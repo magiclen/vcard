@@ -1,5 +1,5 @@
-use super::*;
 use super::super::values::{parameter_value::ParameterValue, Value};
+use super::*;
 
 use std::fmt::Display;
 
@@ -7,7 +7,7 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct AlternativeID {
-    parameter_value: ParameterValue
+    parameter_value: ParameterValue,
 }
 
 impl AlternativeID {

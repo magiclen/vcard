@@ -259,7 +259,11 @@ pub enum TimeRangeError {
 }
 
 impl Time {
-    pub fn with_hour_minute_second(hour: u8, minute: u8, second: u8) -> Result<Time, TimeRangeError> {
+    pub fn with_hour_minute_second(
+        hour: u8,
+        minute: u8,
+        second: u8,
+    ) -> Result<Time, TimeRangeError> {
         if hour >= 24 {
             return Err(TimeRangeError::Hour);
         }
@@ -311,7 +315,11 @@ impl Time {
         Ok(Time::Second(second))
     }
 
-    pub fn with_hour_minute_second_utc(hour: u8, minute: u8, second: u8) -> Result<Time, TimeRangeError> {
+    pub fn with_hour_minute_second_utc(
+        hour: u8,
+        minute: u8,
+        second: u8,
+    ) -> Result<Time, TimeRangeError> {
         if hour >= 24 {
             return Err(TimeRangeError::Hour);
         }
@@ -325,7 +333,12 @@ impl Time {
         Ok(Time::HourMinuteSecondUtc(hour, minute, second))
     }
 
-    pub fn with_hour_minute_second_zone(hour: u8, minute: u8, second: u8, offset_minutes: i16) -> Result<Time, TimeRangeError> {
+    pub fn with_hour_minute_second_zone(
+        hour: u8,
+        minute: u8,
+        second: u8,
+        offset_minutes: i16,
+    ) -> Result<Time, TimeRangeError> {
         if hour >= 24 {
             return Err(TimeRangeError::Hour);
         }
@@ -339,7 +352,12 @@ impl Time {
             return Err(TimeRangeError::Zone);
         }
 
-        Ok(Time::HourMinuteSecondZone(hour, minute, second, offset_minutes))
+        Ok(Time::HourMinuteSecondZone(
+            hour,
+            minute,
+            second,
+            offset_minutes,
+        ))
     }
 }
 
@@ -497,10 +515,7 @@ pub struct DateTime {
 
 impl DateTime {
     pub fn with_date_time(date: Date, time: Time) -> DateTime {
-        DateTime {
-            date,
-            time,
-        }
+        DateTime { date, time }
     }
 }
 
@@ -559,7 +574,6 @@ impl Value for List<DateTime> {
     }
 }
 
-
 validated_customized_ranged_number!(pub UtcOffset, i16, -1439, 1439);
 
 impl Value for UtcOffset {
@@ -579,7 +593,6 @@ impl Value for UtcOffset {
         Ok(())
     }
 }
-
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum DateAndOrTime {
@@ -703,7 +716,15 @@ pub enum TimestampRangeError {
 }
 
 impl Timestamp {
-    pub fn new(year: u16, month: u8, day: u8, hour: u8, minute: u8, second: u8, offset_minutes: Option<i16>) -> Result<Timestamp, TimestampRangeError> {
+    pub fn new(
+        year: u16,
+        month: u8,
+        day: u8,
+        hour: u8,
+        minute: u8,
+        second: u8,
+        offset_minutes: Option<i16>,
+    ) -> Result<Timestamp, TimestampRangeError> {
         if year > 9999 {
             return Err(TimestampRangeError::Date(DateRangeError::Year));
         }
@@ -771,7 +792,9 @@ impl Timestamp {
         })
     }
 
-    pub fn with_date_time<T: chrono::TimeZone>(date_time: chrono::DateTime<T>) -> Result<Timestamp, TimestampRangeError> {
+    pub fn with_date_time<T: chrono::TimeZone>(
+        date_time: chrono::DateTime<T>,
+    ) -> Result<Timestamp, TimestampRangeError> {
         let year = date_time.year();
 
         if year < 0 || year > 9999 {
@@ -790,7 +813,8 @@ impl Timestamp {
 
         let second = date_time.second() as u8;
 
-        let offset_minutes = ((date_time.naive_local().timestamp() - date_time.naive_utc().timestamp()) / 60) as i16;
+        let offset_minutes =
+            ((date_time.naive_local().timestamp() - date_time.naive_utc().timestamp()) / 60) as i16;
 
         Ok(Timestamp {
             year,

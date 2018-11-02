@@ -1,5 +1,5 @@
-use super::*;
 use super::super::values::language_tag::LanguageTag;
+use super::*;
 
 use std::fmt::Display;
 
@@ -7,14 +7,12 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Language {
-    language_tag: LanguageTag
+    language_tag: LanguageTag,
 }
 
 impl Language {
     pub fn with_language_tag(language_tag: LanguageTag) -> Language {
-        Language {
-            language_tag
-        }
+        Language { language_tag }
     }
 }
 

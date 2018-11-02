@@ -6,14 +6,12 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Boolean {
-    boolean: bool
+    boolean: bool,
 }
 
 impl Boolean {
     pub fn from_bool(b: bool) -> Boolean {
-        Boolean {
-            boolean: b
-        }
+        Boolean { boolean: b }
     }
 }
 

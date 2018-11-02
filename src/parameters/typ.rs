@@ -1,4 +1,4 @@
-use super::super::values::property_id_value::PropertyIDValue;
+use super::super::values::type_value::TypeValue;
 use super::super::values::{List, Value};
 use super::*;
 
@@ -6,42 +6,43 @@ use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
 
+// Used in FN, NICKNAME, PHOTO, ADR, TEL, EMAIL, IMPP, LANG, TZ, GEO, TITLE, ROLE, LOGO, ORG, RELATED, CATEGORIES, NOTE, SOUND, URL, KEY, FBURL, CALADRURI, and CALURI
 #[derive(Clone, Debug, PartialEq)]
-pub struct PropertyID {
-    ids: List<PropertyIDValue>,
+pub struct Type {
+    types: List<TypeValue>,
 }
 
-impl PropertyID {
-    pub fn with_ids(ids: List<PropertyIDValue>) -> PropertyID {
-        PropertyID { ids }
+impl Type {
+    pub fn with_ids(types: List<TypeValue>) -> Type {
+        Type { types }
     }
 }
 
-impl PropertyID {
-    pub fn get_ids(&self) -> &List<PropertyIDValue> {
-        &self.ids
+impl Type {
+    pub fn get_ids(&self) -> &List<TypeValue> {
+        &self.types
     }
 }
 
-impl Parameter for PropertyID {
+impl Parameter for Type {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        f.write_str(";PID=")?;
+        f.write_str(";VALUE=")?;
 
-        Value::fmt(&self.ids, f)?;
+        Value::fmt(&self.types, f)?;
 
         Ok(())
     }
 }
 
-impl Display for PropertyID {
+impl Display for Type {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Parameter::fmt(self, f)
     }
 }
 
-impl Validated for PropertyID {}
+impl Validated for Type {}
 
-impl ValidatedWrapper for PropertyID {
+impl ValidatedWrapper for Type {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

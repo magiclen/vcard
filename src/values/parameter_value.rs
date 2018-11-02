@@ -1,5 +1,5 @@
+use super::super::{QSAFE_RE, SAFE_RE};
 use super::*;
-use super::super::{SAFE_RE, QSAFE_RE};
 
 use std::fmt::Display;
 
@@ -13,7 +13,7 @@ pub struct ParameterValue {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ParameterValueError {
-    IncorrectFormat
+    IncorrectFormat,
 }
 
 impl ParameterValue {
@@ -45,10 +45,7 @@ impl ParameterValue {
             false
         };
 
-        Ok(ParameterValue {
-            qsafe,
-            text,
-        })
+        Ok(ParameterValue { qsafe, text })
     }
 
     pub fn is_empty(&self) -> bool {

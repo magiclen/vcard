@@ -1,5 +1,5 @@
-use std::borrow::Cow;
 use regex::Regex;
+use std::borrow::Cow;
 
 lazy_static! {
     static ref NEW_LINE_RE: Regex = { Regex::new(r"\n").unwrap() };

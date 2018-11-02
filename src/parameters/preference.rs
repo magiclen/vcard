@@ -6,12 +6,12 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Preference {
-    p: u8
+    p: u8,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum PreferenceRangeError {
-    OutOfRange
+    OutOfRange,
 }
 
 impl Preference {

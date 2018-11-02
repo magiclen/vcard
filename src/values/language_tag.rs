@@ -1,5 +1,5 @@
-use super::*;
 use super::super::escaping::*;
+use super::*;
 
 // TODO: not implement yet, refer to [RFC5646]
 validated_customized_string!(pub LanguageTag,

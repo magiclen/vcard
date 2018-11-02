@@ -1,6 +1,6 @@
-use super::*;
-use super::super::TEXT_RE;
 use super::super::escaping::*;
+use super::super::TEXT_RE;
+use super::*;
 
 use std::fmt::{self, Formatter};
 

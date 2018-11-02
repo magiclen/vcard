@@ -12,7 +12,7 @@ pub struct PropertyIDValue {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum PropertyIDValueError {
-    OutOfRange
+    OutOfRange,
 }
 
 impl PropertyIDValue {
@@ -26,10 +26,7 @@ impl PropertyIDValue {
             }
         }
 
-        Ok(PropertyIDValue {
-            d1,
-            d2,
-        })
+        Ok(PropertyIDValue { d1, d2 })
     }
 }
 
@@ -51,7 +48,6 @@ impl Value for PropertyIDValue {
             f.write_str(".")?;
             f.write_fmt(format_args!("{}", d2))?;
         }
-
 
         Ok(())
     }
