@@ -1,0 +1,14 @@
+[package]
+name = "vcard4"
+version = "0.1.0"
+authors = ["Magic Len <len@magiclen.org>"]
+edition = "2018"
+
+[dependencies]
+validators = "0.14.3"
+base64-stream = "1.0.1"
+mime_guess = "1.8.6"
+chrono = "0.4.6"
+regex = "1.0.5"
+lazy_static = "1.1.0"
+percent-encoding = "1.0.1"
