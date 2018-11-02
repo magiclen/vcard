@@ -1,25 +1,12 @@
 use super::*;
+use super::super::TEXT_RE;
 use super::super::escaping::*;
 
 use std::fmt::{self, Formatter};
 
-validated_customized_string!(pub Text,
-    from_string s {
-        Ok(s)
-    },
-    from_str s {
-        Ok(s.to_string())
-    }
-);
+validated_customized_regex_string!(pub Text, ref TEXT_RE);
 
-validated_customized_string!(pub Component,
-    from_string s {
-        Ok(s)
-    },
-    from_str s {
-        Ok(s.to_string())
-    }
-);
+validated_customized_regex_string!(pub Component, ref TEXT_RE);
 
 impl Text {
     pub fn is_empty(&self) -> bool {
