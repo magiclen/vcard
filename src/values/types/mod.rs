@@ -126,7 +126,7 @@ impl ValidatedWrapper for ValueType {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TelType {
     Text,
     Voice,
@@ -227,7 +227,7 @@ impl ValidatedWrapper for TelType {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum RelatedType {
     Contact,
     Acquaintance,

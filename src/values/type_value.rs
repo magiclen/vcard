@@ -1,12 +1,13 @@
-use super::super::parameters::types::{RelatedType, TelType};
+use super::types::{RelatedType, TelType};
 use super::super::{IanaToken, XName};
 use super::*;
 
 use std::fmt::Display;
+use std::hash::{Hash, Hasher};
 
 use validators::{Validated, ValidatedWrapper};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum TypeValue {
     Work,
     Home,
@@ -67,6 +68,37 @@ impl Display for TypeValue {
     }
 }
 
+impl Hash for TypeValue {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        match self {
+            TypeValue::Work => {
+                state.write_i8(0);
+                state.write_i8(0);
+            }
+            TypeValue::Home => {
+                state.write_i8(1);
+                state.write_i8(1);
+            }
+            TypeValue::TelType(tt) => {
+                state.write_i8(2);
+                state.write(tt.get_str().as_bytes());
+            }
+            TypeValue::RelatedType(rt) => {
+                state.write_i8(3);
+                state.write(rt.get_str().as_bytes());
+            }
+            TypeValue::IanaToken(x) => {
+                state.write_i8(4);
+                state.write(x.as_str().as_bytes());
+            }
+            TypeValue::XName(x) => {
+                state.write_i8(5);
+                state.write(x.as_str().as_bytes());
+            }
+        }
+    }
+}
+
 impl Validated for TypeValue {}
 
 impl ValidatedWrapper for TypeValue {
@@ -78,20 +110,5 @@ impl ValidatedWrapper for TypeValue {
 
     fn from_str(_from_str_input: &str) -> Result<Self, Self::Error> {
         unimplemented!();
-    }
-}
-
-impl Value for List<TypeValue> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        let v: &Vec<TypeValue> = self.as_vec();
-
-        Value::fmt(&v[0], f)?;
-
-        for e in v.iter().skip(1) {
-            f.write_str(",")?;
-            Value::fmt(e, f)?;
-        }
-
-        Ok(())
     }
 }

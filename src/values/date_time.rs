@@ -224,21 +224,6 @@ impl ValidatedWrapper for Date {
     }
 }
 
-impl Value for List<Date> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        let v: &Vec<Date> = self.as_vec();
-
-        Value::fmt(&v[0], f)?;
-
-        for e in v.iter().skip(1) {
-            f.write_str(",")?;
-            Value::fmt(e, f)?;
-        }
-
-        Ok(())
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub enum Time {
     HourMinuteSecond(u8, u8, u8),
@@ -492,21 +477,6 @@ impl ValidatedWrapper for Time {
     }
 }
 
-impl Value for List<Time> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        let v: &Vec<Time> = self.as_vec();
-
-        Value::fmt(&v[0], f)?;
-
-        for e in v.iter().skip(1) {
-            f.write_str(",")?;
-            Value::fmt(e, f)?;
-        }
-
-        Ok(())
-    }
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub struct DateTime {
     date: Date,
@@ -556,21 +526,6 @@ impl ValidatedWrapper for DateTime {
 
     fn from_str(_from_str_input: &str) -> Result<Self, Self::Error> {
         unimplemented!();
-    }
-}
-
-impl Value for List<DateTime> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        let v: &Vec<DateTime> = self.as_vec();
-
-        Value::fmt(&v[0], f)?;
-
-        for e in v.iter().skip(1) {
-            f.write_str(",")?;
-            Value::fmt(e, f)?;
-        }
-
-        Ok(())
     }
 }
 
@@ -680,21 +635,6 @@ impl ValidatedWrapper for DateAndOrTime {
 
     fn from_str(_from_str_input: &str) -> Result<Self, Self::Error> {
         unimplemented!();
-    }
-}
-
-impl Value for List<DateAndOrTime> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        let v: &Vec<DateAndOrTime> = self.as_vec();
-
-        Value::fmt(&v[0], f)?;
-
-        for e in v.iter().skip(1) {
-            f.write_str(",")?;
-            Value::fmt(e, f)?;
-        }
-
-        Ok(())
     }
 }
 
@@ -882,20 +822,5 @@ impl ValidatedWrapper for Timestamp {
 
     fn from_str(_from_str_input: &str) -> Result<Self, Self::Error> {
         unimplemented!();
-    }
-}
-
-impl Value for List<Timestamp> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        let v: &Vec<Timestamp> = self.as_vec();
-
-        Value::fmt(&v[0], f)?;
-
-        for e in v.iter().skip(1) {
-            f.write_str(",")?;
-            Value::fmt(e, f)?;
-        }
-
-        Ok(())
     }
 }

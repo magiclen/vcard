@@ -1,5 +1,5 @@
 use super::super::values::type_value::TypeValue;
-use super::super::values::{List, Value};
+use super::super::values::{Set, Value};
 use super::*;
 
 use std::fmt::Display;
@@ -7,19 +7,19 @@ use std::fmt::Display;
 use validators::{Validated, ValidatedWrapper};
 
 // Used in FN, NICKNAME, PHOTO, ADR, TEL, EMAIL, IMPP, LANG, TZ, GEO, TITLE, ROLE, LOGO, ORG, RELATED, CATEGORIES, NOTE, SOUND, URL, KEY, FBURL, CALADRURI, and CALURI
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Type {
-    types: List<TypeValue>,
+    types: Set<TypeValue>,
 }
 
 impl Type {
-    pub fn with_ids(types: List<TypeValue>) -> Type {
+    pub fn with_ids(types: Set<TypeValue>) -> Type {
         Type { types }
     }
 }
 
 impl Type {
-    pub fn get_ids(&self) -> &List<TypeValue> {
+    pub fn get_ids(&self) -> &Set<TypeValue> {
         &self.types
     }
 }

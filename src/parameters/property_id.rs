@@ -1,5 +1,5 @@
 use super::super::values::property_id_value::PropertyIDValue;
-use super::super::values::{List, Value};
+use super::super::values::{Set, Value};
 use super::*;
 
 use std::fmt::Display;
@@ -8,17 +8,17 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct PropertyID {
-    ids: List<PropertyIDValue>,
+    ids: Set<PropertyIDValue>,
 }
 
 impl PropertyID {
-    pub fn with_ids(ids: List<PropertyIDValue>) -> PropertyID {
+    pub fn with_ids(ids: Set<PropertyIDValue>) -> PropertyID {
         PropertyID { ids }
     }
 }
 
 impl PropertyID {
-    pub fn get_ids(&self) -> &List<PropertyIDValue> {
+    pub fn get_ids(&self) -> &Set<PropertyIDValue> {
         &self.ids
     }
 }

@@ -1,22 +1,23 @@
-use super::*;
+use super::super::values::types::ValueType;
+use super::Parameter;
 
-use std::fmt::Display;
+use std::fmt::{self, Display, Formatter};
 
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Value {
-    value_type: types::ValueType,
+    value_type: ValueType,
 }
 
 impl Value {
-    pub fn with_value_type(value_type: types::ValueType) -> Value {
+    pub fn with_value_type(value_type: ValueType) -> Value {
         Value { value_type }
     }
 }
 
 impl Value {
-    pub fn get_value_type(&self) -> &types::ValueType {
+    pub fn get_value_type(&self) -> &ValueType {
         &self.value_type
     }
 }

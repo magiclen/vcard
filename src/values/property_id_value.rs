@@ -1,10 +1,11 @@
 use super::*;
 
 use std::fmt::Display;
+use std::hash::{Hash, Hasher};
 
 use validators::{Validated, ValidatedWrapper};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct PropertyIDValue {
     d1: u8,
     d2: Option<u8>,
@@ -59,6 +60,18 @@ impl Display for PropertyIDValue {
     }
 }
 
+impl Hash for PropertyIDValue{
+    fn hash<H: Hasher>(&self, state: &mut H){
+        state.write_u8(self.d1);
+
+        if let Some(d2) = self.d2{
+            state.write_u8(d2);
+        }else{
+            state.write_i8(-1);
+        }
+    }
+}
+
 impl Validated for PropertyIDValue {}
 
 impl ValidatedWrapper for PropertyIDValue {
@@ -70,20 +83,5 @@ impl ValidatedWrapper for PropertyIDValue {
 
     fn from_str(_from_str_input: &str) -> Result<Self, Self::Error> {
         unimplemented!();
-    }
-}
-
-impl Value for List<PropertyIDValue> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        let v: &Vec<PropertyIDValue> = self.as_vec();
-
-        Value::fmt(&v[0], f)?;
-
-        for e in v.iter().skip(1) {
-            f.write_str(",")?;
-            Value::fmt(e, f)?;
-        }
-
-        Ok(())
     }
 }
