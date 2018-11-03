@@ -1,4 +1,5 @@
-use super::types::{RelatedType, TelType};
+use super::related_type::RelatedType;
+use super::tel_type::TelType;
 use super::super::{IanaToken, XName};
 use super::*;
 
@@ -18,30 +19,6 @@ pub enum TypeValue {
 }
 
 impl TypeValue {
-    pub fn new_work() -> TypeValue {
-        TypeValue::Work
-    }
-
-    pub fn new_home() -> TypeValue {
-        TypeValue::Home
-    }
-
-    pub fn with_tel_type(tel_type: TelType) -> TypeValue {
-        TypeValue::TelType(tel_type)
-    }
-
-    pub fn with_related_type(related_type: RelatedType) -> TypeValue {
-        TypeValue::RelatedType(related_type)
-    }
-
-    pub fn with_x_name(x_name: XName) -> TypeValue {
-        TypeValue::XName(x_name)
-    }
-
-    pub fn with_iana_token(iana_token: IanaToken) -> TypeValue {
-        TypeValue::IanaToken(iana_token)
-    }
-
     pub fn get_str(&self) -> &str {
         match self {
             TypeValue::Work => "work",

@@ -10,12 +10,17 @@ fn is_leap(year: u16) -> bool {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Date {
+enum DateInner {
     YearMonthDay(u16, u8, u8),
     YearMonth(u16, u8),
     Year(u16),
     MonthDay(u8, u8),
     Day(u8),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Date {
+    inner: DateInner
 }
 
 #[derive(Clone, Debug)]
@@ -67,7 +72,7 @@ impl Date {
             return Err(DateRangeError::Month);
         }
 
-        Ok(Date::YearMonthDay(year, month, day))
+        Ok(Date { inner: DateInner::YearMonthDay(year, month, day) })
     }
 
     pub fn with_year_month(year: u16, month: u8) -> Result<Date, DateRangeError> {
@@ -79,7 +84,7 @@ impl Date {
             return Err(DateRangeError::Month);
         }
 
-        Ok(Date::YearMonth(year, month))
+        Ok(Date { inner: DateInner::YearMonth(year, month) })
     }
 
     pub fn with_year(year: u16) -> Result<Date, DateRangeError> {
@@ -87,7 +92,7 @@ impl Date {
             return Err(DateRangeError::Year);
         }
 
-        Ok(Date::Year(year))
+        Ok(Date { inner: DateInner::Year(year) })
     }
 
     pub fn with_month_day(month: u8, day: u8) -> Result<Date, DateRangeError> {
@@ -123,7 +128,7 @@ impl Date {
             return Err(DateRangeError::Month);
         }
 
-        Ok(Date::MonthDay(month, day))
+        Ok(Date { inner: DateInner::MonthDay(month, day) })
     }
 
     pub fn with_day(day: u8) -> Result<Date, DateRangeError> {
@@ -131,70 +136,79 @@ impl Date {
             return Err(DateRangeError::Day);
         }
 
-        Ok(Date::Day(day))
+        Ok(Date { inner: DateInner::Day(day) })
     }
 }
 
 impl Date {
     pub fn get_year(&self) -> Option<u16> {
-        if let Date::YearMonthDay(year, _, _) = self {
-            Some(*year)
-        } else if let Date::YearMonth(year, _) = self {
-            Some(*year)
-        } else if let Date::Year(year) = self {
-            Some(*year)
-        } else {
-            None
+        match self.inner {
+            DateInner::YearMonthDay(year, _, _) => {
+                Some(year)
+            }
+            DateInner::YearMonth(year, _) => {
+                Some(year)
+            }
+            DateInner::Year(year) => {
+                Some(year)
+            }
+            _ => None
         }
     }
 
     pub fn get_month(&self) -> Option<u8> {
-        if let Date::YearMonthDay(_, month, _) = self {
-            Some(*month)
-        } else if let Date::YearMonth(_, month) = self {
-            Some(*month)
-        } else if let Date::MonthDay(month, _) = self {
-            Some(*month)
-        } else {
-            None
+        match self.inner {
+            DateInner::YearMonthDay(_, month, _) => {
+                Some(month)
+            }
+            DateInner::YearMonth(_, month) => {
+                Some(month)
+            }
+            DateInner::MonthDay(month, _) => {
+                Some(month)
+            }
+            _ => None
         }
     }
 
     pub fn get_day(&self) -> Option<u8> {
-        if let Date::YearMonthDay(_, _, day) = self {
-            Some(*day)
-        } else if let Date::MonthDay(_, day) = self {
-            Some(*day)
-        } else if let Date::Day(day) = self {
-            Some(*day)
-        } else {
-            None
+        match self.inner {
+            DateInner::YearMonthDay(_, _, day) => {
+                Some(day)
+            }
+            DateInner::MonthDay(_, day) => {
+                Some(day)
+            }
+            DateInner::Day(day) => {
+                Some(day)
+            }
+            _ => None
         }
     }
 }
 
 impl Value for Date {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        match self {
-            Date::YearMonthDay(year, month, day) => {
+        match self.inner {
+            DateInner::YearMonthDay(year, month, day) => {
                 f.write_fmt(format_args!("{:04}", year))?;
                 f.write_fmt(format_args!("{:02}", month))?;
                 f.write_fmt(format_args!("{:02}", day))?;
             }
-            Date::YearMonth(year, month) => {
+            DateInner::YearMonth(year, month) => {
                 f.write_fmt(format_args!("{:04}", year))?;
                 f.write_str("-")?;
                 f.write_fmt(format_args!("{:02}", month))?;
             }
-            Date::Year(year) => {
+            DateInner::Year(year) => {
                 f.write_fmt(format_args!("{:04}", year))?;
             }
-            Date::MonthDay(month, day) => {
+            DateInner::MonthDay(month, day) => {
                 f.write_str("--")?;
                 f.write_fmt(format_args!("{:02}", month))?;
                 f.write_fmt(format_args!("{:02}", day))?;
             }
-            Date::Day(day) => {
+            DateInner::Day(day) => {
                 f.write_str("---")?;
                 f.write_fmt(format_args!("{:02}", day))?;
             }
@@ -225,7 +239,7 @@ impl ValidatedWrapper for Date {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum Time {
+enum TimeInner {
     HourMinuteSecond(u8, u8, u8),
     HourMinute(u8, u8),
     Hour(u8),
@@ -233,6 +247,11 @@ pub enum Time {
     Second(u8),
     HourMinuteSecondUtc(u8, u8, u8),
     HourMinuteSecondZone(u8, u8, u8, i16),
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Time {
+    inner: TimeInner
 }
 
 #[derive(Clone, Debug)]
@@ -259,7 +278,7 @@ impl Time {
             return Err(TimeRangeError::Second);
         }
 
-        Ok(Time::HourMinuteSecond(hour, minute, second))
+        Ok(Time { inner: TimeInner::HourMinuteSecond(hour, minute, second) })
     }
 
     pub fn with_hour_minute(hour: u8, minute: u8) -> Result<Time, TimeRangeError> {
@@ -270,7 +289,7 @@ impl Time {
             return Err(TimeRangeError::Minute);
         }
 
-        Ok(Time::HourMinute(hour, minute))
+        Ok(Time { inner: TimeInner::HourMinute(hour, minute) })
     }
 
     pub fn with_hour(hour: u8) -> Result<Time, TimeRangeError> {
@@ -278,7 +297,7 @@ impl Time {
             return Err(TimeRangeError::Hour);
         }
 
-        Ok(Time::Hour(hour))
+        Ok(Time { inner: TimeInner::Hour(hour) })
     }
 
     pub fn with_minute_second(minute: u8, second: u8) -> Result<Time, TimeRangeError> {
@@ -289,7 +308,7 @@ impl Time {
             return Err(TimeRangeError::Second);
         }
 
-        Ok(Time::MinuteSecond(minute, second))
+        Ok(Time { inner: TimeInner::MinuteSecond(minute, second) })
     }
 
     pub fn with_second(second: u8) -> Result<Time, TimeRangeError> {
@@ -297,7 +316,7 @@ impl Time {
             return Err(TimeRangeError::Minute);
         }
 
-        Ok(Time::Second(second))
+        Ok(Time { inner: TimeInner::Second(second) })
     }
 
     pub fn with_hour_minute_second_utc(
@@ -315,7 +334,7 @@ impl Time {
             return Err(TimeRangeError::Second);
         }
 
-        Ok(Time::HourMinuteSecondUtc(hour, minute, second))
+        Ok(Time { inner: TimeInner::HourMinuteSecondUtc(hour, minute, second) })
     }
 
     pub fn with_hour_minute_second_zone(
@@ -337,106 +356,125 @@ impl Time {
             return Err(TimeRangeError::Zone);
         }
 
-        Ok(Time::HourMinuteSecondZone(
-            hour,
-            minute,
-            second,
-            offset_minutes,
-        ))
+        Ok(Time {
+            inner: TimeInner::HourMinuteSecondZone(
+                hour,
+                minute,
+                second,
+                offset_minutes,
+            )
+        })
     }
 }
 
 impl Time {
     pub fn get_hour(&self) -> Option<u8> {
-        if let Time::HourMinuteSecond(hour, _, _) = self {
-            Some(*hour)
-        } else if let Time::HourMinute(hour, _) = self {
-            Some(*hour)
-        } else if let Time::Hour(hour) = self {
-            Some(*hour)
-        } else if let Time::HourMinuteSecondUtc(hour, _, _) = self {
-            Some(*hour)
-        } else if let Time::HourMinuteSecondZone(hour, _, _, _) = self {
-            Some(*hour)
-        } else {
-            None
+        match self.inner {
+            TimeInner::HourMinuteSecond(hour, _, _) => {
+                Some(hour)
+            }
+            TimeInner::HourMinute(hour, _) => {
+                Some(hour)
+            }
+            TimeInner::Hour(hour) => {
+                Some(hour)
+            }
+            TimeInner::HourMinuteSecondUtc(hour, _, _) => {
+                Some(hour)
+            }
+            TimeInner::HourMinuteSecondZone(hour, _, _, _) => {
+                Some(hour)
+            }
+            _ => None
         }
     }
 
     pub fn get_minute(&self) -> Option<u8> {
-        if let Time::HourMinuteSecond(_, minute, _) = self {
-            Some(*minute)
-        } else if let Time::HourMinute(_, minute) = self {
-            Some(*minute)
-        } else if let Time::MinuteSecond(minute, _) = self {
-            Some(*minute)
-        } else if let Time::HourMinuteSecondUtc(_, minute, _) = self {
-            Some(*minute)
-        } else if let Time::HourMinuteSecondZone(_, minute, _, _) = self {
-            Some(*minute)
-        } else {
-            None
+        match self.inner {
+            TimeInner::HourMinuteSecond(_, minute, _) => {
+                Some(minute)
+            }
+            TimeInner::HourMinute(_, minute) => {
+                Some(minute)
+            }
+            TimeInner::MinuteSecond(minute, _) => {
+                Some(minute)
+            }
+            TimeInner::HourMinuteSecondUtc(_, minute, _) => {
+                Some(minute)
+            }
+            TimeInner::HourMinuteSecondZone(_, minute, _, _) => {
+                Some(minute)
+            }
+            _ => None
         }
     }
 
     pub fn get_second(&self) -> Option<u8> {
-        if let Time::HourMinuteSecond(_, _, second) = self {
-            Some(*second)
-        } else if let Time::MinuteSecond(_, second) = self {
-            Some(*second)
-        } else if let Time::Second(second) = self {
-            Some(*second)
-        } else if let Time::HourMinuteSecondUtc(_, _, second) = self {
-            Some(*second)
-        } else if let Time::HourMinuteSecondZone(_, _, second, _) = self {
-            Some(*second)
-        } else {
-            None
+        match self.inner {
+            TimeInner::HourMinuteSecond(_, _, second) => {
+                Some(second)
+            }
+            TimeInner::MinuteSecond(_, second) => {
+                Some(second)
+            }
+            TimeInner::Second(second) => {
+                Some(second)
+            }
+            TimeInner::HourMinuteSecondUtc(_, _, second) => {
+                Some(second)
+            }
+            TimeInner::HourMinuteSecondZone(_, _, second, _) => {
+                Some(second)
+            }
+            _ => None
         }
     }
 
     pub fn get_time_zone_offset(&self) -> Option<i16> {
-        if let Time::HourMinuteSecondUtc(..) = self {
-            Some(0)
-        } else if let Time::HourMinuteSecondZone(_, _, _, offset_minutes) = self {
-            Some(*offset_minutes)
-        } else {
-            None
+        match self.inner {
+            TimeInner::HourMinuteSecondUtc(..) => {
+                Some(0)
+            }
+            TimeInner::HourMinuteSecondZone(_, _, _, offset_minutes) => {
+                Some(offset_minutes)
+            }
+            _ => None
         }
     }
 }
 
 impl Value for Time {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        match self {
-            Time::HourMinuteSecond(hour, minute, second) => {
+        match self.inner {
+            TimeInner::HourMinuteSecond(hour, minute, second) => {
                 f.write_fmt(format_args!("{:02}", hour))?;
                 f.write_fmt(format_args!("{:02}", minute))?;
                 f.write_fmt(format_args!("{:02}", second))?;
             }
-            Time::HourMinute(hour, minute) => {
+            TimeInner::HourMinute(hour, minute) => {
                 f.write_fmt(format_args!("{:02}", hour))?;
                 f.write_fmt(format_args!("{:02}", minute))?;
             }
-            Time::Hour(hour) => {
+            TimeInner::Hour(hour) => {
                 f.write_fmt(format_args!("{:02}", hour))?;
             }
-            Time::MinuteSecond(minute, second) => {
+            TimeInner::MinuteSecond(minute, second) => {
                 f.write_str("-")?;
                 f.write_fmt(format_args!("{:02}", minute))?;
                 f.write_fmt(format_args!("{:02}", second))?;
             }
-            Time::Second(second) => {
+            TimeInner::Second(second) => {
                 f.write_str("--")?;
                 f.write_fmt(format_args!("{:02}", second))?;
             }
-            Time::HourMinuteSecondUtc(hour, minute, second) => {
+            TimeInner::HourMinuteSecondUtc(hour, minute, second) => {
                 f.write_fmt(format_args!("{:02}", hour))?;
                 f.write_fmt(format_args!("{:02}", minute))?;
                 f.write_fmt(format_args!("{:02}", second))?;
                 f.write_str("Z")?;
             }
-            Time::HourMinuteSecondZone(hour, minute, second, mut offset_minutes) => {
+            TimeInner::HourMinuteSecondZone(hour, minute, second, mut offset_minutes) => {
                 f.write_fmt(format_args!("{:02}", hour))?;
                 f.write_fmt(format_args!("{:02}", minute))?;
                 f.write_fmt(format_args!("{:02}", second))?;
@@ -554,20 +592,6 @@ pub enum DateAndOrTime {
     Date(Date),
     Time(Time),
     DateTime(DateTime),
-}
-
-impl DateAndOrTime {
-    pub fn with_date(date: Date) -> DateAndOrTime {
-        DateAndOrTime::Date(date)
-    }
-
-    pub fn with_time(time: Time) -> DateAndOrTime {
-        DateAndOrTime::Time(time)
-    }
-
-    pub fn with_date_time(date: Date, time: Time) -> DateAndOrTime {
-        DateAndOrTime::DateTime(DateTime::with_date_time(date, time))
-    }
 }
 
 impl DateAndOrTime {

@@ -6,6 +6,8 @@ pub mod preference;
 pub mod property_id;
 pub mod typ;
 pub mod value;
+pub mod media_type;
+pub mod calscale;
 
 pub trait Parameter {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;

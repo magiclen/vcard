@@ -1,5 +1,5 @@
-use super::super::values;
-use super::super::values::value_type::ValueType;
+use super::super::values::Value;
+use super::super::values::calscale_value::CalscaleValue;
 use super::Parameter;
 
 use std::fmt::{self, Display, Formatter};
@@ -7,41 +7,41 @@ use std::fmt::{self, Display, Formatter};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct Value {
-    value_type: ValueType,
+pub struct Calscale {
+    calscale_value: CalscaleValue,
 }
 
-impl Value {
-    pub fn with_value_type(value_type: ValueType) -> Value {
-        Value { value_type }
+impl Calscale {
+    pub fn with_calscale_value(calscale_value: CalscaleValue) -> Calscale {
+        Calscale { calscale_value }
     }
 }
 
-impl Value {
-    pub fn get_value_type(&self) -> &ValueType {
-        &self.value_type
+impl Calscale {
+    pub fn get_value_type(&self) -> &CalscaleValue {
+        &self.calscale_value
     }
 }
 
-impl Parameter for Value {
+impl Parameter for Calscale {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        f.write_str(";VALUE=")?;
+        f.write_str(";CALSCALE=")?;
 
-        values::Value::fmt(&self.value_type, f)?;
+        Value::fmt(&self.calscale_value, f)?;
 
         Ok(())
     }
 }
 
-impl Display for Value {
+impl Display for Calscale {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Parameter::fmt(self, f)
     }
 }
 
-impl Validated for Value {}
+impl Validated for Calscale {}
 
-impl ValidatedWrapper for Value {
+impl ValidatedWrapper for Calscale {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {
