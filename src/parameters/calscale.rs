@@ -6,7 +6,7 @@ use std::fmt::{self, Display, Formatter};
 
 use validators::{Validated, ValidatedWrapper};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Calscale {
     calscale_value: CalscaleValue,
 }

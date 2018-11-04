@@ -1,12 +1,13 @@
 use super::super::values::property_id_value::PropertyIDValue;
-use super::super::values::{Set, Value};
+use super::super::values::Value;
+use super::super::Set;
 use super::*;
 
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct PropertyID {
     ids: Set<PropertyIDValue>,
 }

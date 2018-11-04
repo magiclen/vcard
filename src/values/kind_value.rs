@@ -1,5 +1,3 @@
-use super::related_type::RelatedType;
-use super::tel_type::TelType;
 use super::super::{IanaToken, XName};
 use super::*;
 
@@ -8,29 +6,29 @@ use std::fmt::Display;
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum TypeValue {
-    Work,
-    Home,
-    TelType(TelType),
-    RelatedType(RelatedType),
+pub enum KindValue {
+    Individual,
+    Group,
+    Organization,
+    Location,
     IanaToken(IanaToken),
     XName(XName),
 }
 
-impl TypeValue {
+impl KindValue {
     pub fn get_str(&self) -> &str {
         match self {
-            TypeValue::Work => "work",
-            TypeValue::Home => "home",
-            TypeValue::TelType(tt) => tt.get_str(),
-            TypeValue::RelatedType(rt) => rt.get_str(),
-            TypeValue::IanaToken(x) => x.as_str(),
-            TypeValue::XName(x) => x.as_str(),
+            KindValue::Individual => "individual",
+            KindValue::Group => "group",
+            KindValue::Organization => "org",
+            KindValue::Location => "location",
+            KindValue::IanaToken(x) => x.as_str(),
+            KindValue::XName(x) => x.as_str(),
         }
     }
 }
 
-impl Value for TypeValue {
+impl Value for KindValue {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         f.write_str(self.get_str())?;
 
@@ -38,15 +36,15 @@ impl Value for TypeValue {
     }
 }
 
-impl Display for TypeValue {
+impl Display for KindValue {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Value::fmt(self, f)
     }
 }
 
-impl Validated for TypeValue {}
+impl Validated for KindValue {}
 
-impl ValidatedWrapper for TypeValue {
+impl ValidatedWrapper for KindValue {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

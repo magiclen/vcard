@@ -8,7 +8,7 @@ use validators::{Validated, ValidatedWrapper};
 validated_customized_ranged_number!(pub Latitude, f64, -90.0, 90.0);
 validated_customized_ranged_number!(pub Longitude, f64, -180.0, 180.0);
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum GeoValue {
     URI(URI),
     LatLng(Latitude, Longitude),

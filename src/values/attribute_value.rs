@@ -6,7 +6,7 @@ use validators::{Validated, ValidatedWrapper};
 
 // TODO: not implement yet, refer to [RFC2045]
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct AttributeValue {
     attribute: String,
     value: String,
@@ -63,7 +63,6 @@ impl Display for AttributeValue {
         Value::fmt(self, f)
     }
 }
-
 
 impl Validated for AttributeValue {}
 

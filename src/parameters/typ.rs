@@ -1,5 +1,6 @@
 use super::super::values::type_value::TypeValue;
-use super::super::values::{Set, Value};
+use super::super::values::{Value};
+use super::super::Set;
 use super::*;
 
 use std::fmt::Display;
@@ -7,7 +8,7 @@ use std::fmt::Display;
 use validators::{Validated, ValidatedWrapper};
 
 // Used in FN, NICKNAME, PHOTO, ADR, TEL, EMAIL, IMPP, LANG, TZ, GEO, TITLE, ROLE, LOGO, ORG, RELATED, CATEGORIES, NOTE, SOUND, URL, KEY, FBURL, CALADRURI, and CALURI
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Type {
     types: Set<TypeValue>,
 }

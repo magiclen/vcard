@@ -1,5 +1,6 @@
 use super::super::values::attribute_value::AttributeValue;
 use super::super::values::{Value};
+use super::super::Set;
 use super::*;
 
 use std::fmt::Display;
@@ -16,23 +17,23 @@ lazy_static! {
 
 validated_customized_regex_string!(pub MediaTypeSegment, ref MEDIA_TYPE_SEGMENT_RE);
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct MediaType {
     type_name: MediaTypeSegment,
     subtype_name: MediaTypeSegment,
-    attribute_values: Vec<AttributeValue>,
+    attribute_values: Option<Set<AttributeValue>>,
 }
 
 impl MediaType {
-    pub fn from_str(type_name: &str, subtype_name: &str, attribute_values: Vec<AttributeValue>) -> Result<MediaType, ValidatedCustomizedStringError> {
+    pub fn from_str(type_name: &str, subtype_name: &str, attribute_values: Option<Set<AttributeValue>>) -> Result<MediaType, ValidatedCustomizedStringError> {
         Ok(Self::with_media_type_segments(MediaTypeSegment::from_str(type_name)?, MediaTypeSegment::from_str(subtype_name)?, attribute_values))
     }
 
-    pub fn from_string(type_name: String, subtype_name: String, attribute_values: Vec<AttributeValue>) -> Result<MediaType, ValidatedCustomizedStringError> {
+    pub fn from_string(type_name: String, subtype_name: String, attribute_values: Option<Set<AttributeValue>>) -> Result<MediaType, ValidatedCustomizedStringError> {
         Ok(Self::with_media_type_segments(MediaTypeSegment::from_string(type_name)?, MediaTypeSegment::from_string(subtype_name)?, attribute_values))
     }
 
-    pub fn with_media_type_segments(type_name: MediaTypeSegment, subtype_name: MediaTypeSegment, attribute_values: Vec<AttributeValue>) -> MediaType {
+    pub fn with_media_type_segments(type_name: MediaTypeSegment, subtype_name: MediaTypeSegment, attribute_values: Option<Set<AttributeValue>>) -> MediaType {
         MediaType {
             type_name,
             subtype_name,
@@ -41,13 +42,11 @@ impl MediaType {
     }
 
     pub fn is_empty(&self) -> bool {
-        if !self.attribute_values.is_empty() {
-            return false;
-        }
-
-        for v in &self.attribute_values {
-            if !v.is_empty() {
-                return false;
+        if let Some(attribute_values) = &self.attribute_values {
+            for v in attribute_values.as_hash_set() {
+                if !v.is_empty() {
+                    return false;
+                }
             }
         }
 
@@ -64,7 +63,7 @@ impl MediaType {
         &self.subtype_name
     }
 
-    pub fn get_attribute_values(&self) -> &Vec<AttributeValue> {
+    pub fn get_attribute_values(&self) -> &Option<Set<AttributeValue>> {
         &self.attribute_values
     }
 }
@@ -83,7 +82,9 @@ impl Parameter for MediaType {
 
         f.write_str(&percent_encoding::utf8_percent_encode(self.subtype_name.as_str(), percent_encoding::PATH_SEGMENT_ENCODE_SET).to_string())?;
 
-        Value::fmt(&self.attribute_values, f)?;
+        if let Some(attribute_values) = &self.attribute_values {
+            Value::fmt(attribute_values, f)?;
+        }
 
         Ok(())
     }

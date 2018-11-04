@@ -1,32 +1,25 @@
+use super::super::values::preference_value::PreferenceValue;
+use super::super::values::Value;
 use super::*;
 
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Preference {
-    p: u8,
-}
-
-#[derive(Clone, Debug, PartialEq)]
-pub enum PreferenceRangeError {
-    OutOfRange,
+    preference_value: PreferenceValue,
 }
 
 impl Preference {
-    pub fn from_u8(p: u8) -> Result<Preference, PreferenceRangeError> {
-        if p < 1 || p > 100 {
-            return Err(PreferenceRangeError::OutOfRange);
-        }
-
-        Ok(Preference { p })
+    pub fn from_preference_value(preference_value: PreferenceValue) -> Preference {
+        Preference { preference_value }
     }
 }
 
 impl Preference {
-    pub fn get_number(&self) -> u8 {
-        self.p
+    pub fn get_preference_value(&self) -> &PreferenceValue {
+        &self.preference_value
     }
 }
 
@@ -34,7 +27,7 @@ impl Parameter for Preference {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         f.write_str(";PREF=")?;
 
-        f.write_fmt(format_args!("{}", self.p))?;
+        Value::fmt(&self.preference_value, f)?;
 
         Ok(())
     }

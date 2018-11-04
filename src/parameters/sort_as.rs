@@ -1,23 +1,23 @@
 use super::super::values::{parameter_value::ParameterValue, Value};
-use super::super::values::List;
+use super::super::Set;
 use super::*;
 
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct SortAs {
-    parameter_values: List<ParameterValue>,
+    parameter_values: Set<ParameterValue>,
 }
 
 impl SortAs {
-    pub fn with_parameter_values(parameter_values: List<ParameterValue>) -> SortAs {
+    pub fn with_parameter_values(parameter_values: Set<ParameterValue>) -> SortAs {
         SortAs { parameter_values }
     }
 
     pub fn is_empty(&self) -> bool {
-        let v = self.parameter_values.as_vec();
+        let v = self.parameter_values.as_hash_set();
 
         for e in v {
             if !e.is_empty() {
@@ -30,7 +30,7 @@ impl SortAs {
 }
 
 impl SortAs {
-    pub fn get_parameter_values(&self) -> &List<ParameterValue> {
+    pub fn get_parameter_values(&self) -> &Set<ParameterValue> {
         &self.parameter_values
     }
 }

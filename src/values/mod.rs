@@ -1,6 +1,8 @@
+use super::Set;
+
 use std::fmt::{self, Formatter};
 use std::collections::HashSet;
-use std::hash::Hash;
+use std::hash::{Hash, Hasher};
 use validators::ValidatedWrapper;
 
 pub mod boolean;
@@ -19,44 +21,12 @@ pub mod value_type;
 pub mod tel_type;
 pub mod related_type;
 pub mod geo_value;
+pub mod kind_value;
+pub mod preference_value;
+pub mod version_value;
 
 pub trait Value {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;
-}
-
-validated_customized_ranged_length_vec!(pub List, 1, usize::max_value());
-validated_customized_ranged_length_hash_set!(pub Set, 1, usize::max_value());
-
-impl<V: Value + ValidatedWrapper> Value for List<V> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        let v: &Vec<V> = self.as_vec();
-
-        Value::fmt(&v[0], f)?;
-
-        for e in v.iter().skip(1) {
-            f.write_str(",")?;
-            Value::fmt(e, f)?;
-        }
-
-        Ok(())
-    }
-}
-
-impl<V: Value + ValidatedWrapper> Value for Vec<V> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        if self.is_empty() {
-            return Ok(());
-        }
-
-        Value::fmt(&self[0], f)?;
-
-        for e in self.iter().skip(1) {
-            f.write_str(",")?;
-            Value::fmt(e, f)?;
-        }
-
-        Ok(())
-    }
 }
 
 impl<V: Value + ValidatedWrapper + Eq + Hash> Value for Set<V> {
@@ -76,22 +46,10 @@ impl<V: Value + ValidatedWrapper + Eq + Hash> Value for Set<V> {
     }
 }
 
-
-impl<V: Value + ValidatedWrapper + Eq + Hash> Value for HashSet<V> {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        if self.is_empty() {
-            return Ok(());
+impl<V: Value + ValidatedWrapper + Eq + Hash> Hash for Set<V> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        for e in self.as_hash_set() {
+            e.hash(state);
         }
-
-        for e in self.iter().take(1) {
-            Value::fmt(e, f)?;
-        }
-
-        for e in self.iter().skip(1) {
-            f.write_str(",")?;
-            Value::fmt(e, f)?;
-        }
-
-        Ok(())
     }
 }

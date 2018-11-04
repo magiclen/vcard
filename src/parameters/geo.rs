@@ -6,7 +6,7 @@ use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Geo {
     geo_value: GeoValue
 }

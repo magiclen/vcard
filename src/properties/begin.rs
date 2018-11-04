@@ -1,47 +1,29 @@
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{self, Display, Formatter};
 
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Boolean {
-    boolean: bool,
-}
+pub struct Begin;
 
-impl Boolean {
-    pub fn from_bool(b: bool) -> Boolean {
-        Boolean { boolean: b }
-    }
-}
-
-impl Boolean {
-    pub fn get_bool(&self) -> bool {
-        self.boolean
-    }
-}
-
-impl Value for Boolean {
+impl Property for Begin {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        if self.boolean {
-            f.write_str("TRUE")?;
-        } else {
-            f.write_str("FALSE")?;
-        }
+        f.write_str("BEGIN:VCARD\r\n")?;
 
         Ok(())
     }
 }
 
-impl Display for Boolean {
+impl Display for Begin {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        Value::fmt(self, f)
+        Property::fmt(self, f)
     }
 }
 
-impl Validated for Boolean {}
+impl Validated for Begin {}
 
-impl ValidatedWrapper for Boolean {
+impl ValidatedWrapper for Begin {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

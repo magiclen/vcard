@@ -5,7 +5,7 @@ use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum TelType {
     Text,
     Voice,

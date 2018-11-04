@@ -9,7 +9,7 @@ fn is_leap(year: u16) -> bool {
     (year % 4 == 0) && (year % 100 != 0) || year % 400 == 0
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum DateInner {
     YearMonthDay(u16, u8, u8),
     YearMonth(u16, u8),
@@ -18,12 +18,12 @@ enum DateInner {
     Day(u8),
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Date {
     inner: DateInner
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum DateRangeError {
     Year,
     Month,
@@ -238,7 +238,7 @@ impl ValidatedWrapper for Date {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum TimeInner {
     HourMinuteSecond(u8, u8, u8),
     HourMinute(u8, u8),
@@ -249,12 +249,12 @@ enum TimeInner {
     HourMinuteSecondZone(u8, u8, u8, i16),
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Time {
     inner: TimeInner
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum TimeRangeError {
     Hour,
     Minute,
@@ -515,7 +515,7 @@ impl ValidatedWrapper for Time {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct DateTime {
     date: Date,
     time: Time,
@@ -587,7 +587,7 @@ impl Value for UtcOffset {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum DateAndOrTime {
     Date(Date),
     Time(Time),
@@ -662,7 +662,7 @@ impl ValidatedWrapper for DateAndOrTime {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Timestamp {
     year: u16,
     month: u8,
@@ -673,7 +673,7 @@ pub struct Timestamp {
     offset_minutes: Option<i16>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum TimestampRangeError {
     Date(DateRangeError),
     Time(TimeRangeError),
