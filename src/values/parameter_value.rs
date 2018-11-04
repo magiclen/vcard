@@ -61,6 +61,10 @@ impl ParameterValue {
 
 impl Value for ParameterValue {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        if self.is_empty() {
+            return Ok(());
+        }
+
         if self.qsafe {
             f.write_str("\"")?;
             f.write_str(&self.text)?;

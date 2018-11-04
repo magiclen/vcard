@@ -18,6 +18,7 @@ pub mod calscale_value;
 pub mod value_type;
 pub mod tel_type;
 pub mod related_type;
+pub mod geo_value;
 
 pub trait Value {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;
