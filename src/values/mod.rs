@@ -2,7 +2,7 @@ use super::Set;
 
 use std::fmt::{self, Formatter};
 use std::collections::HashSet;
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
 use validators::ValidatedWrapper;
 
 pub mod boolean;
@@ -43,13 +43,5 @@ impl<V: Value + ValidatedWrapper + Eq + Hash> Value for Set<V> {
         }
 
         Ok(())
-    }
-}
-
-impl<V: Value + ValidatedWrapper + Eq + Hash> Hash for Set<V> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        for e in self.as_hash_set() {
-            e.hash(state);
-        }
     }
 }

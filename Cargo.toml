@@ -5,7 +5,7 @@ authors = ["Magic Len <len@magiclen.org>"]
 edition = "2018"
 
 [dependencies]
-validators = "0.15.1"
+validators = "0.15.3"
 base64-stream = "1.0.1"
 mime_guess = "1.8.6"
 chrono = "0.4.6"
