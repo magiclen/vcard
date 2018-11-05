@@ -173,11 +173,24 @@ mod tests {
     fn it_works() {
         let mut vcard = VCard::from_formatted_name_str("Magic Len").unwrap();
 
-        let mut source = HashSet::new();
+        let mut sources = HashSet::new();
 
-        source.insert(properties::Source::from_uri(values::uri::URI::from_str("https://magiclen.org").unwrap()));
+        {
+            let mut source = Source::from_uri(values::uri::URI::from_str("https://magiclen.org").unwrap());
 
-        vcard.sources = Some(Set::from_hash_set(source).unwrap());
+            let mut property_ids = HashSet::new();
+
+            property_ids.insert(values::property_id_value::PropertyIDValue::from_u8(1, None).unwrap());
+            property_ids.insert(values::property_id_value::PropertyIDValue::from_u8(2, Some(5)).unwrap());
+
+            let source_property_id = parameters::property_id::PropertyID::from_ids(Set::from_hash_set(property_ids).unwrap());
+
+            source.property_id = Some(source_property_id);
+
+            sources.insert(source);
+        }
+
+        vcard.sources = Some(Set::from_hash_set(sources).unwrap());
 
         println!("{}", vcard.to_string());
     }
