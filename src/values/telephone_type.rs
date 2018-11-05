@@ -6,7 +6,7 @@ use std::fmt::Display;
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum TelType {
+pub enum TelephoneType {
     Text,
     Voice,
     Fax,
@@ -18,23 +18,23 @@ pub enum TelType {
     XName(XName),
 }
 
-impl TelType {
+impl TelephoneType {
     pub fn get_str(&self) -> &str {
         match self {
-            TelType::Text => "text",
-            TelType::Voice => "voice",
-            TelType::Fax => "fax",
-            TelType::Cell => "cell",
-            TelType::Video => "video",
-            TelType::Pager => "pager",
-            TelType::Textphone => "textphone",
-            TelType::IanaToken(x) => x.as_str(),
-            TelType::XName(x) => x.as_str(),
+            TelephoneType::Text => "text",
+            TelephoneType::Voice => "voice",
+            TelephoneType::Fax => "fax",
+            TelephoneType::Cell => "cell",
+            TelephoneType::Video => "video",
+            TelephoneType::Pager => "pager",
+            TelephoneType::Textphone => "textphone",
+            TelephoneType::IanaToken(x) => x.as_str(),
+            TelephoneType::XName(x) => x.as_str(),
         }
     }
 }
 
-impl Value for TelType {
+impl Value for TelephoneType {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         f.write_str(self.get_str())?;
 
@@ -42,15 +42,15 @@ impl Value for TelType {
     }
 }
 
-impl Display for TelType {
+impl Display for TelephoneType {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Value::fmt(self, f)
     }
 }
 
-impl Validated for TelType {}
+impl Validated for TelephoneType {}
 
-impl ValidatedWrapper for TelType {
+impl ValidatedWrapper for TelephoneType {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

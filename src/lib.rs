@@ -72,6 +72,8 @@ pub struct VCard {
     pub gender: Option<Gender>,
     pub birthdays: Option<Set<Birthday>>,
     pub anniversaries: Option<Set<Anniversary>>,
+    pub addresses: Option<Set<Address>>,
+    pub telephones: Option<Set<Address>>,
     pub photos: Option<Set<Photo>>,
     pub sources: Option<Set<Source>>,
     pub end: End,
@@ -107,6 +109,8 @@ impl VCard {
             gender: None,
             birthdays: None,
             anniversaries: None,
+            addresses: None,
+            telephones: None,
             photos: None,
             sources: None,
             end: properties::End,
@@ -150,6 +154,9 @@ impl Display for VCard {
         fmt!(2, nicknames);
         fmt!(0, gender);
         fmt!(2, birthdays);
+        fmt!(2, anniversaries);
+        fmt!(2, addresses);
+        fmt!(2, telephones);
         fmt!(2, photos);
         fmt!(2, sources);
         fmt!(1, end);

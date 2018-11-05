@@ -37,7 +37,7 @@ impl SortAs {
 
 impl Parameter for SortAs {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        f.write_str(";SAFE-CHAR=")?;
+        f.write_str(";SORT-AS=")?;
 
         Value::fmt(&self.parameter_values, f)?;
 

@@ -18,7 +18,8 @@ pub mod uri;
 pub mod attribute_value;
 pub mod calscale_value;
 pub mod value_type;
-pub mod tel_type;
+pub mod telephone_type;
+pub mod telephone_value;
 pub mod related_type;
 pub mod geo_value;
 pub mod kind_value;
@@ -27,6 +28,7 @@ pub mod version_value;
 pub mod name_value;
 pub mod image_value;
 pub mod gender_value;
+pub mod address_value;
 
 pub trait Value {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;

@@ -18,7 +18,7 @@ impl GeoValue {
     pub fn get_uri_string(&self) -> String {
         match self {
             GeoValue::URI(uri) => uri.get_full_uri().to_string(),
-            GeoValue::LatLng(lat, lng) => format!("GEO:geo:{:.6}:{:.6}", lat.get_number(), lng.get_number())
+            GeoValue::LatLng(lat, lng) => format!("geo:{:.6}:{:.6}", lat.get_number(), lng.get_number())
         }
     }
 }

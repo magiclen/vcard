@@ -11,6 +11,8 @@ mod photo;
 mod birthday;
 mod anniversary;
 mod gender;
+mod address;
+mod telephone;
 
 pub use self::begin::Begin;
 pub use self::end::End;
@@ -23,6 +25,8 @@ pub use self::photo::Photo;
 pub use self::birthday::Birthday;
 pub use self::anniversary::Anniversary;
 pub use self::gender::Gender;
+pub use self::address::Address;
+pub use self::telephone::Telephone;
 
 pub trait Property {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;

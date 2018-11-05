@@ -11,6 +11,7 @@ pub mod calscale;
 pub mod sort_as;
 pub mod geo;
 pub mod tz;
+pub mod label;
 pub mod any;
 
 pub trait Parameter {

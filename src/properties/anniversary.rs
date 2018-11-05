@@ -104,7 +104,7 @@ impl Property for Anniversary {
                 fmt!(0, alternative_id);
                 fmt!(2, any);
 
-                f.write_str(":")?;
+                f.write_str(";VALUE=text:")?;
 
                 Value::fmt(value, f)?;
             }

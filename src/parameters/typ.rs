@@ -1,5 +1,5 @@
-use super::super::values::type_value::TypeValue;
-use super::super::values::{Value};
+use super::super::values::type_value::{TypeValue, TypeValueWithTelephoneType};
+use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
@@ -7,7 +7,6 @@ use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
 
-// Used in FN, NICKNAME, PHOTO, ADR, TEL, EMAIL, IMPP, LANG, TZ, GEO, TITLE, ROLE, LOGO, ORG, RELATED, CATEGORIES, NOTE, SOUND, URL, KEY, FBURL, CALADRURI, and CALURI
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Type {
     types: Set<TypeValue>,
@@ -27,7 +26,7 @@ impl Type {
 
 impl Parameter for Type {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        f.write_str(";VALUE=")?;
+        f.write_str(";TYPE=")?;
 
         Value::fmt(&self.types, f)?;
 
@@ -44,6 +43,53 @@ impl Display for Type {
 impl Validated for Type {}
 
 impl ValidatedWrapper for Type {
+    type Error = &'static str;
+
+    fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {
+        unimplemented!();
+    }
+
+    fn from_str(_from_str_input: &str) -> Result<Self, Self::Error> {
+        unimplemented!();
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct TypeWithTelType {
+    types: Set<TypeValueWithTelephoneType>,
+}
+
+impl TypeWithTelType {
+    pub fn from_ids(types: Set<TypeValueWithTelephoneType>) -> TypeWithTelType {
+        TypeWithTelType { types }
+    }
+}
+
+impl TypeWithTelType {
+    pub fn get_ids(&self) -> &Set<TypeValueWithTelephoneType> {
+        &self.types
+    }
+}
+
+impl Parameter for TypeWithTelType {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        f.write_str(";TYPE=")?;
+
+        Value::fmt(&self.types, f)?;
+
+        Ok(())
+    }
+}
+
+impl Display for TypeWithTelType {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        Parameter::fmt(self, f)
+    }
+}
+
+impl Validated for TypeWithTelType {}
+
+impl ValidatedWrapper for TypeWithTelType {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {
