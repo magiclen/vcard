@@ -1,14 +1,10 @@
 use super::super::values::Value;
-use super::super::values::address_value::AddressValue;
+use super::super::values::language_tag::LanguageTag;
 use super::super::parameters::Parameter;
 use super::super::parameters::property_id::PropertyID;
 use super::super::parameters::preference::Preference;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
-use super::super::parameters::label::Label;
-use super::super::parameters::language::Language;
-use super::super::parameters::geo::Geo;
-use super::super::parameters::time_zone::TimeZone;
 use super::super::parameters::typ::Type;
 use super::super::Set;
 use super::*;
@@ -18,48 +14,32 @@ use std::fmt::{self, Display, Formatter};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Address {
-    pub label: Option<Label>,
-    pub language: Option<Language>,
-    pub geo: Option<Geo>,
-    pub time_zone: Option<TimeZone>,
+pub struct Language {
     pub typ: Option<Type>,
     pub property_id: Option<PropertyID>,
     pub preference: Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
     pub any: Option<Set<Any>>,
-    pub value: AddressValue,
+    pub value: LanguageTag,
 }
 
-impl Address {
-    pub fn from_address_value(address_value: AddressValue) -> Address {
-        Address {
-            label: None,
-            language: None,
-            geo: None,
-            time_zone: None,
+impl Language {
+    pub fn from_language_tag(language_tag: LanguageTag) -> Language {
+        Language {
             typ: None,
 
             property_id: None,
             preference: None,
             alternative_id: None,
             any: None,
-            value: address_value
+            value: language_tag,
         }
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.value.is_empty()
     }
 }
 
-impl Property for Address {
+impl Property for Language {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        if self.is_empty() {
-            return Ok(());
-        }
-
-        f.write_str("ADR")?;
+        f.write_str("LANG")?;
 
         macro_rules! fmt {
             ($c:tt, $p:ident) => {
@@ -67,10 +47,6 @@ impl Property for Address {
             };
         }
 
-        fmt!(0, label);
-        fmt!(0, language);
-        fmt!(0, geo);
-        fmt!(0, time_zone);
         fmt!(0, typ);
         fmt!(0, property_id);
         fmt!(0, preference);
@@ -87,15 +63,15 @@ impl Property for Address {
     }
 }
 
-impl Display for Address {
+impl Display for Language {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Property::fmt(self, f)
     }
 }
 
-impl Validated for Address {}
+impl Validated for Language {}
 
-impl ValidatedWrapper for Address {
+impl ValidatedWrapper for Language {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

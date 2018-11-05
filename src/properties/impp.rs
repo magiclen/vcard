@@ -1,15 +1,12 @@
 use super::super::values::Value;
-use super::super::values::address_value::AddressValue;
+use super::super::values::uri::URI;
 use super::super::parameters::Parameter;
 use super::super::parameters::property_id::PropertyID;
 use super::super::parameters::preference::Preference;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
-use super::super::parameters::label::Label;
-use super::super::parameters::language::Language;
-use super::super::parameters::geo::Geo;
-use super::super::parameters::time_zone::TimeZone;
 use super::super::parameters::typ::Type;
+use super::super::parameters::media_type::MediaType;
 use super::super::Set;
 use super::*;
 
@@ -18,48 +15,34 @@ use std::fmt::{self, Display, Formatter};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Address {
-    pub label: Option<Label>,
-    pub language: Option<Language>,
-    pub geo: Option<Geo>,
-    pub time_zone: Option<TimeZone>,
+pub struct IMPP {
     pub typ: Option<Type>,
+    pub media_type: Option<MediaType>,
     pub property_id: Option<PropertyID>,
     pub preference: Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
     pub any: Option<Set<Any>>,
-    pub value: AddressValue,
+    pub value: URI,
 }
 
-impl Address {
-    pub fn from_address_value(address_value: AddressValue) -> Address {
-        Address {
-            label: None,
-            language: None,
-            geo: None,
-            time_zone: None,
+impl IMPP {
+    pub fn from_uri(uri: URI) -> IMPP {
+        IMPP {
             typ: None,
+            media_type: None,
 
             property_id: None,
             preference: None,
             alternative_id: None,
             any: None,
-            value: address_value
+            value: uri,
         }
-    }
-
-    pub fn is_empty(&self) -> bool {
-        self.value.is_empty()
     }
 }
 
-impl Property for Address {
+impl Property for IMPP {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        if self.is_empty() {
-            return Ok(());
-        }
-
-        f.write_str("ADR")?;
+        f.write_str("IMPP")?;
 
         macro_rules! fmt {
             ($c:tt, $p:ident) => {
@@ -67,11 +50,8 @@ impl Property for Address {
             };
         }
 
-        fmt!(0, label);
-        fmt!(0, language);
-        fmt!(0, geo);
-        fmt!(0, time_zone);
         fmt!(0, typ);
+        fmt!(0, media_type);
         fmt!(0, property_id);
         fmt!(0, preference);
         fmt!(0, alternative_id);
@@ -87,15 +67,15 @@ impl Property for Address {
     }
 }
 
-impl Display for Address {
+impl Display for IMPP {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Property::fmt(self, f)
     }
 }
 
-impl Validated for Address {}
+impl Validated for IMPP {}
 
-impl ValidatedWrapper for Address {
+impl ValidatedWrapper for IMPP {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

@@ -28,7 +28,17 @@ impl Parameter for Type {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         f.write_str(";TYPE=")?;
 
+        let has_double_quote = self.types.as_hash_set().len() > 1;
+
+        if has_double_quote {
+            f.write_str("\"")?;
+        }
+
         Value::fmt(&self.types, f)?;
+
+        if has_double_quote {
+            f.write_str("\"")?;
+        }
 
         Ok(())
     }

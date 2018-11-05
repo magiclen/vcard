@@ -1,6 +1,7 @@
 #[macro_use]
 pub extern crate validators;
 pub extern crate chrono;
+pub extern crate chrono_tz;
 #[macro_use]
 extern crate lazy_static;
 extern crate base64_stream;
@@ -74,7 +75,12 @@ pub struct VCard {
     pub anniversaries: Option<Set<Anniversary>>,
     pub addresses: Option<Set<Address>>,
     pub telephones: Option<Set<Address>>,
+    pub emails: Option<Set<Email>>,
     pub photos: Option<Set<Photo>>,
+    pub languages: Option<Set<Language>>,
+    pub time_zones: Option<Set<TimeZone>>,
+    pub geos: Option<Set<TimeZone>>,
+    pub impps: Option<Set<IMPP>>,
     pub sources: Option<Set<Source>>,
     pub end: End,
 }
@@ -111,7 +117,12 @@ impl VCard {
             anniversaries: None,
             addresses: None,
             telephones: None,
+            emails: None,
             photos: None,
+            languages: None,
+            time_zones: None,
+            geos: None,
+            impps: None,
             sources: None,
             end: properties::End,
         })
@@ -157,7 +168,12 @@ impl Display for VCard {
         fmt!(2, anniversaries);
         fmt!(2, addresses);
         fmt!(2, telephones);
+        fmt!(2, emails);
         fmt!(2, photos);
+        fmt!(2, languages);
+        fmt!(2, time_zones);
+        fmt!(2, geos);
+        fmt!(2, impps);
         fmt!(2, sources);
         fmt!(1, end);
 

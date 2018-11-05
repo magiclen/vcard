@@ -1,6 +1,5 @@
 use super::super::values::Value;
-use super::super::values::parameter_value::ParameterValue;
-use super::super::values::uri::URI;
+use super::super::values::time_zone_value::TimeZoneValue;
 use super::*;
 
 use std::fmt::Display;
@@ -8,23 +7,30 @@ use std::fmt::Display;
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub enum Tz {
-    URI(URI),
-    ParameterValue(ParameterValue),
+pub struct TimeZone {
+    time_zone_value: TimeZoneValue
 }
 
-impl Parameter for Tz {
+impl TimeZone {
+    pub fn from_time_zone_value(time_zone_value: TimeZoneValue) -> TimeZone {
+        TimeZone {
+            time_zone_value
+        }
+    }
+}
+
+impl Parameter for TimeZone {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         f.write_str(";TZ=")?;
 
-        match self {
-            Tz::URI(uri) => {
-                f.write_str("\"")?;
-                Value::fmt(uri, f)?;
-                f.write_str("\"")?;
+        match &self.time_zone_value {
+            TimeZoneValue::Tz(_) => {
+                Value::fmt(&self.time_zone_value, f)?;
             }
-            Tz::ParameterValue(parameter_value) => {
-                Value::fmt(parameter_value, f)?;
+            TimeZoneValue::URI(_) => {
+                f.write_str("\"")?;
+                Value::fmt(&self.time_zone_value, f)?;
+                f.write_str("\"")?;
             }
         }
 
@@ -32,15 +38,15 @@ impl Parameter for Tz {
     }
 }
 
-impl Display for Tz {
+impl Display for TimeZone {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Parameter::fmt(self, f)
     }
 }
 
-impl Validated for Tz {}
+impl Validated for TimeZone {}
 
-impl ValidatedWrapper for Tz {
+impl ValidatedWrapper for TimeZone {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

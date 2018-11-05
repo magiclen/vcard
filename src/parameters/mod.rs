@@ -10,7 +10,7 @@ pub mod media_type;
 pub mod calscale;
 pub mod sort_as;
 pub mod geo;
-pub mod tz;
+pub mod time_zone;
 pub mod label;
 pub mod any;
 

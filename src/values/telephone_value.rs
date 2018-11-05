@@ -9,7 +9,7 @@ use validators::{Validated, ValidatedWrapper, ValidatedCustomizedStringError};
 
 lazy_static! {
     static ref TEL_NUMBER_RE: Regex = { Regex::new(r"^[+\-0-9]+$").unwrap() };
-    static ref SPACE_RE: Regex = { Regex::new(" ").unwrap() };
+    static ref SPACES_RE: Regex = { Regex::new("[ ]+").unwrap() };
 }
 
 validated_customized_regex_string!(pub TelephoneNumber, ref TEL_NUMBER_RE);
@@ -28,12 +28,12 @@ impl TelephoneValue {
         telephone_number: S,
         extension: Option<SS>,
     ) -> Result<TelephoneValue, ValidatedCustomizedStringError> {
-        let telephone_number = SPACE_RE.replace_all(telephone_number.as_ref(), "-");
+        let telephone_number = SPACES_RE.replace_all(telephone_number.as_ref(), "-");
         let telephone_number = TelephoneNumber::from_str(telephone_number.as_ref())?;
 
         let extension = match extension {
             Some(extension) => {
-                let extension = SPACE_RE.replace_all(extension.as_ref(), "-");
+                let extension = SPACES_RE.replace_all(extension.as_ref(), "-");
                 Some(TelephoneNumber::from_str(extension.as_ref())?)
             }
             None => None,

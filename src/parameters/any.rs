@@ -1,6 +1,6 @@
 use super::super::{IanaToken, XName};
-use super::super::values::{Value};
-use super::super::values::parameter_value::ParameterValue;
+use super::super::values::Value;
+use super::super::values::parameter_value::ParameterValues;
 use super::super::Set;
 use super::Parameter;
 
@@ -11,24 +11,45 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Any {
-    IanaToken(IanaToken, Set<ParameterValue>),
-    XName(XName, Set<ParameterValue>),
+    IanaToken(IanaToken, ParameterValues),
+    XName(XName, ParameterValues),
+}
+
+impl Any {
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Any::IanaToken(_, v) => {
+                v.is_empty()
+            }
+            Any::XName(_, v) => {
+                v.is_empty()
+            }
+        }
+    }
 }
 
 impl Parameter for Any {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        if self.is_empty() {
+            return Ok(());
+        }
+
         f.write_str(";")?;
 
-        match self {
+        let set = match self {
             Any::IanaToken(a, b) => {
                 f.write_str(a.as_str())?;
-                Value::fmt(b, f)?;
+                b
             }
             Any::XName(a, b) => {
                 f.write_str(a.as_str())?;
-                Value::fmt(b, f)?;
+                b
             }
-        }
+        };
+
+        f.write_str("=")?;
+
+        Value::fmt(set, f)?;
 
         Ok(())
     }

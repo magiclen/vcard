@@ -14,6 +14,10 @@ impl Label {
     pub fn from_parameter_value(parameter_value: ParameterValue) -> Label {
         Label { parameter_value }
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.parameter_value.is_empty()
+    }
 }
 
 impl Label {
@@ -24,6 +28,10 @@ impl Label {
 
 impl Parameter for Label {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        if self.is_empty() {
+            return Ok(());
+        }
+
         f.write_str(";LABEL=")?;
 
         Value::fmt(&self.parameter_value, f)?;

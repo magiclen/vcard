@@ -40,18 +40,6 @@ impl MediaType {
             attribute_values,
         }
     }
-
-    pub fn is_empty(&self) -> bool {
-        if let Some(attribute_values) = &self.attribute_values {
-            for v in attribute_values.as_hash_set() {
-                if !v.is_empty() {
-                    return false;
-                }
-            }
-        }
-
-        true
-    }
 }
 
 impl MediaType {
@@ -70,10 +58,6 @@ impl MediaType {
 
 impl Parameter for MediaType {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        if self.is_empty() {
-            return Ok(());
-        }
-
         f.write_str(";MEDIATYPE=")?;
 
         f.write_str(&percent_encoding::utf8_percent_encode(self.type_name.as_str(), percent_encoding::PATH_SEGMENT_ENCODE_SET).to_string())?;

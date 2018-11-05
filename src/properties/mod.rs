@@ -13,6 +13,11 @@ mod anniversary;
 mod gender;
 mod address;
 mod telephone;
+mod email;
+mod impp;
+mod language;
+mod time_zone;
+mod geo;
 
 pub use self::begin::Begin;
 pub use self::end::End;
@@ -27,6 +32,11 @@ pub use self::anniversary::Anniversary;
 pub use self::gender::Gender;
 pub use self::address::Address;
 pub use self::telephone::Telephone;
+pub use self::email::Email;
+pub use self::impp::IMPP;
+pub use self::language::Language;
+pub use self::time_zone::TimeZone;
+pub use self::geo::Geo;
 
 pub trait Property {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;

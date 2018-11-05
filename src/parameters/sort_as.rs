@@ -1,5 +1,4 @@
-use super::super::values::{parameter_value::ParameterValue, Value};
-use super::super::Set;
+use super::super::values::{parameter_value::ParameterValues, Value};
 use super::*;
 
 use std::fmt::Display;
@@ -8,29 +7,21 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct SortAs {
-    parameter_values: Set<ParameterValue>,
+    parameter_values: ParameterValues,
 }
 
 impl SortAs {
-    pub fn from_parameter_values(parameter_values: Set<ParameterValue>) -> SortAs {
+    pub fn from_parameter_values(parameter_values: ParameterValues) -> SortAs {
         SortAs { parameter_values }
     }
 
     pub fn is_empty(&self) -> bool {
-        let v = self.parameter_values.as_hash_set();
-
-        for e in v {
-            if !e.is_empty() {
-                return false;
-            }
-        }
-
-        true
+        self.parameter_values.is_empty()
     }
 }
 
 impl SortAs {
-    pub fn get_parameter_values(&self) -> &Set<ParameterValue> {
+    pub fn get_parameter_values(&self) -> &ParameterValues {
         &self.parameter_values
     }
 }
