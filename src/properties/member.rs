@@ -1,12 +1,11 @@
 use super::super::values::Value;
-use super::super::values::text::Text;
+use super::super::values::uri::URI;
 use super::super::parameters::Parameter;
 use super::super::parameters::property_id::PropertyID;
 use super::super::parameters::preference::Preference;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
-use super::super::parameters::typ::Type;
-use super::super::parameters::language::Language;
+use super::super::parameters::media_type::MediaType;
 use super::super::Set;
 use super::*;
 
@@ -15,48 +14,32 @@ use std::fmt::{self, Display, Formatter};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct NickName {
-    pub typ: Option<Type>,
-    pub language: Option<Language>,
+pub struct Member {
+    pub media_type: Option<MediaType>,
     pub property_id: Option<PropertyID>,
     pub preference: Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
     pub any: Option<Set<Any>>,
-    pub value: Set<Text>,
+    pub value: URI,
 }
 
-impl NickName {
-    pub fn from_text_list(text_list: Set<Text>) -> NickName {
-        NickName {
-            typ: None,
-            language: None,
+impl Member {
+    pub fn from_uri(uri: URI) -> Member {
+        Member {
+            media_type: None,
 
             property_id: None,
             preference: None,
             alternative_id: None,
             any: None,
-            value: text_list,
+            value: uri,
         }
-    }
-
-    pub fn is_empty(&self) -> bool {
-        for e in self.value.as_hash_set() {
-            if !e.is_empty() {
-                return false;
-            }
-        }
-
-        true
     }
 }
 
-impl Property for NickName {
+impl Property for Member {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        if self.is_empty() {
-            return Ok(());
-        }
-
-        f.write_str("NICKNAME")?;
+        f.write_str("MEMBER")?;
 
         macro_rules! fmt {
             ($c:tt, $p:ident) => {
@@ -64,8 +47,7 @@ impl Property for NickName {
             };
         }
 
-        fmt!(0, typ);
-        fmt!(0, language);
+        fmt!(0, media_type);
         fmt!(0, property_id);
         fmt!(0, preference);
         fmt!(0, alternative_id);
@@ -81,15 +63,15 @@ impl Property for NickName {
     }
 }
 
-impl Display for NickName {
+impl Display for Member {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Property::fmt(self, f)
     }
 }
 
-impl Validated for NickName {}
+impl Validated for Member {}
 
-impl ValidatedWrapper for NickName {
+impl ValidatedWrapper for Member {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

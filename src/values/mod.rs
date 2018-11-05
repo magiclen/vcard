@@ -15,6 +15,7 @@ pub mod property_id_value;
 pub mod text;
 pub mod type_value;
 pub mod uri;
+pub mod url;
 pub mod attribute_value;
 pub mod calscale_value;
 pub mod value_type;

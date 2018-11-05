@@ -1,3 +1,4 @@
+use super::super::values::uri::URI;
 use super::*;
 
 use std::fmt::Display;
@@ -7,7 +8,6 @@ use std::fs::File;
 
 use validators::{Validated, ValidatedWrapper};
 use validators::base64::Base64;
-use validators::http_url::HttpUrlLocalableWithProtocol;
 
 use base64_stream::ToBase64Reader;
 
@@ -37,7 +37,7 @@ impl ImageType {
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum ImageValue {
     Base64(ImageType, Base64),
-    URL(HttpUrlLocalableWithProtocol),
+    URI(URI),
 }
 
 impl ImageValue {
@@ -110,8 +110,8 @@ impl Value for ImageValue {
                 f.write_str(";base64,")?;
                 f.write_str(base64.get_base64())?;
             }
-            ImageValue::URL(url) => {
-                f.write_str(url.get_full_http_url())?;
+            ImageValue::URI(uri) => {
+                f.write_str(uri.get_full_uri())?;
             }
         }
 

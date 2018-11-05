@@ -11,7 +11,6 @@ use validators::{Validated, ValidatedWrapper};
 pub enum TypeValue {
     Work,
     Home,
-    RelatedType(RelatedType),
     IanaToken(IanaToken),
     XName(XName),
 }
@@ -21,7 +20,6 @@ impl TypeValue {
         match self {
             TypeValue::Work => "work",
             TypeValue::Home => "home",
-            TypeValue::RelatedType(rt) => rt.get_str(),
             TypeValue::IanaToken(x) => x.as_str(),
             TypeValue::XName(x) => x.as_str(),
         }
@@ -61,7 +59,6 @@ pub enum TypeValueWithTelephoneType {
     Work,
     Home,
     TelType(TelephoneType),
-    RelatedType(RelatedType),
     IanaToken(IanaToken),
     XName(XName),
 }
@@ -72,7 +69,6 @@ impl TypeValueWithTelephoneType {
             TypeValueWithTelephoneType::Work => "work",
             TypeValueWithTelephoneType::Home => "home",
             TypeValueWithTelephoneType::TelType(tt) => tt.get_str(),
-            TypeValueWithTelephoneType::RelatedType(rt) => rt.get_str(),
             TypeValueWithTelephoneType::IanaToken(x) => x.as_str(),
             TypeValueWithTelephoneType::XName(x) => x.as_str(),
         }
@@ -96,6 +92,55 @@ impl Display for TypeValueWithTelephoneType {
 impl Validated for TypeValueWithTelephoneType {}
 
 impl ValidatedWrapper for TypeValueWithTelephoneType {
+    type Error = &'static str;
+
+    fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {
+        unimplemented!();
+    }
+
+    fn from_str(_from_str_input: &str) -> Result<Self, Self::Error> {
+        unimplemented!();
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum TypeValueWithRelatedType {
+    Work,
+    Home,
+    RelatedType(RelatedType),
+    IanaToken(IanaToken),
+    XName(XName),
+}
+
+impl TypeValueWithRelatedType {
+    pub fn get_str(&self) -> &str {
+        match self {
+            TypeValueWithRelatedType::Work => "work",
+            TypeValueWithRelatedType::Home => "home",
+            TypeValueWithRelatedType::RelatedType(rt) => rt.get_str(),
+            TypeValueWithRelatedType::IanaToken(x) => x.as_str(),
+            TypeValueWithRelatedType::XName(x) => x.as_str(),
+        }
+    }
+}
+
+impl Value for TypeValueWithRelatedType {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        f.write_str(self.get_str())?;
+
+        Ok(())
+    }
+}
+
+impl Display for TypeValueWithRelatedType {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        Value::fmt(self, f)
+    }
+}
+
+impl Validated for TypeValueWithRelatedType {}
+
+impl ValidatedWrapper for TypeValueWithRelatedType {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

@@ -76,7 +76,13 @@ pub struct VCard {
     pub addresses: Option<Set<Address>>,
     pub telephones: Option<Set<Address>>,
     pub emails: Option<Set<Email>>,
+    pub titles: Option<Set<Title>>,
+    pub roles: Option<Set<Role>>,
     pub photos: Option<Set<Photo>>,
+    pub logos: Option<Set<Logo>>,
+    pub organizations: Option<Set<Organization>>,
+    pub members: Option<Set<Member>>,
+    pub relationships: Option<Set<Relationship>>,
     pub languages: Option<Set<Language>>,
     pub time_zones: Option<Set<TimeZone>>,
     pub geos: Option<Set<TimeZone>>,
@@ -118,7 +124,13 @@ impl VCard {
             addresses: None,
             telephones: None,
             emails: None,
+            titles: None,
+            roles: None,
             photos: None,
+            logos: None,
+            organizations: None,
+            members: None,
+            relationships: None,
             languages: None,
             time_zones: None,
             geos: None,
@@ -169,7 +181,13 @@ impl Display for VCard {
         fmt!(2, addresses);
         fmt!(2, telephones);
         fmt!(2, emails);
+        fmt!(2, titles);
+        fmt!(2, roles);
         fmt!(2, photos);
+        fmt!(2, logos);
+        fmt!(2, organizations);
+        fmt!(2, members);
+        fmt!(2, relationships);
         fmt!(2, languages);
         fmt!(2, time_zones);
         fmt!(2, geos);

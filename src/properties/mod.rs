@@ -18,6 +18,12 @@ mod impp;
 mod language;
 mod time_zone;
 mod geo;
+mod title;
+mod role;
+mod logo;
+mod organization;
+mod member;
+mod relationship;
 
 pub use self::begin::Begin;
 pub use self::end::End;
@@ -37,6 +43,12 @@ pub use self::impp::IMPP;
 pub use self::language::Language;
 pub use self::time_zone::TimeZone;
 pub use self::geo::Geo;
+pub use self::title::Title;
+pub use self::role::Role;
+pub use self::logo::Logo;
+pub use self::organization::Organization;
+pub use self::member::Member;
+pub use self::relationship::Relationship;
 
 pub trait Property {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;

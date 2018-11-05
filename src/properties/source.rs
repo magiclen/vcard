@@ -15,10 +15,10 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Source {
+    pub media_type: Option<MediaType>,
     pub property_id: Option<PropertyID>,
     pub preference: Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
-    pub media_type: Option<MediaType>,
     pub any: Option<Set<Any>>,
     pub value: URI,
 }

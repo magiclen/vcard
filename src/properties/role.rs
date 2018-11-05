@@ -15,19 +15,19 @@ use std::fmt::{self, Display, Formatter};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct NickName {
+pub struct Role {
     pub typ: Option<Type>,
     pub language: Option<Language>,
     pub property_id: Option<PropertyID>,
     pub preference: Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
     pub any: Option<Set<Any>>,
-    pub value: Set<Text>,
+    pub value: Text,
 }
 
-impl NickName {
-    pub fn from_text_list(text_list: Set<Text>) -> NickName {
-        NickName {
+impl Role {
+    pub fn from_text(text: Text) -> Role {
+        Role {
             typ: None,
             language: None,
 
@@ -35,28 +35,22 @@ impl NickName {
             preference: None,
             alternative_id: None,
             any: None,
-            value: text_list,
+            value: text,
         }
     }
 
     pub fn is_empty(&self) -> bool {
-        for e in self.value.as_hash_set() {
-            if !e.is_empty() {
-                return false;
-            }
-        }
-
-        true
+        self.value.is_empty()
     }
 }
 
-impl Property for NickName {
+impl Property for Role {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         if self.is_empty() {
             return Ok(());
         }
 
-        f.write_str("NICKNAME")?;
+        f.write_str("ROLE")?;
 
         macro_rules! fmt {
             ($c:tt, $p:ident) => {
@@ -81,15 +75,15 @@ impl Property for NickName {
     }
 }
 
-impl Display for NickName {
+impl Display for Role {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Property::fmt(self, f)
     }
 }
 
-impl Validated for NickName {}
+impl Validated for Role {}
 
-impl ValidatedWrapper for NickName {
+impl ValidatedWrapper for Role {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {
