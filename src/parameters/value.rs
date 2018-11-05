@@ -12,7 +12,7 @@ pub struct Value {
 }
 
 impl Value {
-    pub fn with_value_type(value_type: ValueType) -> Value {
+    pub fn from_value_type(value_type: ValueType) -> Value {
         Value { value_type }
     }
 }

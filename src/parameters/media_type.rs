@@ -26,14 +26,14 @@ pub struct MediaType {
 
 impl MediaType {
     pub fn from_str(type_name: &str, subtype_name: &str, attribute_values: Option<Set<AttributeValue>>) -> Result<MediaType, ValidatedCustomizedStringError> {
-        Ok(Self::with_media_type_segments(MediaTypeSegment::from_str(type_name)?, MediaTypeSegment::from_str(subtype_name)?, attribute_values))
+        Ok(Self::from_media_type_segments(MediaTypeSegment::from_str(type_name)?, MediaTypeSegment::from_str(subtype_name)?, attribute_values))
     }
 
     pub fn from_string(type_name: String, subtype_name: String, attribute_values: Option<Set<AttributeValue>>) -> Result<MediaType, ValidatedCustomizedStringError> {
-        Ok(Self::with_media_type_segments(MediaTypeSegment::from_string(type_name)?, MediaTypeSegment::from_string(subtype_name)?, attribute_values))
+        Ok(Self::from_media_type_segments(MediaTypeSegment::from_string(type_name)?, MediaTypeSegment::from_string(subtype_name)?, attribute_values))
     }
 
-    pub fn with_media_type_segments(type_name: MediaTypeSegment, subtype_name: MediaTypeSegment, attribute_values: Option<Set<AttributeValue>>) -> MediaType {
+    pub fn from_media_type_segments(type_name: MediaTypeSegment, subtype_name: MediaTypeSegment, attribute_values: Option<Set<AttributeValue>>) -> MediaType {
         MediaType {
             type_name,
             subtype_name,
@@ -63,8 +63,8 @@ impl MediaType {
         &self.subtype_name
     }
 
-    pub fn get_attribute_values(&self) -> &Option<Set<AttributeValue>> {
-        &self.attribute_values
+    pub fn get_attribute_values(&self) -> Option<&Set<AttributeValue>> {
+        self.attribute_values.as_ref()
     }
 }
 

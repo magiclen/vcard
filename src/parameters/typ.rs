@@ -14,7 +14,7 @@ pub struct Type {
 }
 
 impl Type {
-    pub fn with_ids(types: Set<TypeValue>) -> Type {
+    pub fn from_ids(types: Set<TypeValue>) -> Type {
         Type { types }
     }
 }

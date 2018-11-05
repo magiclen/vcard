@@ -57,24 +57,24 @@ impl NameValue {
 }
 
 impl NameValue {
-    pub fn get_last_name(&self) -> &Option<Component> {
-        &self.last_name
+    pub fn get_last_name(&self) -> Option<&Component> {
+        self.last_name.as_ref()
     }
 
-    pub fn get_first_name(&self) -> &Option<Component> {
-        &self.first_name
+    pub fn get_first_name(&self) -> Option<&Component> {
+        self.first_name.as_ref()
     }
 
-    pub fn get_middle_name(&self) -> &Option<Component> {
-        &self.middle_name
+    pub fn get_middle_name(&self) -> Option<&Component> {
+        self.middle_name.as_ref()
     }
 
-    pub fn get_name_prefix(&self) -> &Option<Component> {
-        &self.name_prefix
+    pub fn get_name_prefix(&self) -> Option<&Component> {
+        self.name_prefix.as_ref()
     }
 
-    pub fn get_name_suffix(&self) -> &Option<Component> {
-        &self.name_suffix
+    pub fn get_name_suffix(&self) -> Option<&Component> {
+        self.name_suffix.as_ref()
     }
 }
 

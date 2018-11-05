@@ -31,7 +31,7 @@ pub enum DateRangeError {
 }
 
 impl Date {
-    pub fn with_year_month_day(year: u16, month: u8, day: u8) -> Result<Date, DateRangeError> {
+    pub fn from_year_month_day(year: u16, month: u8, day: u8) -> Result<Date, DateRangeError> {
         if year > 9999 {
             return Err(DateRangeError::Year);
         }
@@ -75,7 +75,7 @@ impl Date {
         Ok(Date { inner: DateInner::YearMonthDay(year, month, day) })
     }
 
-    pub fn with_year_month(year: u16, month: u8) -> Result<Date, DateRangeError> {
+    pub fn from_year_month(year: u16, month: u8) -> Result<Date, DateRangeError> {
         if year > 9999 {
             return Err(DateRangeError::Year);
         }
@@ -87,7 +87,7 @@ impl Date {
         Ok(Date { inner: DateInner::YearMonth(year, month) })
     }
 
-    pub fn with_year(year: u16) -> Result<Date, DateRangeError> {
+    pub fn from_year(year: u16) -> Result<Date, DateRangeError> {
         if year > 9999 {
             return Err(DateRangeError::Year);
         }
@@ -95,7 +95,7 @@ impl Date {
         Ok(Date { inner: DateInner::Year(year) })
     }
 
-    pub fn with_month_day(month: u8, day: u8) -> Result<Date, DateRangeError> {
+    pub fn from_month_day(month: u8, day: u8) -> Result<Date, DateRangeError> {
         if month == 1 {
             if day > 31 {
                 return Err(DateRangeError::Day);
@@ -131,7 +131,7 @@ impl Date {
         Ok(Date { inner: DateInner::MonthDay(month, day) })
     }
 
-    pub fn with_day(day: u8) -> Result<Date, DateRangeError> {
+    pub fn from_day(day: u8) -> Result<Date, DateRangeError> {
         if day == 0 || day > 31 {
             return Err(DateRangeError::Day);
         }
@@ -263,7 +263,7 @@ pub enum TimeRangeError {
 }
 
 impl Time {
-    pub fn with_hour_minute_second(
+    pub fn from_hour_minute_second(
         hour: u8,
         minute: u8,
         second: u8,
@@ -281,7 +281,7 @@ impl Time {
         Ok(Time { inner: TimeInner::HourMinuteSecond(hour, minute, second) })
     }
 
-    pub fn with_hour_minute(hour: u8, minute: u8) -> Result<Time, TimeRangeError> {
+    pub fn from_hour_minute(hour: u8, minute: u8) -> Result<Time, TimeRangeError> {
         if hour >= 24 {
             return Err(TimeRangeError::Hour);
         }
@@ -292,7 +292,7 @@ impl Time {
         Ok(Time { inner: TimeInner::HourMinute(hour, minute) })
     }
 
-    pub fn with_hour(hour: u8) -> Result<Time, TimeRangeError> {
+    pub fn from_hour(hour: u8) -> Result<Time, TimeRangeError> {
         if hour >= 24 {
             return Err(TimeRangeError::Hour);
         }
@@ -300,7 +300,7 @@ impl Time {
         Ok(Time { inner: TimeInner::Hour(hour) })
     }
 
-    pub fn with_minute_second(minute: u8, second: u8) -> Result<Time, TimeRangeError> {
+    pub fn from_minute_second(minute: u8, second: u8) -> Result<Time, TimeRangeError> {
         if minute >= 60 {
             return Err(TimeRangeError::Minute);
         }
@@ -311,7 +311,7 @@ impl Time {
         Ok(Time { inner: TimeInner::MinuteSecond(minute, second) })
     }
 
-    pub fn with_second(second: u8) -> Result<Time, TimeRangeError> {
+    pub fn from_second(second: u8) -> Result<Time, TimeRangeError> {
         if second >= 60 {
             return Err(TimeRangeError::Minute);
         }
@@ -319,7 +319,7 @@ impl Time {
         Ok(Time { inner: TimeInner::Second(second) })
     }
 
-    pub fn with_hour_minute_second_utc(
+    pub fn from_hour_minute_second_utc(
         hour: u8,
         minute: u8,
         second: u8,
@@ -337,7 +337,7 @@ impl Time {
         Ok(Time { inner: TimeInner::HourMinuteSecondUtc(hour, minute, second) })
     }
 
-    pub fn with_hour_minute_second_zone(
+    pub fn from_hour_minute_second_zone(
         hour: u8,
         minute: u8,
         second: u8,
@@ -522,7 +522,7 @@ pub struct DateTime {
 }
 
 impl DateTime {
-    pub fn with_date_time(date: Date, time: Time) -> DateTime {
+    pub fn from_date_time(date: Date, time: Time) -> DateTime {
         DateTime { date, time }
     }
 }
@@ -826,7 +826,7 @@ impl Timestamp {
         })
     }
 
-    pub fn with_date_time<T: chrono::TimeZone>(
+    pub fn from_date_time<T: chrono::TimeZone>(
         date_time: chrono::DateTime<T>,
     ) -> Result<Timestamp, TimestampRangeError> {
         let year = date_time.year();

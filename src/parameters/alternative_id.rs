@@ -11,7 +11,7 @@ pub struct AlternativeID {
 }
 
 impl AlternativeID {
-    pub fn with_parameter_value(parameter_value: ParameterValue) -> AlternativeID {
+    pub fn from_parameter_value(parameter_value: ParameterValue) -> AlternativeID {
         AlternativeID { parameter_value }
     }
 }

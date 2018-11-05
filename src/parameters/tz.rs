@@ -13,16 +13,6 @@ pub enum Tz {
     ParameterValue(ParameterValue),
 }
 
-impl Tz {
-    pub fn from_uri(uri: URI) -> Tz {
-        Tz::URI(uri)
-    }
-
-    pub fn from_parameter_value(parameter_value: ParameterValue) -> Tz {
-        Tz::ParameterValue(parameter_value)
-    }
-}
-
 impl Parameter for Tz {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         f.write_str(";TZ=")?;

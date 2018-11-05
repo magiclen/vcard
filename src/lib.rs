@@ -69,9 +69,11 @@ pub struct VCard {
     pub formatted_names: Set<FormattedName>,
     pub names: Option<Set<Name>>,
     pub nicknames: Option<Set<NickName>>,
+    pub gender: Option<Gender>,
     pub birthdays: Option<Set<Birthday>>,
-    pub photo: Option<Set<Photo>>,
-    pub source: Option<Set<Source>>,
+    pub anniversaries: Option<Set<Anniversary>>,
+    pub photos: Option<Set<Photo>>,
+    pub sources: Option<Set<Source>>,
     pub end: End,
 }
 
@@ -102,9 +104,11 @@ impl VCard {
             formatted_names,
             names: None,
             nicknames: None,
+            gender: None,
             birthdays: None,
-            photo: None,
-            source: None,
+            anniversaries: None,
+            photos: None,
+            sources: None,
             end: properties::End,
         })
     }
@@ -144,9 +148,10 @@ impl Display for VCard {
         fmt!(3, formatted_names);
         fmt!(2, names);
         fmt!(2, nicknames);
+        fmt!(0, gender);
         fmt!(2, birthdays);
-        fmt!(2, photo);
-        fmt!(2, source);
+        fmt!(2, photos);
+        fmt!(2, sources);
         fmt!(1, end);
 
         Ok(())
@@ -165,7 +170,7 @@ mod tests {
 
         source.insert(properties::Source::from_uri(values::uri::URI::from_str("https://magiclen.org").unwrap()));
 
-        vcard.source = Some(Set::from_hash_set(source).unwrap());
+        vcard.sources = Some(Set::from_hash_set(source).unwrap());
 
         println!("{}", vcard.to_string());
     }

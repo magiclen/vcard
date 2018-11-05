@@ -17,11 +17,11 @@ impl CalscaleValue {
         CalscaleValue::Gregorian
     }
 
-    pub fn with_x_name(x_name: XName) -> CalscaleValue {
+    pub fn from_x_name(x_name: XName) -> CalscaleValue {
         CalscaleValue::XName(x_name)
     }
 
-    pub fn with_iana_token(iana_token: IanaToken) -> CalscaleValue {
+    pub fn from_iana_token(iana_token: IanaToken) -> CalscaleValue {
         CalscaleValue::IanaToken(iana_token)
     }
 

@@ -12,7 +12,7 @@ pub struct Calscale {
 }
 
 impl Calscale {
-    pub fn with_calscale_value(calscale_value: CalscaleValue) -> Calscale {
+    pub fn from_calscale_value(calscale_value: CalscaleValue) -> Calscale {
         Calscale { calscale_value }
     }
 }

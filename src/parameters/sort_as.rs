@@ -12,7 +12,7 @@ pub struct SortAs {
 }
 
 impl SortAs {
-    pub fn with_parameter_values(parameter_values: Set<ParameterValue>) -> SortAs {
+    pub fn from_parameter_values(parameter_values: Set<ParameterValue>) -> SortAs {
         SortAs { parameter_values }
     }
 

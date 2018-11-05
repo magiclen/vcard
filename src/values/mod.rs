@@ -26,6 +26,7 @@ pub mod preference_value;
 pub mod version_value;
 pub mod name_value;
 pub mod image_value;
+pub mod gender_value;
 
 pub trait Value {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;
