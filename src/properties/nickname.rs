@@ -15,19 +15,19 @@ use std::fmt::{self, Display, Formatter};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct FormattedName {
+pub struct NickName {
     pub typ: Option<Type>,
     pub language: Option<Language>,
     pub property_id: Option<PropertyID>,
     pub preference: Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
     pub any: Option<Set<Any>>,
-    pub value: Text,
+    pub value: Option<Set<Text>>,
 }
 
-impl FormattedName {
-    pub fn from_text(text: Text) -> FormattedName {
-        FormattedName {
+impl NickName {
+    pub fn from_text_list(text_list: Option<Set<Text>>) -> NickName {
+        NickName {
             typ: None,
             language: None,
 
@@ -35,22 +35,30 @@ impl FormattedName {
             preference: None,
             alternative_id: None,
             any: None,
-            value: text,
+            value: text_list,
         }
     }
 
     pub fn is_empty(&self) -> bool {
-        self.value.is_empty()
+        if let Some(v) = &self.value {
+            for e in v.as_hash_set() {
+                if !e.is_empty() {
+                    return false;
+                }
+            }
+        }
+
+        true
     }
 }
 
-impl Property for FormattedName {
+impl Property for NickName {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         if self.is_empty() {
             return Ok(());
         }
 
-        f.write_str("FN")?;
+        f.write_str("NICKNAME")?;
 
         macro_rules! fmt {
             ($c:tt, $p:ident) => {
@@ -67,7 +75,9 @@ impl Property for FormattedName {
 
         f.write_str(":")?;
 
-        Value::fmt(&self.value, f)?;
+        if let Some(v) = &self.value {
+            Value::fmt(v, f)?;
+        }
 
         f.write_str("\r\n")?;
 
@@ -75,15 +85,15 @@ impl Property for FormattedName {
     }
 }
 
-impl Display for FormattedName {
+impl Display for NickName {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Property::fmt(self, f)
     }
 }
 
-impl Validated for FormattedName {}
+impl Validated for NickName {}
 
-impl ValidatedWrapper for FormattedName {
+impl ValidatedWrapper for NickName {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

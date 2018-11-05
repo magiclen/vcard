@@ -663,6 +663,76 @@ impl ValidatedWrapper for DateAndOrTime {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub enum DateOrDateTime {
+    Date(Date),
+    DateTime(DateTime),
+}
+
+impl DateOrDateTime {
+    pub fn get_date(&self) -> &Date {
+        match self {
+            DateOrDateTime::Date(d) => {
+                &d
+            }
+            DateOrDateTime::DateTime(dt) => {
+                dt.get_date()
+            }
+        }
+    }
+
+    pub fn get_time(&self) -> Option<&Time> {
+        if let DateOrDateTime::DateTime(dt) = self {
+            Some(&dt.time)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_date_time(&self) -> Option<&DateTime> {
+        if let DateOrDateTime::DateTime(dt) = self {
+            Some(&dt)
+        } else {
+            None
+        }
+    }
+}
+
+impl Value for DateOrDateTime {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        match self {
+            DateOrDateTime::Date(d) => {
+                Value::fmt(d, f)?;
+            }
+            DateOrDateTime::DateTime(dt) => {
+                Value::fmt(dt, f)?;
+            }
+        }
+
+        Ok(())
+    }
+}
+
+impl Display for DateOrDateTime {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        Value::fmt(self, f)
+    }
+}
+
+impl Validated for DateOrDateTime {}
+
+impl ValidatedWrapper for DateOrDateTime {
+    type Error = &'static str;
+
+    fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {
+        unimplemented!();
+    }
+
+    fn from_str(_from_str_input: &str) -> Result<Self, Self::Error> {
+        unimplemented!();
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Timestamp {
     year: u16,
     month: u8,

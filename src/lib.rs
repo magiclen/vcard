@@ -8,26 +8,32 @@ extern crate mime_guess;
 extern crate percent_encoding;
 extern crate regex;
 
-macro_rules! fmt_g {
-    (0, $t:ident, $o:ident, $p:ident, $f:ident) => { // *1
-        if let Some(p) = &$o.$p {
+macro_rules! fmt_gg {
+    (0, $t:ident, $p:expr, $f:ident) => { // *1
+        if let Some(p) = &$p {
             $t::fmt(p, $f)?;
         }
     };
-    (1, $t:ident, $o:ident, $p:ident, $f:ident) => { // 1
-        $t::fmt(&$o.$p, $f)?;
+    (1, $t:ident, $p:expr, $f:ident) => { // 1
+        $t::fmt(&$p, $f)?;
     };
-    (2, $t:ident, $o:ident, $p:ident, $f:ident) => { // *
-        if let Some(p) = &$o.$p {
+    (2, $t:ident, $p:expr, $f:ident) => { // *
+        if let Some(p) = &$p {
             for e in p.as_hash_set() {
                 $t::fmt(e, $f)?;
             }
         }
     };
-    (3, $t:ident, $o:ident, $p:ident, $f:ident) => { // 1*
-        for e in $o.$p.as_hash_set() {
+    (3, $t:ident, $p:expr, $f:ident) => { // 1*
+        for e in $p.as_hash_set() {
             $t::fmt(e, $f)?;
         }
+    };
+}
+
+macro_rules! fmt_g {
+    ($c:tt, $t:ident, $o:ident, $p:ident, $f:ident) => { // *1
+        fmt_gg!($c, $t, $o.$p, $f);
     };
 }
 
@@ -61,40 +67,67 @@ pub struct VCard {
     pub begin: Begin,
     pub version: Version,
     pub formatted_names: Set<FormattedName>,
+    pub names: Option<Set<Name>>,
+    pub nicknames: Option<Set<NickName>>,
+    pub birthdays: Option<Set<Birthday>>,
+    pub photo: Option<Set<Photo>>,
     pub source: Option<Set<Source>>,
     pub end: End,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum VCardError {
+    FormatError(ValidatedCustomizedStringError),
+    EmptyFormatName,
+}
+
 impl VCard {
-    pub fn from_formatted_names(formatted_names: Set<FormattedName>) -> VCard {
-        VCard {
+    pub fn from_formatted_names(formatted_names: Set<FormattedName>) -> Result<VCard, VCardError> {
+        let mut has_formatted_names = false;
+
+        for e in formatted_names.as_hash_set() {
+            if !e.is_empty() {
+                has_formatted_names = true;
+                break;
+            }
+        }
+
+        if !has_formatted_names {
+            return Err(VCardError::EmptyFormatName);
+        }
+
+        Ok(VCard {
             begin: properties::Begin,
             version: properties::Version::from_version_value(values::version_value::VersionValue::V4P0),
             formatted_names,
+            names: None,
+            nicknames: None,
+            birthdays: None,
+            photo: None,
             source: None,
             end: properties::End,
-        }
+        })
     }
 
-    pub fn from_formatted_name(formatted_name: FormattedName) -> VCard {
+    pub fn from_formatted_name(formatted_name: FormattedName) -> Result<VCard, VCardError> {
         let mut formatted_names = HashSet::new();
         formatted_names.insert(formatted_name);
 
         Self::from_formatted_names(Set::from_hash_set(formatted_names).unwrap())
     }
 
-    pub fn from_formatted_name_string(formatted_name: String) -> Result<VCard, ValidatedCustomizedStringError> {
-        let text = values::text::Text::from_string(formatted_name)?;
+    pub fn from_formatted_name_string(formatted_name: String) -> Result<VCard, VCardError> {
+        let text = values::text::Text::from_string(formatted_name).map_err(|err| VCardError::FormatError(err))?;
         let formatted_name = FormattedName::from_text(text);
 
-        Ok(Self::from_formatted_name(formatted_name))
+        Self::from_formatted_name(formatted_name)
     }
 
-    pub fn from_formatted_name_str(formatted_name: &str) -> Result<VCard, ValidatedCustomizedStringError> {
-        let text = values::text::Text::from_str(formatted_name)?;
+    pub fn from_formatted_name_str(formatted_name: &str) -> Result<VCard, VCardError> {
+        let text = values::text::Text::from_str(formatted_name).map_err(|err| VCardError::FormatError(err))?;
         let formatted_name = FormattedName::from_text(text);
 
-        Ok(Self::from_formatted_name(formatted_name))
+        Self::from_formatted_name(formatted_name)
     }
 }
 
@@ -109,6 +142,10 @@ impl Display for VCard {
         fmt!(1, begin);
         fmt!(1, version);
         fmt!(3, formatted_names);
+        fmt!(2, names);
+        fmt!(2, nicknames);
+        fmt!(2, birthdays);
+        fmt!(2, photo);
         fmt!(2, source);
         fmt!(1, end);
 

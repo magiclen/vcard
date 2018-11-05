@@ -69,9 +69,6 @@ impl Display for Source {
     }
 }
 
-
-
-
 impl Validated for Source {}
 
 impl ValidatedWrapper for Source {

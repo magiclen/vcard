@@ -1,11 +1,10 @@
 use super::super::values::Value;
-use super::super::values::text::Text;
+use super::super::values::name_value::NameValue;
 use super::super::parameters::Parameter;
 use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::preference::Preference;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
-use super::super::parameters::typ::Type;
+use super::super::parameters::sort_as::SortAs;
 use super::super::parameters::language::Language;
 use super::super::Set;
 use super::*;
@@ -15,27 +14,25 @@ use std::fmt::{self, Display, Formatter};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct FormattedName {
-    pub typ: Option<Type>,
+pub struct Name {
+    pub sort_as: Option<SortAs>,
     pub language: Option<Language>,
     pub property_id: Option<PropertyID>,
-    pub preference: Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
     pub any: Option<Set<Any>>,
-    pub value: Text,
+    pub value: NameValue,
 }
 
-impl FormattedName {
-    pub fn from_text(text: Text) -> FormattedName {
-        FormattedName {
-            typ: None,
+impl Name {
+    pub fn from_name_value(name_value: NameValue) -> Name {
+        Name {
+            sort_as: None,
             language: None,
 
             property_id: None,
-            preference: None,
             alternative_id: None,
             any: None,
-            value: text,
+            value: name_value
         }
     }
 
@@ -44,13 +41,13 @@ impl FormattedName {
     }
 }
 
-impl Property for FormattedName {
+impl Property for Name {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         if self.is_empty() {
             return Ok(());
         }
 
-        f.write_str("FN")?;
+        f.write_str("N")?;
 
         macro_rules! fmt {
             ($c:tt, $p:ident) => {
@@ -58,10 +55,9 @@ impl Property for FormattedName {
             };
         }
 
-        fmt!(0, typ);
+        fmt!(0, sort_as);
         fmt!(0, language);
         fmt!(0, property_id);
-        fmt!(0, preference);
         fmt!(0, alternative_id);
         fmt!(2, any);
 
@@ -75,15 +71,15 @@ impl Property for FormattedName {
     }
 }
 
-impl Display for FormattedName {
+impl Display for Name {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Property::fmt(self, f)
     }
 }
 
-impl Validated for FormattedName {}
+impl Validated for Name {}
 
-impl ValidatedWrapper for FormattedName {
+impl ValidatedWrapper for Name {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {
