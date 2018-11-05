@@ -15,7 +15,7 @@ impl Value for TimeZoneValue {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         match self {
             TimeZoneValue::Tz(tz) => {
-                f.write_str(&format!("{:?}", tz))?;
+                f.write_fmt(format_args!("{:?}", tz))?;
             }
             TimeZoneValue::URI(uri) => {
                 Value::fmt(uri, f)?;

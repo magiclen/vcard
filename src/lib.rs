@@ -51,6 +51,8 @@ use validators::ValidatedCustomizedStringError;
 
 use self::properties::*;
 
+pub use mime_guess::Mime;
+
 lazy_static! {
     static ref TEXT_RE: Regex = { Regex::new(r"^[^\x00-\x1F\x7F]*$").unwrap() };
     static ref SAFE_RE: Regex = { Regex::new(r"^[^\x00-\x1F\x22\x3A\x3B\x7F]*$").unwrap() };
@@ -70,6 +72,7 @@ pub struct VCard {
     pub formatted_names: Set<FormattedName>,
     pub names: Option<Set<Name>>,
     pub nicknames: Option<Set<NickName>>,
+    pub uid: Option<UID>,
     pub gender: Option<Gender>,
     pub birthdays: Option<Set<Birthday>>,
     pub anniversaries: Option<Set<Anniversary>>,
@@ -80,14 +83,19 @@ pub struct VCard {
     pub roles: Option<Set<Role>>,
     pub photos: Option<Set<Photo>>,
     pub logos: Option<Set<Logo>>,
+    pub sounds: Option<Set<Sound>>,
     pub organizations: Option<Set<Organization>>,
     pub members: Option<Set<Member>>,
     pub relationships: Option<Set<Relationship>>,
+    pub categories: Option<Set<Category>>,
+    pub notes: Option<Set<Note>>,
     pub languages: Option<Set<Language>>,
     pub time_zones: Option<Set<TimeZone>>,
     pub geos: Option<Set<TimeZone>>,
     pub impps: Option<Set<IMPP>>,
     pub sources: Option<Set<Source>>,
+    pub product_id: Option<ProductID>,
+    pub revision: Option<Revision>,
     pub end: End,
 }
 
@@ -112,12 +120,15 @@ impl VCard {
             return Err(VCardError::EmptyFormatName);
         }
 
+        let revision = Revision::now();
+
         Ok(VCard {
             begin: properties::Begin,
             version: properties::Version::from_version_value(values::version_value::VersionValue::V4P0),
             formatted_names,
             names: None,
             nicknames: None,
+            uid: None,
             gender: None,
             birthdays: None,
             anniversaries: None,
@@ -128,14 +139,19 @@ impl VCard {
             roles: None,
             photos: None,
             logos: None,
+            sounds: None,
             organizations: None,
             members: None,
             relationships: None,
+            categories: None,
+            notes: None,
             languages: None,
             time_zones: None,
             geos: None,
             impps: None,
             sources: None,
+            product_id: None,
+            revision: Some(revision),
             end: properties::End,
         })
     }
@@ -175,6 +191,7 @@ impl Display for VCard {
         fmt!(3, formatted_names);
         fmt!(2, names);
         fmt!(2, nicknames);
+        fmt!(0, uid);
         fmt!(0, gender);
         fmt!(2, birthdays);
         fmt!(2, anniversaries);
@@ -185,14 +202,19 @@ impl Display for VCard {
         fmt!(2, roles);
         fmt!(2, photos);
         fmt!(2, logos);
+        fmt!(2, sounds);
         fmt!(2, organizations);
         fmt!(2, members);
         fmt!(2, relationships);
+        fmt!(2, categories);
+        fmt!(2, notes);
         fmt!(2, languages);
         fmt!(2, time_zones);
         fmt!(2, geos);
         fmt!(2, impps);
         fmt!(2, sources);
+        fmt!(0, product_id);
+        fmt!(0, revision);
         fmt!(1, end);
 
         Ok(())

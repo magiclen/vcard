@@ -44,28 +44,22 @@ impl TelephoneValue {
             extension,
         })
     }
-
-    pub fn get_uri_string(&self) -> String {
-        match self {
-            TelephoneValue::URI(uri) => uri.get_full_uri().to_string(),
-            TelephoneValue::TelephoneNumber{telephone_number, extension} => {
-                let mut s = String::from("tel:");
-                s.push_str(telephone_number.as_str());
-
-                if let Some(extension) = extension {
-                    s.push_str(";ext=");
-                    s.push_str(extension.as_str());
-                }
-
-                s
-            }
-        }
-    }
 }
 
 impl Value for TelephoneValue {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        f.write_str(&self.get_uri_string())?;
+        match self {
+            TelephoneValue::URI(uri) => {
+                Value::fmt(uri, f)?;
+            }
+            TelephoneValue::TelephoneNumber { telephone_number, extension } => {
+                f.write_fmt(format_args!("tel:{}", telephone_number))?;
+                if let Some(extension) = extension {
+                    f.write_str(";ext=")?;
+                    f.write_str(extension.as_str())?;
+                }
+            }
+        }
 
         Ok(())
     }

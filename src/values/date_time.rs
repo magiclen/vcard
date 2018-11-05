@@ -860,6 +860,10 @@ impl Timestamp {
             offset_minutes: Some(offset_minutes),
         })
     }
+
+    pub fn now() -> Timestamp {
+        Self::from_date_time(Utc::now()).unwrap()
+    }
 }
 
 impl Value for Timestamp {

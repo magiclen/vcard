@@ -14,18 +14,16 @@ pub enum GeoValue {
     LatLng(Latitude, Longitude),
 }
 
-impl GeoValue {
-    pub fn get_uri_string(&self) -> String {
-        match self {
-            GeoValue::URI(uri) => uri.get_full_uri().to_string(),
-            GeoValue::LatLng(lat, lng) => format!("geo:{:.6}:{:.6}", lat.get_number(), lng.get_number())
-        }
-    }
-}
-
 impl Value for GeoValue {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        f.write_str(&self.get_uri_string())?;
+        match self {
+            GeoValue::URI(uri) => {
+                Value::fmt(uri, f)?;
+            }
+            GeoValue::LatLng(lat, lng) => {
+                f.write_fmt(format_args!("geo:{:.6}:{:.6}", lat.get_number(), lng.get_number()))?;
+            }
+        }
 
         Ok(())
     }

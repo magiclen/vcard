@@ -24,6 +24,12 @@ mod logo;
 mod organization;
 mod member;
 mod relationship;
+mod category;
+mod note;
+mod product_id;
+mod revision;
+mod sound;
+mod uid;
 
 pub use self::begin::Begin;
 pub use self::end::End;
@@ -49,6 +55,12 @@ pub use self::logo::Logo;
 pub use self::organization::Organization;
 pub use self::member::Member;
 pub use self::relationship::Relationship;
+pub use self::category::Category;
+pub use self::note::Note;
+pub use self::product_id::ProductID;
+pub use self::revision::Revision;
+pub use self::sound::Sound;
+pub use self::uid::UID;
 
 pub trait Property {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;

@@ -28,10 +28,13 @@ pub mod preference_value;
 pub mod version_value;
 pub mod name_value;
 pub mod image_value;
+pub mod sound_value;
 pub mod gender_value;
 pub mod address_value;
 pub mod email_value;
 pub mod time_zone_value;
+pub mod product_id_value;
+pub mod uid_value;
 
 pub trait Value {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;
