@@ -1,10 +1,10 @@
 [package]
 name = "vcard"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Magic Len <len@magiclen.org>"]
 repository = "https://github.com/magiclen/vcard"
 homepage = "https://magiclen.org/vcard"
-keywords = ["vcard", "rfc6350"]
+keywords = ["vcard", "rfc6350", "rfc-6350"]
 categories = ["value-formatting", "parsing"]
 description= "A pure Rust implementation of vCard based on RFC 6350."
 readme = "README.md"
@@ -23,3 +23,4 @@ chrono-tz = "0.5.0"
 regex = "1.0.5"
 lazy_static = "1.1.0"
 percent-encoding = "1.0.1"
+idna = "0.1.5"

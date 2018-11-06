@@ -304,7 +304,7 @@ let urls = {
     let mut urls = HashSet::new();
 
     let company_site = {
-        let mut url = URL::from_url(url::URL::from_str("https://thaumaturgiclen.com").unwrap());
+        let mut url = URL::from_url(url::URL::from_str("https://職員.thaumaturgiclen.com:444/王大衛").unwrap());
 
         let type_values = {
             let mut type_values = HashSet::new();
@@ -372,8 +372,8 @@ println!("{}", vcard);
 //    TEL;TYPE="voice,work";VALUE=uri:tel:+886-02-8888-8888;ext=532
 //    EMAIL;TYPE=work:david@thaumaturgiclen.com
 //    EMAIL;TYPE=home:david@gmail.com
-//    PHOTO:data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAAG0OVFdAAAABmJL...
-//    URL;TYPE=work:https://thaumaturgiclen.com
+//    PHOTO:data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAAG0OVFdAAAABmJLR0...
+//    URL;TYPE=work:https://xn--gwr372h.thaumaturgiclen.com:444/%E7%8E%8B%E5%A4%A7%E8%A1%9B
 //    X-SOCIALPROFILE;TYPE=facebook:https://www.facebook.com/david.vard.wang
 //    REV:20181106T000000Z
 //    END:VCARD
