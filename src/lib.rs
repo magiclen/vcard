@@ -411,7 +411,7 @@ macro_rules! fmt_gg {
 }
 
 macro_rules! fmt_g {
-    ($c:tt, $t:ident, $o:ident, $p:ident, $f:ident) => { // *1
+    ($c:tt, $t:ident, $o:ident, $p:ident, $f:ident) => {
         fmt_gg!($c, $t, $o.$p, $f);
     };
 }
