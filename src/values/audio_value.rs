@@ -32,10 +32,12 @@ pub enum AudioValueError {
 
 impl AudioValue {
     pub fn from_base64(mime: Mime, base64: Base64) -> Result<AudioValue, AudioValueError> {
-        let Mime(top, ..) = &mime;
+        {
+            let Mime(top, ..) = &mime;
 
-        if top != "audio" {
-            return Err(AudioValueError::MediaTypeNotAudio);
+            if top != "audio" {
+                return Err(AudioValueError::MediaTypeNotAudio);
+            }
         }
 
         Ok(AudioValue {
@@ -68,10 +70,12 @@ impl AudioValue {
                         Some(ext) => {
                             let mime = mime_guess::get_mime_type(ext);
 
-                            let Mime(top, ..) = &mime;
+                            {
+                                let Mime(top, ..) = &mime;
 
-                            if top != "audio" {
-                                return Err(AudioValueError::MediaTypeNotAudio);
+                                if top != "audio" {
+                                    return Err(AudioValueError::MediaTypeNotAudio);
+                                }
                             }
 
                             mime

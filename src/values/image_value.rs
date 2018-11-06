@@ -32,10 +32,12 @@ pub enum ImageValueError {
 
 impl ImageValue {
     pub fn from_base64(mime: Mime, base64: Base64) -> Result<ImageValue, ImageValueError> {
-        let Mime(top, ..) = &mime;
+        {
+            let Mime(top, ..) = &mime;
 
-        if top != "image" {
-            return Err(ImageValueError::MediaTypeNotImage);
+            if top != "image" {
+                return Err(ImageValueError::MediaTypeNotImage);
+            }
         }
 
         Ok(ImageValue {
@@ -68,10 +70,12 @@ impl ImageValue {
                         Some(ext) => {
                             let mime = mime_guess::get_mime_type(ext);
 
-                            let Mime(top, ..) = &mime;
+                            {
+                                let Mime(top, ..) = &mime;
 
-                            if top != "image" {
-                                return Err(ImageValueError::MediaTypeNotImage);
+                                if top != "image" {
+                                    return Err(ImageValueError::MediaTypeNotImage);
+                                }
                             }
 
                             mime
