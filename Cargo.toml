@@ -1,8 +1,18 @@
 [package]
-name = "vcard4"
+name = "vcard"
 version = "0.1.0"
 authors = ["Magic Len <len@magiclen.org>"]
-edition = "2018"
+repository = "https://github.com/magiclen/vcard"
+homepage = "https://magiclen.org/vcard"
+keywords = ["vcard", "rfc6350"]
+categories = ["value-formatting", "parsing"]
+description= "A pure Rust implementation of VCard based on RFC 6350."
+readme = "README.md"
+license = "MIT"
+
+[badges]
+travis-ci = { repository = "magiclen/vcard", branch = "master" }
+appveyor = { repository = "magiclen/vcard", branch = "master", service = "github" }
 
 [dependencies]
 validators = "0.15.3"

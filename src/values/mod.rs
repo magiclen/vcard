@@ -20,16 +20,14 @@ pub mod uuid;
 pub mod attribute_value;
 pub mod calscale_value;
 pub mod value_type;
-pub mod telephone_type;
 pub mod telephone_value;
-pub mod related_type;
 pub mod geo_value;
 pub mod kind_value;
 pub mod preference_value;
 pub mod version_value;
 pub mod name_value;
 pub mod image_value;
-pub mod sound_value;
+pub mod audio_value;
 pub mod gender_value;
 pub mod address_value;
 pub mod email_value;
@@ -37,6 +35,7 @@ pub mod time_zone_value;
 pub mod product_id_value;
 pub mod uid_value;
 pub mod client_property_id_map_value;
+pub mod key_value;
 
 pub trait Value {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;

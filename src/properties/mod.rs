@@ -32,6 +32,11 @@ mod sound;
 mod uid;
 mod client_property_id_map;
 mod url;
+mod key;
+mod fburl;
+mod calendar_uri;
+mod calendar_address_uri;
+mod x_property;
 
 pub use self::begin::Begin;
 pub use self::end::End;
@@ -65,6 +70,11 @@ pub use self::sound::Sound;
 pub use self::uid::UID;
 pub use self::client_property_id_map::ClientPropertyIDMap;
 pub use self::url::URL;
+pub use self::key::Key;
+pub use self::fburl::FBURL;
+pub use self::calendar_uri::CalendarURI;
+pub use self::calendar_address_uri::CalendarAddressURI;
+pub use self::x_property::XProperty;
 
 pub trait Property {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;

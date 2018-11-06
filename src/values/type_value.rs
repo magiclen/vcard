@@ -1,5 +1,3 @@
-use super::related_type::RelatedType;
-use super::telephone_type::TelephoneType;
 use super::super::{IanaToken, XName};
 use super::*;
 
@@ -58,7 +56,13 @@ impl ValidatedWrapper for TypeValue {
 pub enum TypeValueWithTelephoneType {
     Work,
     Home,
-    TelType(TelephoneType),
+    Text,
+    Voice,
+    Fax,
+    Cell,
+    Video,
+    Pager,
+    TextPhone,
     IanaToken(IanaToken),
     XName(XName),
 }
@@ -68,7 +72,13 @@ impl TypeValueWithTelephoneType {
         match self {
             TypeValueWithTelephoneType::Work => "work",
             TypeValueWithTelephoneType::Home => "home",
-            TypeValueWithTelephoneType::TelType(tt) => tt.get_str(),
+            TypeValueWithTelephoneType::Text => "text",
+            TypeValueWithTelephoneType::Voice => "voice",
+            TypeValueWithTelephoneType::Fax => "fax",
+            TypeValueWithTelephoneType::Cell => "cell",
+            TypeValueWithTelephoneType::Video => "video",
+            TypeValueWithTelephoneType::Pager => "pager",
+            TypeValueWithTelephoneType::TextPhone => "textphone",
             TypeValueWithTelephoneType::IanaToken(x) => x.as_str(),
             TypeValueWithTelephoneType::XName(x) => x.as_str(),
         }
@@ -107,7 +117,25 @@ impl ValidatedWrapper for TypeValueWithTelephoneType {
 pub enum TypeValueWithRelatedType {
     Work,
     Home,
-    RelatedType(RelatedType),
+    Contact,
+    Acquaintance,
+    Friend,
+    Met,
+    CoWorker,
+    Colleague,
+    CoResident,
+    Neighbor,
+    Child,
+    Parent,
+    Spouse,
+    Kin,
+    Muse,
+    Crush,
+    Date,
+    Sweetheart,
+    Me,
+    Agent,
+    Emergency,
     IanaToken(IanaToken),
     XName(XName),
 }
@@ -117,7 +145,25 @@ impl TypeValueWithRelatedType {
         match self {
             TypeValueWithRelatedType::Work => "work",
             TypeValueWithRelatedType::Home => "home",
-            TypeValueWithRelatedType::RelatedType(rt) => rt.get_str(),
+            TypeValueWithRelatedType::Contact => "contact",
+            TypeValueWithRelatedType::Acquaintance => "acquaintance",
+            TypeValueWithRelatedType::Friend => "friend",
+            TypeValueWithRelatedType::Met => "met",
+            TypeValueWithRelatedType::CoWorker => "co-worker",
+            TypeValueWithRelatedType::Colleague => "colleague",
+            TypeValueWithRelatedType::CoResident => "co-resident",
+            TypeValueWithRelatedType::Neighbor => "neighbor",
+            TypeValueWithRelatedType::Child => "child",
+            TypeValueWithRelatedType::Parent => "parent",
+            TypeValueWithRelatedType::Spouse => "spouse",
+            TypeValueWithRelatedType::Kin => "kin",
+            TypeValueWithRelatedType::Muse => "muse",
+            TypeValueWithRelatedType::Crush => "crush",
+            TypeValueWithRelatedType::Date => "date",
+            TypeValueWithRelatedType::Sweetheart => "sweetheart",
+            TypeValueWithRelatedType::Me => "me",
+            TypeValueWithRelatedType::Agent => "agent",
+            TypeValueWithRelatedType::Emergency => "emergency",
             TypeValueWithRelatedType::IanaToken(x) => x.as_str(),
             TypeValueWithRelatedType::XName(x) => x.as_str(),
         }

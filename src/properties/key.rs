@@ -1,13 +1,11 @@
 use super::super::values::Value;
-use super::super::values::audio_value::AudioValue;
+use super::super::values::key_value::KeyValue;
 use super::super::parameters::Parameter;
 use super::super::parameters::property_id::PropertyID;
 use super::super::parameters::preference::Preference;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
-use super::super::parameters::typ::Type;
 use super::super::parameters::media_type::MediaType;
-use super::super::parameters::language::Language;
 use super::super::Set;
 use super::*;
 
@@ -16,36 +14,32 @@ use std::fmt::{self, Display, Formatter};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-pub struct Sound {
-    pub typ: Option<Type>,
-    pub media_type: Option<MediaType>,
-    pub language: Option<Language>,
+pub struct Key {
+    pub typ: Option<MediaType>,
     pub property_id: Option<PropertyID>,
     pub preference: Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
     pub any: Option<Set<Any>>,
-    pub value: AudioValue,
+    pub value: KeyValue,
 }
 
-impl Sound {
-    pub fn from_sound_value(sound_value: AudioValue) -> Sound {
-        Sound {
+impl Key {
+    pub fn from_key_value(key_value: KeyValue) -> Key {
+        Key {
             typ: None,
-            media_type: None,
-            language: None,
 
             property_id: None,
             preference: None,
             alternative_id: None,
             any: None,
-            value: sound_value,
+            value: key_value,
         }
     }
 }
 
-impl Property for Sound {
+impl Property for Key {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        f.write_str("LOGO")?;
+        f.write_str("KEY")?;
 
         macro_rules! fmt {
             ($c:tt, $p:ident) => {
@@ -54,14 +48,16 @@ impl Property for Sound {
         }
 
         fmt!(0, typ);
-        fmt!(0, media_type);
-        fmt!(0, language);
         fmt!(0, property_id);
         fmt!(0, preference);
         fmt!(0, alternative_id);
         fmt!(2, any);
 
-        f.write_str(":")?;
+        if let KeyValue::Text(_) = self.value {
+            f.write_str(";VALUE=text:")?;
+        } else {
+            f.write_str(":")?;
+        }
 
         Value::fmt(&self.value, f)?;
 
@@ -71,15 +67,15 @@ impl Property for Sound {
     }
 }
 
-impl Display for Sound {
+impl Display for Key {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Property::fmt(self, f)
     }
 }
 
-impl Validated for Sound {}
+impl Validated for Key {}
 
-impl ValidatedWrapper for Sound {
+impl ValidatedWrapper for Key {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

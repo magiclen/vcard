@@ -9,18 +9,18 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Type {
-    types: Set<TypeValue>,
+    type_values: Set<TypeValue>,
 }
 
 impl Type {
-    pub fn from_ids(types: Set<TypeValue>) -> Type {
-        Type { types }
+    pub fn from_type_values(type_values: Set<TypeValue>) -> Type {
+        Type { type_values }
     }
 }
 
 impl Type {
-    pub fn get_ids(&self) -> &Set<TypeValue> {
-        &self.types
+    pub fn get_type_values(&self) -> &Set<TypeValue> {
+        &self.type_values
     }
 }
 
@@ -28,13 +28,13 @@ impl Parameter for Type {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         f.write_str(";TYPE=")?;
 
-        let has_double_quote = self.types.as_hash_set().len() > 1;
+        let has_double_quote = self.type_values.as_hash_set().len() > 1;
 
         if has_double_quote {
             f.write_str("\"")?;
         }
 
-        Value::fmt(&self.types, f)?;
+        Value::fmt(&self.type_values, f)?;
 
         if has_double_quote {
             f.write_str("\"")?;
@@ -66,18 +66,18 @@ impl ValidatedWrapper for Type {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct TypeWithTelType {
-    types: Set<TypeValueWithTelephoneType>,
+    type_values: Set<TypeValueWithTelephoneType>,
 }
 
 impl TypeWithTelType {
-    pub fn from_ids(types: Set<TypeValueWithTelephoneType>) -> TypeWithTelType {
-        TypeWithTelType { types }
+    pub fn from_type_values(type_values: Set<TypeValueWithTelephoneType>) -> TypeWithTelType {
+        TypeWithTelType { type_values }
     }
 }
 
 impl TypeWithTelType {
     pub fn get_ids(&self) -> &Set<TypeValueWithTelephoneType> {
-        &self.types
+        &self.type_values
     }
 }
 
@@ -85,7 +85,17 @@ impl Parameter for TypeWithTelType {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         f.write_str(";TYPE=")?;
 
-        Value::fmt(&self.types, f)?;
+        let has_double_quote = self.type_values.as_hash_set().len() > 1;
+
+        if has_double_quote {
+            f.write_str("\"")?;
+        }
+
+        Value::fmt(&self.type_values, f)?;
+
+        if has_double_quote {
+            f.write_str("\"")?;
+        }
 
         Ok(())
     }
@@ -113,18 +123,18 @@ impl ValidatedWrapper for TypeWithTelType {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct TypeWithRelatedType {
-    types: Set<TypeValueWithRelatedType>,
+    type_values: Set<TypeValueWithRelatedType>,
 }
 
 impl TypeWithRelatedType {
-    pub fn from_ids(types: Set<TypeValueWithRelatedType>) -> TypeWithRelatedType {
-        TypeWithRelatedType { types }
+    pub fn from_type_values(type_values: Set<TypeValueWithRelatedType>) -> TypeWithRelatedType {
+        TypeWithRelatedType { type_values }
     }
 }
 
 impl TypeWithRelatedType {
-    pub fn get_ids(&self) -> &Set<TypeValueWithRelatedType> {
-        &self.types
+    pub fn get_type_values(&self) -> &Set<TypeValueWithRelatedType> {
+        &self.type_values
     }
 }
 
@@ -132,7 +142,17 @@ impl Parameter for TypeWithRelatedType {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         f.write_str(";TYPE=")?;
 
-        Value::fmt(&self.types, f)?;
+        let has_double_quote = self.type_values.as_hash_set().len() > 1;
+
+        if has_double_quote {
+            f.write_str("\"")?;
+        }
+
+        Value::fmt(&self.type_values, f)?;
+
+        if has_double_quote {
+            f.write_str("\"")?;
+        }
 
         Ok(())
     }
