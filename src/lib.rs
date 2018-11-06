@@ -423,6 +423,9 @@ pub mod properties;
 
 use std::fmt::{self, Display, Formatter};
 use std::collections::HashSet;
+use std::io;
+use std::fs;
+use std::path::Path;
 
 use regex::Regex;
 use validators::ValidatedCustomizedStringError;
@@ -569,6 +572,12 @@ impl VCard {
         let formatted_name = FormattedName::from_text(text);
 
         Self::from_formatted_name(formatted_name)
+    }
+
+    pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), io::Error> {
+        let path = path.as_ref();
+
+        fs::write(path, self.to_string())
     }
 }
 
