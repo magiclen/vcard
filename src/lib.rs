@@ -1,6 +1,6 @@
 //! # VCard
 //!
-//! A pure Rust implementation of VCard based on RFC 6350.
+//! A pure Rust implementation of vCard based on RFC 6350.
 //!
 //! ## Example
 //! ```
