@@ -1,6 +1,6 @@
 [package]
 name = "vcard"
-version = "0.1.4"
+version = "0.2.0"
 authors = ["Magic Len <len@magiclen.org>"]
 repository = "https://github.com/magiclen/vcard"
 homepage = "https://magiclen.org/vcard"
@@ -15,7 +15,7 @@ travis-ci = { repository = "magiclen/vcard", branch = "master" }
 appveyor = { repository = "magiclen/vcard", branch = "master", service = "github" }
 
 [dependencies]
-validators = "0.15.3"
+validators = "0.16"
 base64-stream = "1.0.1"
 mime_guess = "1.8.6"
 chrono = "0.4.6"
