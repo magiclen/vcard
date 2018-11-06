@@ -1,4 +1,4 @@
-use super::super::values::type_value::{TypeValue, TypeValueWithTelephoneType};
+use super::super::values::type_value::{TypeValue, TypeValueWithTelephoneType, TypeValueWithRelatedType};
 use super::super::values::Value;
 use super::super::Set;
 use super::*;
@@ -100,6 +100,53 @@ impl Display for TypeWithTelType {
 impl Validated for TypeWithTelType {}
 
 impl ValidatedWrapper for TypeWithTelType {
+    type Error = &'static str;
+
+    fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {
+        unimplemented!();
+    }
+
+    fn from_str(_from_str_input: &str) -> Result<Self, Self::Error> {
+        unimplemented!();
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct TypeWithRelatedType {
+    types: Set<TypeValueWithRelatedType>,
+}
+
+impl TypeWithRelatedType {
+    pub fn from_ids(types: Set<TypeValueWithRelatedType>) -> TypeWithRelatedType {
+        TypeWithRelatedType { types }
+    }
+}
+
+impl TypeWithRelatedType {
+    pub fn get_ids(&self) -> &Set<TypeValueWithRelatedType> {
+        &self.types
+    }
+}
+
+impl Parameter for TypeWithRelatedType {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        f.write_str(";TYPE=")?;
+
+        Value::fmt(&self.types, f)?;
+
+        Ok(())
+    }
+}
+
+impl Display for TypeWithRelatedType {
+    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
+        Parameter::fmt(self, f)
+    }
+}
+
+impl Validated for TypeWithRelatedType {}
+
+impl ValidatedWrapper for TypeWithRelatedType {
     type Error = &'static str;
 
     fn from_string(_from_string_input: String) -> Result<Self, Self::Error> {

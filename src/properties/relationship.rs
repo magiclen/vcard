@@ -6,7 +6,7 @@ use super::super::parameters::property_id::PropertyID;
 use super::super::parameters::preference::Preference;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
-use super::super::parameters::typ::TypeWithTelType;
+use super::super::parameters::typ::TypeWithRelatedType;
 use super::super::parameters::media_type::MediaType;
 use super::super::parameters::language::Language;
 use super::super::Set;
@@ -19,7 +19,7 @@ use validators::{Validated, ValidatedWrapper};
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Relationship {
     URI {
-        typ: Option<TypeWithTelType>,
+        typ: Option<TypeWithRelatedType>,
         media_type: Option<MediaType>,
 
         property_id: Option<PropertyID>,
@@ -29,7 +29,7 @@ pub enum Relationship {
         value: URI,
     },
     Text {
-        typ: Option<TypeWithTelType>,
+        typ: Option<TypeWithRelatedType>,
         language: Option<Language>,
 
         property_id: Option<PropertyID>,

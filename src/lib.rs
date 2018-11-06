@@ -83,6 +83,7 @@ pub struct VCard {
     pub roles: Option<Set<Role>>,
     pub photos: Option<Set<Photo>>,
     pub logos: Option<Set<Logo>>,
+    pub urls: Option<Set<URL>>,
     pub sounds: Option<Set<Sound>>,
     pub organizations: Option<Set<Organization>>,
     pub members: Option<Set<Member>>,
@@ -95,6 +96,7 @@ pub struct VCard {
     pub impps: Option<Set<IMPP>>,
     pub sources: Option<Set<Source>>,
     pub product_id: Option<ProductID>,
+    pub client_property_id_maps: Option<Set<ClientPropertyIDMap>>,
     pub revision: Option<Revision>,
     pub end: End,
 }
@@ -139,6 +141,7 @@ impl VCard {
             roles: None,
             photos: None,
             logos: None,
+            urls: None,
             sounds: None,
             organizations: None,
             members: None,
@@ -151,6 +154,7 @@ impl VCard {
             impps: None,
             sources: None,
             product_id: None,
+            client_property_id_maps: None,
             revision: Some(revision),
             end: properties::End,
         })
@@ -202,6 +206,7 @@ impl Display for VCard {
         fmt!(2, roles);
         fmt!(2, photos);
         fmt!(2, logos);
+        fmt!(2, urls);
         fmt!(2, sounds);
         fmt!(2, organizations);
         fmt!(2, members);
@@ -214,6 +219,7 @@ impl Display for VCard {
         fmt!(2, impps);
         fmt!(2, sources);
         fmt!(0, product_id);
+        fmt!(2, client_property_id_maps);
         fmt!(0, revision);
         fmt!(1, end);
 

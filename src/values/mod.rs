@@ -16,6 +16,7 @@ pub mod text;
 pub mod type_value;
 pub mod uri;
 pub mod url;
+pub mod uuid;
 pub mod attribute_value;
 pub mod calscale_value;
 pub mod value_type;
@@ -35,6 +36,7 @@ pub mod email_value;
 pub mod time_zone_value;
 pub mod product_id_value;
 pub mod uid_value;
+pub mod client_property_id_map_value;
 
 pub trait Value {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;

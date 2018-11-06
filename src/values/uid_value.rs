@@ -1,11 +1,11 @@
 use super::text::Text;
 use super::uri::URI;
+use super::uuid::UUID;
 use super::*;
 
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
-use validators::uuid::UUID;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum UIDValue {
@@ -35,12 +35,7 @@ impl Value for UIDValue {
                 Value::fmt(uri, f)?;
             }
             UIDValue::UUID(uuid) => {
-                f.write_str("urn:uuid:")?;
-                if uuid.has_both_case() || uuid.has_uppercase() {
-                    f.write_str(&uuid.get_full_uuid().to_lowercase())?;
-                } else {
-                    f.write_str(uuid.get_full_uuid())?;
-                }
+                Value::fmt(uuid, f)?;
             }
             UIDValue::Text(t) => {
                 Value::fmt(t, f)?;
