@@ -373,7 +373,7 @@ println!("{}", vcard);
 //    EMAIL;TYPE=work:david@thaumaturgiclen.com
 //    EMAIL;TYPE=home:david@gmail.com
 //    PHOTO:data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAAG0OVFdAAAABmJL...
-//    URL;TYPE=work:https: //thaumaturgiclen.com
+//    URL;TYPE=work:https://thaumaturgiclen.com
 //    X-SOCIALPROFILE;TYPE=facebook:https://www.facebook.com/david.vard.wang
 //    REV:20181106T000000Z
 //    END:VCARD
