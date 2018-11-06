@@ -377,7 +377,6 @@ println!("{}", vcard);
 //    X-SOCIALPROFILE;TYPE=facebook:https://www.facebook.com/david.vard.wang
 //    REV:20181106T000000Z
 //    END:VCARD
-*/
 ```
 
 ## TODO
