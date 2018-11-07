@@ -436,7 +436,7 @@ use self::properties::*;
 pub use mime_guess::Mime;
 
 lazy_static! {
-    static ref TEXT_RE: Regex = { Regex::new(r"^[^\x00-\x1F\x7F]*$").unwrap() };
+    static ref TEXT_RE: Regex = { Regex::new(r"^([^\x00-\x1F\x7F]|\n)*$").unwrap() };
     static ref SAFE_RE: Regex = { Regex::new(r"^[^\x00-\x1F\x22\x3A\x3B\x7F]*$").unwrap() };
     static ref QSAFE_RE: Regex = { Regex::new(r"^[^\x00-\x1F\x22\x7F]*$").unwrap() };
     static ref IANA_TOKEN_RE: Regex = { Regex::new(r"^[a-zA-Z0-9\-]+$").unwrap() };
