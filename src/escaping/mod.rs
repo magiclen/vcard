@@ -2,7 +2,7 @@ use regex::Regex;
 use std::borrow::Cow;
 
 lazy_static! {
-    static ref NEW_LINE_RE: Regex = { Regex::new(r"\n").unwrap() };
+    static ref NEW_LINE_RE: Regex = { Regex::new(r"\n\r|\r\n|\n").unwrap() };
     static ref COMMA_RE: Regex = { Regex::new(r",").unwrap() };
     static ref SEMICOLON_RE: Regex = { Regex::new(r";").unwrap() };
     static ref BACKSLASH_RE: Regex = { Regex::new(r"\\").unwrap() };
