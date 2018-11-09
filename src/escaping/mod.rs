@@ -6,10 +6,15 @@ lazy_static! {
     static ref COMMA_RE: Regex = { Regex::new(r",").unwrap() };
     static ref SEMICOLON_RE: Regex = { Regex::new(r";").unwrap() };
     static ref BACKSLASH_RE: Regex = { Regex::new(r"\\").unwrap() };
+    static ref TAB_RE: Regex = { Regex::new("\x09").unwrap() };
 }
 
 pub(crate) fn escape_new_line(s: &str) -> Cow<'_, str> {
     NEW_LINE_RE.replace_all(s, "\\n")
+}
+
+pub(crate) fn escape_tab(s: &str) -> Cow<'_, str> {
+    TAB_RE.replace_all(s, "    ")
 }
 
 pub(crate) fn escape_comma(s: &str) -> Cow<'_, str> {

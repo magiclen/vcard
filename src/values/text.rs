@@ -22,6 +22,7 @@ impl Value for Text {
 
         let c = escape_backslash(self.as_str());
         let c = escape_new_line(c.as_ref());
+        let c = escape_tab(c.as_ref());
         let c = escape_comma(c.as_ref());
 
         f.write_str(c.as_ref())?;
@@ -44,6 +45,7 @@ impl Value for Component {
 
         let c = escape_backslash(self.as_str());
         let c = escape_new_line(c.as_ref());
+        let c = escape_tab(c.as_ref());
         let c = escape_comma(c.as_ref());
         let c = escape_semicolon(c.as_ref());
 
