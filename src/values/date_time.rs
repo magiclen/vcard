@@ -138,6 +138,24 @@ impl Date {
 
         Ok(Date { inner: DateInner::Day(day) })
     }
+
+    pub fn from_date_time<T: chrono::TimeZone>(
+        date_time: chrono::DateTime<T>,
+    ) -> Result<Date, DateRangeError> {
+        let year = date_time.year();
+
+        if year < 0 || year > 9999 {
+            return Err(DateRangeError::Year);
+        }
+
+        let year = year as u16;
+
+        let month = date_time.month() as u8;
+
+        let day = date_time.day() as u8;
+
+        Ok(Date { inner: DateInner::YearMonthDay(year, month, day) })
+    }
 }
 
 impl Date {
@@ -364,6 +382,29 @@ impl Time {
                 offset_minutes,
             )
         })
+    }
+
+    pub fn from_date_time<T: chrono::TimeZone>(
+        date_time: chrono::DateTime<T>,
+    ) -> Time {
+        let hour = date_time.hour() as u8;
+
+        let minute = date_time.minute() as u8;
+
+        let second = date_time.second() as u8;
+
+        let offset_minutes =
+            ((date_time.naive_local().timestamp() - date_time.naive_utc().timestamp()) / 60) as i16;
+
+        if offset_minutes == 0 {
+            Time {
+                inner: TimeInner::HourMinuteSecondUtc(hour, minute, second)
+            }
+        } else {
+            Time {
+                inner: TimeInner::HourMinuteSecondZone(hour, minute, second, offset_minutes)
+            }
+        }
     }
 }
 
