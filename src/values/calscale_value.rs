@@ -13,18 +13,6 @@ pub enum CalscaleValue {
 }
 
 impl CalscaleValue {
-    pub fn gregorian() -> CalscaleValue {
-        CalscaleValue::Gregorian
-    }
-
-    pub fn from_x_name(x_name: XName) -> CalscaleValue {
-        CalscaleValue::XName(x_name)
-    }
-
-    pub fn from_iana_token(iana_token: IanaToken) -> CalscaleValue {
-        CalscaleValue::IanaToken(iana_token)
-    }
-
     pub fn get_str(&self) -> &str {
         match self {
             CalscaleValue::Gregorian => "gregorian",

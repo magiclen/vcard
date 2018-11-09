@@ -563,8 +563,17 @@ pub struct DateTime {
 }
 
 impl DateTime {
-    pub fn from_date_time(date: Date, time: Time) -> DateTime {
+    pub fn from_date_and_time(date: Date, time: Time) -> DateTime {
         DateTime { date, time }
+    }
+
+    pub fn from_date_time<T: chrono::TimeZone>(
+        date_time: chrono::DateTime<T>,
+    ) -> Result<DateTime, DateRangeError> {
+        let date = Date::from_date_time(date_time.clone())?;
+        let time = Time::from_date_time(date_time);
+
+        Ok(Self::from_date_and_time(date, time))
     }
 }
 

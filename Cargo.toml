@@ -1,6 +1,6 @@
 [package]
 name = "vcard"
-version = "0.2.4"
+version = "0.3.0"
 authors = ["Magic Len <len@magiclen.org>"]
 repository = "https://github.com/magiclen/vcard"
 homepage = "https://magiclen.org/vcard"
