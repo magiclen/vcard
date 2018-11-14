@@ -10,7 +10,7 @@ use super::super::parameters::media_type::MediaType;
 use super::super::Set;
 use super::*;
 
-use std::fmt::{self, Display, Formatter};
+use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -60,7 +60,7 @@ impl Property for TimeZone {
         if let TimeZoneValue::URI(_) = self.value{
             f.write_str(";VALUE=uri:")?;
         }else{
-            f.write_str(":")?;
+            f.write_char(':')?;
         }
 
         Value::fmt(&self.value, f)?;

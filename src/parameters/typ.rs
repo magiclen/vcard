@@ -3,7 +3,7 @@ use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -31,13 +31,13 @@ impl Parameter for Type {
         let has_double_quote = self.type_values.as_hash_set().len() > 1;
 
         if has_double_quote {
-            f.write_str("\"")?;
+            f.write_char('\"')?;
         }
 
         Value::fmt(&self.type_values, f)?;
 
         if has_double_quote {
-            f.write_str("\"")?;
+            f.write_char('\"')?;
         }
 
         Ok(())
@@ -88,13 +88,13 @@ impl Parameter for TypeWithTelType {
         let has_double_quote = self.type_values.as_hash_set().len() > 1;
 
         if has_double_quote {
-            f.write_str("\"")?;
+            f.write_char('\"')?;
         }
 
         Value::fmt(&self.type_values, f)?;
 
         if has_double_quote {
-            f.write_str("\"")?;
+            f.write_char('\"')?;
         }
 
         Ok(())
@@ -145,13 +145,13 @@ impl Parameter for TypeWithRelatedType {
         let has_double_quote = self.type_values.as_hash_set().len() > 1;
 
         if has_double_quote {
-            f.write_str("\"")?;
+            f.write_char('\"')?;
         }
 
         Value::fmt(&self.type_values, f)?;
 
         if has_double_quote {
-            f.write_str("\"")?;
+            f.write_char('\"')?;
         }
 
         Ok(())

@@ -3,7 +3,7 @@ use super::super::values::{Value};
 use super::super::Set;
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper, ValidatedCustomizedStringError};
 
@@ -62,7 +62,7 @@ impl Parameter for MediaType {
 
         f.write_str(&percent_encoding::utf8_percent_encode(self.type_name.as_str(), percent_encoding::PATH_SEGMENT_ENCODE_SET).to_string())?;
 
-        f.write_str("/")?;
+        f.write_char('/')?;
 
         f.write_str(&percent_encoding::utf8_percent_encode(self.subtype_name.as_str(), percent_encoding::PATH_SEGMENT_ENCODE_SET).to_string())?;
 

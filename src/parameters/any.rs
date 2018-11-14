@@ -4,7 +4,7 @@ use super::super::values::parameter_value::ParameterValues;
 use super::super::Set;
 use super::Parameter;
 
-use std::fmt::{self, Display, Formatter};
+use std::fmt::{self, Display, Formatter, Write};
 use std::hash::{Hash, Hasher};
 
 use validators::{Validated, ValidatedWrapper};
@@ -34,7 +34,7 @@ impl Parameter for Any {
             return Ok(());
         }
 
-        f.write_str(";")?;
+        f.write_char(';')?;
 
         let set = match self {
             Any::IanaToken(a, b) => {
@@ -47,7 +47,7 @@ impl Parameter for Any {
             }
         };
 
-        f.write_str("=")?;
+        f.write_char('=')?;
 
         Value::fmt(set, f)?;
 

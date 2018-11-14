@@ -1,6 +1,6 @@
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -49,9 +49,9 @@ impl Value for AttributeValue {
         if self.is_empty() {
             return Ok(());
         }
-        f.write_str(";")?;
+        f.write_char(';')?;
         f.write_str(&percent_encoding::utf8_percent_encode(self.attribute.as_str(), percent_encoding::QUERY_ENCODE_SET).to_string())?;
-        f.write_str("=")?;
+        f.write_char('=')?;
         f.write_str(&percent_encoding::utf8_percent_encode(self.value.as_str(), percent_encoding::QUERY_ENCODE_SET).to_string())?;
 
         Ok(())

@@ -1,6 +1,6 @@
 use super::Set;
 
-use std::fmt::{self, Formatter};
+use std::fmt::{self, Formatter, Write};
 use std::collections::HashSet;
 use std::hash::Hash;
 use validators::ValidatedWrapper;
@@ -50,7 +50,7 @@ impl<V: Value + ValidatedWrapper + Eq + Hash> Value for Set<V> {
         }
 
         for e in v.iter().skip(1) {
-            f.write_str(",")?;
+            f.write_char(',')?;
             Value::fmt(e, f)?;
         }
 

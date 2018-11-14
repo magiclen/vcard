@@ -1,7 +1,7 @@
 use super::super::{QSAFE_RE, SAFE_RE};
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -72,9 +72,9 @@ impl Value for ParameterValue {
         }
 
         if self.qsafe {
-            f.write_str("\"")?;
+            f.write_char('\"')?;
             f.write_str(&self.text)?;
-            f.write_str("\"")?;
+            f.write_char('\"')?;
         } else {
             f.write_str(&self.text)?;
         }
@@ -166,7 +166,7 @@ impl Value for ParameterValues {
 
 
         if self.has_multiple_non_empty_values() {
-            f.write_str("\"")?;
+            f.write_char('\"')?;
 
             let mut it = v.iter();
 
@@ -185,7 +185,7 @@ impl Value for ParameterValues {
                 match e {
                     Some(e) => {
                         if !e.is_empty() {
-                            f.write_str(",")?;
+                            f.write_char(',')?;
                             f.write_str(&e.text)?;
                             break;
                         }
@@ -196,7 +196,7 @@ impl Value for ParameterValues {
                 }
             }
 
-            f.write_str("\"")?;
+            f.write_char('\"')?;
         } else {
             for e in v {
                 if !e.is_empty() {

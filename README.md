@@ -84,7 +84,7 @@ let photos = {
     let mut photos = HashSet::new();
 
     let photo = {
-        let image_value = ImageValue::from_file("tests/data/photo.png").unwrap();
+        let image_value = ImageValue::from_file("photo.png").unwrap();
 
         Photo::from_image_value(image_value)
     };

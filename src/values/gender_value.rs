@@ -1,7 +1,7 @@
 use super::text::Text;
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -88,7 +88,7 @@ impl Value for GenderValue {
 
         if let Some(t) = &self.gender_identity {
             if t.is_empty() {
-                f.write_str(";")?;
+                f.write_char(';')?;
                 Value::fmt(t, f)?;
             }
         }

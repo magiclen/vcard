@@ -1,7 +1,7 @@
 use super::text::Component;
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -114,22 +114,22 @@ impl Value for AddressValue {
 
         fmt!(0, post_office_box);
 
-        f.write_str(";")?;
+        f.write_char(';')?;
         fmt!(0, extension);
 
-        f.write_str(";")?;
+        f.write_char(';')?;
         fmt!(0, street);
 
-        f.write_str(";")?;
+        f.write_char(';')?;
         fmt!(0, locality);
 
-        f.write_str(";")?;
+        f.write_char(';')?;
         fmt!(0, region);
 
-        f.write_str(";")?;
+        f.write_char(';')?;
         fmt!(0, code);
 
-        f.write_str(";")?;
+        f.write_char(';')?;
         fmt!(0, country);
 
         Ok(())

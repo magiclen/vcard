@@ -21,6 +21,12 @@ use vcard::parameters::typ::{Type, TypeWithTelType};
 
 use vcard::chrono::prelude::*;
 
+#[cfg(windows)]
+const PHOTO_PATH: &str = r"examples\data\photo.png";
+
+#[cfg(not(windows))]
+const PHOTO_PATH: &str = "examples/data/photo.png";
+
 fn main() {
     let formatted_names = {
         let mut formatted_names = HashSet::new();
@@ -74,7 +80,7 @@ fn main() {
         let mut photos = HashSet::new();
 
         let photo = {
-            let image_value = ImageValue::from_file("tests/data/photo.png").unwrap();
+            let image_value = ImageValue::from_file(PHOTO_PATH).unwrap();
 
             Photo::from_image_value(image_value)
         };

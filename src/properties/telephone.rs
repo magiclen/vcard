@@ -11,7 +11,7 @@ use super::super::parameters::media_type::MediaType;
 use super::super::Set;
 use super::*;
 
-use std::fmt::{self, Display, Formatter};
+use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -95,7 +95,7 @@ impl Property for Telephone {
                 fmt!(0, alternative_id);
                 fmt!(2, any);
 
-                f.write_str(":")?;
+                f.write_char(':')?;
 
                 Value::fmt(value, f)?;
             }

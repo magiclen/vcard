@@ -2,7 +2,7 @@ use super::super::values::Value;
 use super::super::values::geo_value::GeoValue;
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -29,7 +29,7 @@ impl Parameter for Geo {
 
         Value::fmt(&self.geo_value, f)?;
 
-        f.write_str("\"")?;
+        f.write_char('\"')?;
 
         Ok(())
     }

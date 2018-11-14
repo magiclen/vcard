@@ -5,7 +5,7 @@ use super::super::parameters::any::Any;
 use super::super::Set;
 use super::*;
 
-use std::fmt::{self, Display, Formatter};
+use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -36,7 +36,7 @@ impl Property for Version {
 
         fmt!(2, any);
 
-        f.write_str(":")?;
+        f.write_char(':')?;
 
         Value::fmt(&self.value, f)?;
 

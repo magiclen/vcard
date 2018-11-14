@@ -2,7 +2,7 @@ use super::super::values::Value;
 use super::super::values::time_zone_value::TimeZoneValue;
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -28,9 +28,9 @@ impl Parameter for TimeZone {
                 Value::fmt(&self.time_zone_value, f)?;
             }
             TimeZoneValue::URI(_) => {
-                f.write_str("\"")?;
+                f.write_char('\"')?;
                 Value::fmt(&self.time_zone_value, f)?;
-                f.write_str("\"")?;
+                f.write_char('\"')?;
             }
         }
 

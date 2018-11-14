@@ -1,6 +1,6 @@
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -45,7 +45,7 @@ impl Value for PropertyIDValue {
         f.write_fmt(format_args!("{}", self.d1))?;
 
         if let Some(d2) = self.d2 {
-            f.write_str(".")?;
+            f.write_char('.')?;
             f.write_fmt(format_args!("{}", d2))?;
         }
 

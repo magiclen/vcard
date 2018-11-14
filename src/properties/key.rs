@@ -9,7 +9,7 @@ use super::super::parameters::media_type::MediaType;
 use super::super::Set;
 use super::*;
 
-use std::fmt::{self, Display, Formatter};
+use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -56,7 +56,7 @@ impl Property for Key {
         if let KeyValue::Text(_) = self.value {
             f.write_str(";VALUE=text:")?;
         } else {
-            f.write_str(":")?;
+            f.write_char(':')?;
         }
 
         Value::fmt(&self.value, f)?;

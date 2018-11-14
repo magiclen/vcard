@@ -9,7 +9,7 @@ use super::super::parameters::language::Language;
 use super::super::Set;
 use super::*;
 
-use std::fmt::{self, Display, Formatter};
+use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -47,7 +47,7 @@ impl Property for Name {
             return Ok(());
         }
 
-        f.write_str("N")?;
+        f.write_char('N')?;
 
         macro_rules! fmt {
             ($c:tt, $p:ident) => {
@@ -61,7 +61,7 @@ impl Property for Name {
         fmt!(0, alternative_id);
         fmt!(2, any);
 
-        f.write_str(":")?;
+        f.write_char(':')?;
 
         Value::fmt(&self.value, f)?;
 

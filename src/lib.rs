@@ -1,10 +1,11 @@
-//! # VCard
-//!
-//! A pure Rust implementation of vCard based on RFC 6350.
-//!
-//! ## Example
-//! ```
 /*!
+# VCard
+
+A pure Rust implementation of vCard based on RFC 6350.
+
+## Example
+
+```rust,ignore
 extern crate vcard;
 
 use std::collections::HashSet;
@@ -80,7 +81,7 @@ let photos = {
     let mut photos = HashSet::new();
 
     let photo = {
-        let image_value = ImageValue::from_file("tests/data/photo.png").unwrap();
+        let image_value = ImageValue::from_file("photo.png").unwrap();
 
         Photo::from_image_value(image_value)
     };
@@ -373,8 +374,8 @@ println!("{}", vcard);
 //    X-SOCIALPROFILE;TYPE=facebook:https://www.facebook.com/david.vard.wang
 //    REV:20181106T000000Z
 //    END:VCARD
+```
 */
-//! ```
 
 #[macro_use]
 pub extern crate validators;

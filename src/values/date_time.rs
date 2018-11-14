@@ -1,6 +1,6 @@
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use chrono::prelude::*;
 use validators::{Validated, ValidatedWrapper};
@@ -215,7 +215,7 @@ impl Value for Date {
             }
             DateInner::YearMonth(year, month) => {
                 f.write_fmt(format_args!("{:04}", year))?;
-                f.write_str("-")?;
+                f.write_char('-')?;
                 f.write_fmt(format_args!("{:02}", month))?;
             }
             DateInner::Year(year) => {
@@ -501,7 +501,7 @@ impl Value for Time {
                 f.write_fmt(format_args!("{:02}", hour))?;
             }
             TimeInner::MinuteSecond(minute, second) => {
-                f.write_str("-")?;
+                f.write_char('-')?;
                 f.write_fmt(format_args!("{:02}", minute))?;
                 f.write_fmt(format_args!("{:02}", second))?;
             }
@@ -513,7 +513,7 @@ impl Value for Time {
                 f.write_fmt(format_args!("{:02}", hour))?;
                 f.write_fmt(format_args!("{:02}", minute))?;
                 f.write_fmt(format_args!("{:02}", second))?;
-                f.write_str("Z")?;
+                f.write_char('Z')?;
             }
             TimeInner::HourMinuteSecondZone(hour, minute, second, mut offset_minutes) => {
                 f.write_fmt(format_args!("{:02}", hour))?;
@@ -521,9 +521,9 @@ impl Value for Time {
                 f.write_fmt(format_args!("{:02}", second))?;
 
                 if offset_minutes >= 0 {
-                    f.write_str("+")?;
+                    f.write_char('+')?;
                 } else {
-                    f.write_str("-")?;
+                    f.write_char('-')?;
                     offset_minutes = -offset_minutes;
                 }
 
@@ -590,7 +590,7 @@ impl DateTime {
 impl Value for DateTime {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Value::fmt(&self.date, f)?;
-        f.write_str("T")?;
+        f.write_char('T')?;
         Value::fmt(&self.time, f)?;
 
         Ok(())
@@ -624,9 +624,9 @@ impl Value for UtcOffset {
         let mut offset_minutes = self.get_number();
 
         if offset_minutes >= 0 {
-            f.write_str("+")?;
+            f.write_char('+')?;
         } else {
-            f.write_str("-")?;
+            f.write_char('-')?;
             offset_minutes = -offset_minutes;
         }
 
@@ -922,7 +922,7 @@ impl Value for Timestamp {
         f.write_fmt(format_args!("{:02}", self.month))?;
         f.write_fmt(format_args!("{:02}", self.day))?;
 
-        f.write_str("T")?;
+        f.write_char('T')?;
 
         f.write_fmt(format_args!("{:02}", self.hour))?;
         f.write_fmt(format_args!("{:02}", self.minute))?;
@@ -930,12 +930,12 @@ impl Value for Timestamp {
 
         if let Some(mut offset_minutes) = self.offset_minutes {
             if offset_minutes > 0 {
-                f.write_str("+")?;
+                f.write_char('+')?;
             } else if offset_minutes < 0 {
-                f.write_str("-")?;
+                f.write_char('-')?;
                 offset_minutes = -offset_minutes;
             } else {
-                f.write_str("Z")?;
+                f.write_char('Z')?;
                 return Ok(());
             }
 

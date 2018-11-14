@@ -1,6 +1,7 @@
 pub use super::super::validators::http_ftp_url::HttpFtpUrlLocalableWithProtocol as URL;
 use super::*;
 
+use std::fmt::Write;
 use idna::domain_to_ascii;
 use validators::host::Host;
 
@@ -11,7 +12,7 @@ impl Value for URL {
         if self.is_absolute() {
             f.write_str("://")?;
         } else {
-            f.write_str(":")?;
+            f.write_char(':')?;
         }
 
         let host = self.get_host();
@@ -27,7 +28,7 @@ impl Value for URL {
             }
 
             if let Some(port) = domain.get_port() {
-                f.write_str(":")?;
+                f.write_char(':')?;
                 f.write_fmt(format_args!("{}", port))?;
             }
         } else {
@@ -39,12 +40,12 @@ impl Value for URL {
         }
 
         if let Some(query) = self.get_query() {
-            f.write_str("?")?;
+            f.write_char('?')?;
             f.write_str(&percent_encoding::utf8_percent_encode(query, percent_encoding::QUERY_ENCODE_SET).to_string())?;
         }
 
         if let Some(fragment) = self.get_fragment() {
-            f.write_str("#")?;
+            f.write_char('#')?;
             f.write_str(&percent_encoding::utf8_percent_encode(fragment, percent_encoding::QUERY_ENCODE_SET).to_string())?;
         }
 

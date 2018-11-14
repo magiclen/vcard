@@ -1,7 +1,7 @@
 use super::text::Component;
 use super::*;
 
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -92,16 +92,16 @@ impl Value for NameValue {
 
         fmt!(0, last_name);
 
-        f.write_str(";")?;
+        f.write_char(';')?;
         fmt!(0, first_name);
 
-        f.write_str(";")?;
+        f.write_char(';')?;
         fmt!(0, middle_name);
 
-        f.write_str(";")?;
+        f.write_char(';')?;
         fmt!(0, name_prefix);
 
-        f.write_str(";")?;
+        f.write_char(';')?;
         fmt!(0, name_suffix);
 
         Ok(())
