@@ -10,7 +10,7 @@ use validators::{Validated, ValidatedWrapper};
 use validators::base64::Base64;
 
 use base64_stream::ToBase64Reader;
-use mime_guess::Mime;
+use mime::Mime;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum AudioValueInner {
@@ -31,17 +31,13 @@ pub enum AudioValueError {
 }
 
 impl AudioValue {
-    pub fn from_base64(mime: Mime, base64: Base64) -> Result<AudioValue, AudioValueError> {
-        {
-            let Mime(top, ..) = &mime;
-
-            if top != "audio" {
-                return Err(AudioValueError::MediaTypeNotAudio);
-            }
+    pub fn from_base64(mime_type: Mime, base64: Base64) -> Result<AudioValue, AudioValueError> {
+        if mime_type.type_() != mime::AUDIO {
+            return Err(AudioValueError::MediaTypeNotAudio);
         }
 
         Ok(AudioValue {
-            inner: AudioValueInner::Base64(mime, base64)
+            inner: AudioValueInner::Base64(mime_type, base64)
         })
     }
 
@@ -55,30 +51,26 @@ impl AudioValue {
         Self::from_file_inner(path, None)
     }
 
-    pub fn from_file_with_mime<P: AsRef<Path>>(path: P, mime: Mime) -> Result<AudioValue, AudioValueError> {
-        Self::from_file_inner(path, Some(mime))
+    pub fn from_file_with_mime<P: AsRef<Path>>(path: P, mime_type: Mime) -> Result<AudioValue, AudioValueError> {
+        Self::from_file_inner(path, Some(mime_type))
     }
 
-    fn from_file_inner<P: AsRef<Path>>(path: P, mime: Option<Mime>) -> Result<AudioValue, AudioValueError> {
+    fn from_file_inner<P: AsRef<Path>>(path: P, mime_type: Option<Mime>) -> Result<AudioValue, AudioValueError> {
         let path = path.as_ref();
 
-        let mime = match mime {
+        let mime_type = match mime_type {
             Some(audio_type) => audio_type,
             None => {
                 match path.extension() {
                     Some(ext) => match ext.to_str() {
                         Some(ext) => {
-                            let mime = mime_guess::get_mime_type(ext);
+                            let mime_type = mime_guess::get_mime_type(ext);
 
-                            {
-                                let Mime(top, ..) = &mime;
-
-                                if top != "audio" {
-                                    return Err(AudioValueError::MediaTypeNotAudio);
-                                }
+                            if mime_type.type_() != mime::AUDIO {
+                                return Err(AudioValueError::MediaTypeNotAudio);
                             }
 
-                            mime
+                            mime_type
                         }
                         None => {
                             return Err(AudioValueError::FileMediaTypeCannotBeDefined);
@@ -101,7 +93,7 @@ impl AudioValue {
 
         let base64 = unsafe { Base64::from_string_unchecked(base64) };
 
-        Ok(AudioValue { inner: AudioValueInner::Base64(mime, base64) })
+        Ok(AudioValue { inner: AudioValueInner::Base64(mime_type, base64) })
     }
 }
 

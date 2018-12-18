@@ -10,7 +10,7 @@ use validators::{Validated, ValidatedWrapper};
 use validators::base64::Base64;
 
 use base64_stream::ToBase64Reader;
-use mime_guess::Mime;
+use mime::Mime;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum ImageValueInner {
@@ -31,17 +31,13 @@ pub enum ImageValueError {
 }
 
 impl ImageValue {
-    pub fn from_base64(mime: Mime, base64: Base64) -> Result<ImageValue, ImageValueError> {
-        {
-            let Mime(top, ..) = &mime;
-
-            if top != "image" {
-                return Err(ImageValueError::MediaTypeNotImage);
-            }
+    pub fn from_base64(mime_type: Mime, base64: Base64) -> Result<ImageValue, ImageValueError> {
+        if mime_type.type_() != mime::IMAGE {
+            return Err(ImageValueError::MediaTypeNotImage);
         }
 
         Ok(ImageValue {
-            inner: ImageValueInner::Base64(mime, base64)
+            inner: ImageValueInner::Base64(mime_type, base64)
         })
     }
 
@@ -55,30 +51,26 @@ impl ImageValue {
         Self::from_file_inner(path, None)
     }
 
-    pub fn from_file_with_mime<P: AsRef<Path>>(path: P, mime: Mime) -> Result<ImageValue, ImageValueError> {
-        Self::from_file_inner(path, Some(mime))
+    pub fn from_file_with_mime<P: AsRef<Path>>(path: P, mime_type: Mime) -> Result<ImageValue, ImageValueError> {
+        Self::from_file_inner(path, Some(mime_type))
     }
 
-    fn from_file_inner<P: AsRef<Path>>(path: P, mime: Option<Mime>) -> Result<ImageValue, ImageValueError> {
+    fn from_file_inner<P: AsRef<Path>>(path: P, mime_type: Option<Mime>) -> Result<ImageValue, ImageValueError> {
         let path = path.as_ref();
 
-        let mime = match mime {
+        let mime_type = match mime_type {
             Some(image_type) => image_type,
             None => {
                 match path.extension() {
                     Some(ext) => match ext.to_str() {
                         Some(ext) => {
-                            let mime = mime_guess::get_mime_type(ext);
+                            let mime_type = mime_guess::get_mime_type(ext);
 
-                            {
-                                let Mime(top, ..) = &mime;
-
-                                if top != "image" {
-                                    return Err(ImageValueError::MediaTypeNotImage);
-                                }
+                            if mime_type.type_() != mime::IMAGE {
+                                return Err(ImageValueError::MediaTypeNotImage);
                             }
 
-                            mime
+                            mime_type
                         }
                         None => {
                             return Err(ImageValueError::FileMediaTypeCannotBeDefined);
@@ -101,7 +93,7 @@ impl ImageValue {
 
         let base64 = unsafe { Base64::from_string_unchecked(base64) };
 
-        Ok(ImageValue { inner: ImageValueInner::Base64(mime, base64) })
+        Ok(ImageValue { inner: ImageValueInner::Base64(mime_type, base64) })
     }
 }
 

@@ -384,6 +384,7 @@ pub extern crate chrono_tz;
 #[macro_use]
 extern crate lazy_static;
 extern crate base64_stream;
+extern crate mime;
 extern crate mime_guess;
 extern crate percent_encoding;
 extern crate regex;
