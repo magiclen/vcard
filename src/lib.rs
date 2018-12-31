@@ -364,9 +364,9 @@ println!("{}", vcard);
 //    BDAY:19930707
 //    ADR;TYPE=home:;No.5;Section 5\, Xinyi Road\, Xinyi District;Taipei City;;110;Taiwan
 //    ADR;TYPE=work:;No.3;Beiping West Road\, Zhongzheng District;Taipei City;;100;Taiwan
-//    TEL;TYPE="voice,cell";VALUE=uri:tel:+886-987-654-321
-//    TEL;TYPE="voice,home";VALUE=uri:tel:+886-02-1234-5678
-//    TEL;TYPE="voice,work";VALUE=uri:tel:+886-02-8888-8888;ext=532
+//    TEL;TYPE="voice,cell";VALUE=uri:tel:886-987-654-321
+//    TEL;TYPE="voice,home";VALUE=uri:tel:886-02-1234-5678
+//    TEL;TYPE="voice,work";VALUE=uri:tel:886-02-8888-8888;ext=532
 //    EMAIL;TYPE=work:david@thaumaturgiclen.com
 //    EMAIL;TYPE=home:david@gmail.com
 //    PHOTO:data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAYAAAG0OVFdAAAABmJLR0...
