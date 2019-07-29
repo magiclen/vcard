@@ -2,7 +2,6 @@ vCard
 ====================
 
 [![Build Status](https://travis-ci.org/magiclen/vcard.svg?branch=master)](https://travis-ci.org/magiclen/vcard)
-[![Build status](https://ci.appveyor.com/api/projects/status/wak9p119ud8me6dc/branch/master?svg=true)](https://ci.appveyor.com/project/magiclen/vcard/branch/master)
 
 A pure Rust implementation of vCard based on RFC 6350.
 
