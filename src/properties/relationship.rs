@@ -1,14 +1,14 @@
-use super::super::values::Value;
-use super::super::values::uri::URI;
-use super::super::values::text::Text;
-use super::super::parameters::Parameter;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::preference::Preference;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
-use super::super::parameters::typ::TypeWithRelatedType;
-use super::super::parameters::media_type::MediaType;
 use super::super::parameters::language::Language;
+use super::super::parameters::media_type::MediaType;
+use super::super::parameters::preference::Preference;
+use super::super::parameters::property_id::PropertyID;
+use super::super::parameters::typ::TypeWithRelatedType;
+use super::super::parameters::Parameter;
+use super::super::values::text::Text;
+use super::super::values::uri::URI;
+use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
@@ -17,6 +17,7 @@ use std::fmt::{self, Display, Formatter, Write};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[allow(clippy::large_enum_variant)]
 pub enum Relationship {
     URI {
         typ: Option<TypeWithRelatedType>,
@@ -68,7 +69,11 @@ impl Relationship {
     }
 
     pub fn is_empty(&self) -> bool {
-        if let Relationship::Text { value, .. } = self {
+        if let Relationship::Text {
+            value,
+            ..
+        } = self
+        {
             return value.is_empty();
         }
 
@@ -91,7 +96,15 @@ impl Property for Relationship {
         }
 
         match self {
-            Relationship::URI { typ, media_type, property_id, preference, alternative_id, any, value } => {
+            Relationship::URI {
+                typ,
+                media_type,
+                property_id,
+                preference,
+                alternative_id,
+                any,
+                value,
+            } => {
                 fmt!(0, typ);
                 fmt!(0, media_type);
                 fmt!(0, property_id);
@@ -103,7 +116,15 @@ impl Property for Relationship {
 
                 Value::fmt(value, f)?;
             }
-            Relationship::Text { typ, language, property_id, preference, alternative_id, any, value } => {
+            Relationship::Text {
+                typ,
+                language,
+                property_id,
+                preference,
+                alternative_id,
+                any,
+                value,
+            } => {
                 fmt!(0, typ);
                 fmt!(0, language);
                 fmt!(0, property_id);

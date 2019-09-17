@@ -12,7 +12,9 @@ pub struct Label {
 
 impl Label {
     pub fn from_parameter_value(parameter_value: ParameterValue) -> Label {
-        Label { parameter_value }
+        Label {
+            parameter_value,
+        }
     }
 
     pub fn is_empty(&self) -> bool {

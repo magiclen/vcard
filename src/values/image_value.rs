@@ -2,12 +2,12 @@ use super::super::values::uri::URI;
 use super::*;
 
 use std::fmt::Display;
-use std::path::Path;
-use std::io::{self, Read};
 use std::fs::File;
+use std::io::{self, Read};
+use std::path::Path;
 
-use validators::{Validated, ValidatedWrapper};
 use validators::base64::Base64;
+use validators::{Validated, ValidatedWrapper};
 
 use base64_stream::ToBase64Reader;
 use mime::Mime;
@@ -20,7 +20,7 @@ enum ImageValueInner {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ImageValue {
-    inner: ImageValueInner
+    inner: ImageValueInner,
 }
 
 #[derive(Debug)]
@@ -30,6 +30,13 @@ pub enum ImageValueError {
     IOError(io::Error),
 }
 
+impl From<io::Error> for ImageValueError {
+    #[inline]
+    fn from(err: io::Error) -> Self {
+        ImageValueError::IOError(err)
+    }
+}
+
 impl ImageValue {
     pub fn from_base64(mime_type: Mime, base64: Base64) -> Result<ImageValue, ImageValueError> {
         if mime_type.type_() != mime::IMAGE {
@@ -37,13 +44,13 @@ impl ImageValue {
         }
 
         Ok(ImageValue {
-            inner: ImageValueInner::Base64(mime_type, base64)
+            inner: ImageValueInner::Base64(mime_type, base64),
         })
     }
 
     pub fn from_uri(uri: URI) -> ImageValue {
         ImageValue {
-            inner: ImageValueInner::URI(uri)
+            inner: ImageValueInner::URI(uri),
         }
     }
 
@@ -51,31 +58,39 @@ impl ImageValue {
         Self::from_file_inner(path, None)
     }
 
-    pub fn from_file_with_mime<P: AsRef<Path>>(path: P, mime_type: Mime) -> Result<ImageValue, ImageValueError> {
+    pub fn from_file_with_mime<P: AsRef<Path>>(
+        path: P,
+        mime_type: Mime,
+    ) -> Result<ImageValue, ImageValueError> {
         Self::from_file_inner(path, Some(mime_type))
     }
 
-    fn from_file_inner<P: AsRef<Path>>(path: P, mime_type: Option<Mime>) -> Result<ImageValue, ImageValueError> {
+    fn from_file_inner<P: AsRef<Path>>(
+        path: P,
+        mime_type: Option<Mime>,
+    ) -> Result<ImageValue, ImageValueError> {
         let path = path.as_ref();
 
         let mime_type = match mime_type {
             Some(image_type) => image_type,
             None => {
                 match path.extension() {
-                    Some(ext) => match ext.to_str() {
-                        Some(ext) => {
-                            let mime_type = mime_guess::get_mime_type(ext);
+                    Some(ext) => {
+                        match ext.to_str() {
+                            Some(ext) => {
+                                let mime_type = mime_guess::from_ext(ext).first_or_octet_stream();
 
-                            if mime_type.type_() != mime::IMAGE {
-                                return Err(ImageValueError::MediaTypeNotImage);
+                                if mime_type.type_() != mime::IMAGE {
+                                    return Err(ImageValueError::MediaTypeNotImage);
+                                }
+
+                                mime_type
                             }
-
-                            mime_type
+                            None => {
+                                return Err(ImageValueError::FileMediaTypeCannotBeDefined);
+                            }
                         }
-                        None => {
-                            return Err(ImageValueError::FileMediaTypeCannotBeDefined);
-                        }
-                    },
+                    }
                     None => {
                         return Err(ImageValueError::FileMediaTypeCannotBeDefined);
                     }
@@ -83,17 +98,19 @@ impl ImageValue {
             }
         };
 
-        let mut reader = ToBase64Reader::new(File::open(path).map_err(|err| ImageValueError::IOError(err))?);
+        let mut reader = ToBase64Reader::new(File::open(path)?);
 
         let mut base64_raw = Vec::new();
 
-        reader.read_to_end(&mut base64_raw).map_err(|err| ImageValueError::IOError(err))?;
+        reader.read_to_end(&mut base64_raw)?;
 
         let base64 = unsafe { String::from_utf8_unchecked(base64_raw) };
 
         let base64 = unsafe { Base64::from_string_unchecked(base64) };
 
-        Ok(ImageValue { inner: ImageValueInner::Base64(mime_type, base64) })
+        Ok(ImageValue {
+            inner: ImageValueInner::Base64(mime_type, base64),
+        })
     }
 }
 

@@ -1,15 +1,15 @@
-use super::super::values::Value;
-use super::super::values::address_value::AddressValue;
-use super::super::parameters::Parameter;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::preference::Preference;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
+use super::super::parameters::geo::Geo;
 use super::super::parameters::label::Label;
 use super::super::parameters::language::Language;
-use super::super::parameters::geo::Geo;
+use super::super::parameters::preference::Preference;
+use super::super::parameters::property_id::PropertyID;
 use super::super::parameters::time_zone::TimeZone;
 use super::super::parameters::typ::Type;
+use super::super::parameters::Parameter;
+use super::super::values::address_value::AddressValue;
+use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
@@ -44,7 +44,7 @@ impl Address {
             preference: None,
             alternative_id: None,
             any: None,
-            value: address_value
+            value: address_value,
         }
     }
 

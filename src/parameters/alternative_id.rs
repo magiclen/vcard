@@ -12,7 +12,9 @@ pub struct AlternativeID {
 
 impl AlternativeID {
     pub fn from_parameter_value(parameter_value: ParameterValue) -> AlternativeID {
-        AlternativeID { parameter_value }
+        AlternativeID {
+            parameter_value,
+        }
     }
 }
 

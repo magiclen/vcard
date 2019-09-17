@@ -15,9 +15,7 @@ pub enum ProductIDValue {
 impl ProductIDValue {
     pub fn is_empty(&self) -> bool {
         match self {
-            ProductIDValue::Text(t) => {
-                t.is_empty()
-            }
+            ProductIDValue::Text(t) => t.is_empty(),
         }
     }
 }

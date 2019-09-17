@@ -1,10 +1,10 @@
-use super::super::values::Value;
-use super::super::values::date_time::*;
-use super::super::values::text::Text;
-use super::super::parameters::Parameter;
-use super::super::parameters::calscale::Calscale;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
+use super::super::parameters::calscale::Calscale;
+use super::super::parameters::Parameter;
+use super::super::values::date_time::*;
+use super::super::values::text::Text;
+use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
@@ -60,7 +60,11 @@ impl Anniversary {
     }
 
     pub fn is_empty(&self) -> bool {
-        if let Anniversary::Text { value, .. } = self {
+        if let Anniversary::Text {
+            value,
+            ..
+        } = self
+        {
             return value.is_empty();
         }
 
@@ -83,7 +87,12 @@ impl Property for Anniversary {
         }
 
         match self {
-            Anniversary::DateOrDateTime { calscale, alternative_id, any, value } => {
+            Anniversary::DateOrDateTime {
+                calscale,
+                alternative_id,
+                any,
+                value,
+            } => {
                 fmt!(0, calscale);
                 fmt!(0, alternative_id);
                 fmt!(2, any);
@@ -92,7 +101,11 @@ impl Property for Anniversary {
 
                 Value::fmt(value, f)?;
             }
-            Anniversary::DateAndOrTime { alternative_id, any, value } => {
+            Anniversary::DateAndOrTime {
+                alternative_id,
+                any,
+                value,
+            } => {
                 fmt!(0, alternative_id);
                 fmt!(2, any);
 
@@ -100,7 +113,11 @@ impl Property for Anniversary {
 
                 Value::fmt(value, f)?;
             }
-            Anniversary::Text { alternative_id, any, value } => {
+            Anniversary::Text {
+                alternative_id,
+                any,
+                value,
+            } => {
                 fmt!(0, alternative_id);
                 fmt!(2, any);
 

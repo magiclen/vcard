@@ -26,7 +26,10 @@ impl PropertyIDValue {
             }
         }
 
-        Ok(PropertyIDValue { d1, d2 })
+        Ok(PropertyIDValue {
+            d1,
+            d2,
+        })
     }
 }
 

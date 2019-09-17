@@ -13,7 +13,9 @@ pub struct Preference {
 
 impl Preference {
     pub fn from_preference_value(preference_value: PreferenceValue) -> Preference {
-        Preference { preference_value }
+        Preference {
+            preference_value,
+        }
     }
 }
 

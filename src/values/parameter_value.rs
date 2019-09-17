@@ -2,6 +2,7 @@ use super::super::{QSAFE_RE, SAFE_RE};
 use super::*;
 
 use std::fmt::{Display, Write};
+use std::str::FromStr;
 
 use validators::{Validated, ValidatedWrapper};
 
@@ -18,6 +19,7 @@ pub enum ParameterValueError {
 }
 
 impl ParameterValue {
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(text: &str) -> Result<ParameterValue, ParameterValueError> {
         let qsafe = if !SAFE_RE.is_match(text) {
             if QSAFE_RE.is_match(text) {
@@ -29,7 +31,7 @@ impl ParameterValue {
             false
         };
 
-        let comma = text.contains(",");
+        let comma = text.contains(',');
 
         Ok(ParameterValue {
             qsafe,
@@ -49,9 +51,13 @@ impl ParameterValue {
             false
         };
 
-        let comma = text.contains(",");
+        let comma = text.contains(',');
 
-        Ok(ParameterValue { qsafe, comma, text })
+        Ok(ParameterValue {
+            qsafe,
+            comma,
+            text,
+        })
     }
 
     pub fn is_empty(&self) -> bool {
@@ -62,6 +68,15 @@ impl ParameterValue {
 impl ParameterValue {
     pub fn get_text(&self) -> &str {
         &self.text
+    }
+}
+
+impl FromStr for ParameterValue {
+    type Err = ParameterValueError;
+
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        ParameterValue::from_str(s)
     }
 }
 
@@ -105,7 +120,7 @@ impl ValidatedWrapper for ParameterValue {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ParameterValues {
-    parameter_values: Set<ParameterValue>
+    parameter_values: Set<ParameterValue>,
 }
 
 impl ParameterValues {
@@ -163,7 +178,6 @@ impl Value for ParameterValues {
         }
 
         let v = self.parameter_values.as_hash_set();
-
 
         if self.has_multiple_non_empty_values() {
             f.write_char('\"')?;

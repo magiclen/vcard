@@ -1,5 +1,5 @@
-use super::super::values::Value;
 use super::super::values::geo_value::GeoValue;
+use super::super::values::Value;
 use super::*;
 
 use std::fmt::{Display, Write};
@@ -8,12 +8,14 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Geo {
-    geo_value: GeoValue
+    geo_value: GeoValue,
 }
 
 impl Geo {
     pub fn from_geo_value(geo_value: GeoValue) -> Geo {
-        Geo { geo_value }
+        Geo {
+            geo_value,
+        }
     }
 }
 

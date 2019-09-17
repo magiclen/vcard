@@ -1,4 +1,5 @@
 use super::*;
+use crate::PATH_PERCENT_ENCODE_SET;
 
 use std::fmt::{Display, Write};
 
@@ -23,7 +24,10 @@ impl AttributeValue {
         })
     }
 
-    pub fn from_string(attribute: String, value: String) -> Result<AttributeValue, AttributeValueError> {
+    pub fn from_string(
+        attribute: String,
+        value: String,
+    ) -> Result<AttributeValue, AttributeValueError> {
         Ok(AttributeValue {
             attribute,
             value,
@@ -39,6 +43,7 @@ impl AttributeValue {
     pub fn get_attribute(&self) -> &str {
         &self.attribute
     }
+
     pub fn value(&self) -> &str {
         &self.value
     }
@@ -50,9 +55,18 @@ impl Value for AttributeValue {
             return Ok(());
         }
         f.write_char(';')?;
-        f.write_str(&percent_encoding::utf8_percent_encode(self.attribute.as_str(), percent_encoding::QUERY_ENCODE_SET).to_string())?;
+        f.write_str(
+            &percent_encoding::utf8_percent_encode(
+                self.attribute.as_str(),
+                PATH_PERCENT_ENCODE_SET,
+            )
+            .to_string(),
+        )?;
         f.write_char('=')?;
-        f.write_str(&percent_encoding::utf8_percent_encode(self.value.as_str(), percent_encoding::QUERY_ENCODE_SET).to_string())?;
+        f.write_str(
+            &percent_encoding::utf8_percent_encode(self.value.as_str(), PATH_PERCENT_ENCODE_SET)
+                .to_string(),
+        )?;
 
         Ok(())
     }

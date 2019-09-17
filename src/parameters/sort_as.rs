@@ -12,7 +12,9 @@ pub struct SortAs {
 
 impl SortAs {
     pub fn from_parameter_values(parameter_values: ParameterValues) -> SortAs {
-        SortAs { parameter_values }
+        SortAs {
+            parameter_values,
+        }
     }
 
     pub fn is_empty(&self) -> bool {

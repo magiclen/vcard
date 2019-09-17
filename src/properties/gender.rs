@@ -1,7 +1,7 @@
-use super::super::values::Value;
-use super::super::values::gender_value::GenderValue;
-use super::super::parameters::Parameter;
 use super::super::parameters::any::Any;
+use super::super::parameters::Parameter;
+use super::super::values::gender_value::GenderValue;
+use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
@@ -30,7 +30,7 @@ impl Gender {
 
 impl Property for Gender {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        if self.is_empty(){
+        if self.is_empty() {
             return Ok(());
         }
 

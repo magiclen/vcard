@@ -6,7 +6,7 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum VersionValue {
-    V4P0
+    V4P0,
 }
 
 impl VersionValue {

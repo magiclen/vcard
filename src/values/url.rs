@@ -1,8 +1,9 @@
 pub use super::super::validators::http_ftp_url::HttpFtpUrlLocalableWithProtocol as URL;
 use super::*;
+use crate::PATH_PERCENT_ENCODE_SET;
 
-use std::fmt::Write;
 use idna::domain_to_ascii;
+use std::fmt::Write;
 use validators::host::Host;
 
 impl Value for URL {
@@ -36,17 +37,24 @@ impl Value for URL {
         }
 
         if let Some(path) = self.get_path() {
-            f.write_str(&percent_encoding::utf8_percent_encode(path, percent_encoding::DEFAULT_ENCODE_SET).to_string())?;
+            f.write_str(
+                &percent_encoding::utf8_percent_encode(path, PATH_PERCENT_ENCODE_SET).to_string(),
+            )?;
         }
 
         if let Some(query) = self.get_query() {
             f.write_char('?')?;
-            f.write_str(&percent_encoding::utf8_percent_encode(query, percent_encoding::QUERY_ENCODE_SET).to_string())?;
+            f.write_str(
+                &percent_encoding::utf8_percent_encode(query, PATH_PERCENT_ENCODE_SET).to_string(),
+            )?;
         }
 
         if let Some(fragment) = self.get_fragment() {
             f.write_char('#')?;
-            f.write_str(&percent_encoding::utf8_percent_encode(fragment, percent_encoding::QUERY_ENCODE_SET).to_string())?;
+            f.write_str(
+                &percent_encoding::utf8_percent_encode(fragment, PATH_PERCENT_ENCODE_SET)
+                    .to_string(),
+            )?;
         }
 
         Ok(())

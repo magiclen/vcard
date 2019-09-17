@@ -1,12 +1,12 @@
-use super::super::values::Value;
-use super::super::values::time_zone_value::TimeZoneValue;
-use super::super::parameters::Parameter;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::preference::Preference;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
-use super::super::parameters::typ::Type;
 use super::super::parameters::media_type::MediaType;
+use super::super::parameters::preference::Preference;
+use super::super::parameters::property_id::PropertyID;
+use super::super::parameters::typ::Type;
+use super::super::parameters::Parameter;
+use super::super::values::time_zone_value::TimeZoneValue;
+use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
@@ -57,9 +57,9 @@ impl Property for TimeZone {
         fmt!(0, alternative_id);
         fmt!(2, any);
 
-        if let TimeZoneValue::URI(_) = self.value{
+        if let TimeZoneValue::URI(_) = self.value {
             f.write_str(";VALUE=uri:")?;
-        }else{
+        } else {
             f.write_char(':')?;
         }
 

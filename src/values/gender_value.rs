@@ -15,7 +15,7 @@ pub enum SexType {
 }
 
 impl SexType {
-    pub fn get_str(&self) -> &'static str {
+    pub fn get_str(self) -> &'static str {
         match self {
             SexType::Male => "M",
             SexType::Female => "F",
@@ -37,7 +37,6 @@ impl GenderValue {
         GenderValue {
             sex_type,
             gender_identity,
-
         }
     }
 

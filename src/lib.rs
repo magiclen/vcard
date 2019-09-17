@@ -377,6 +377,8 @@ println!("{}", vcard);
 ```
 */
 
+#![allow(clippy::trivial_regex)]
+
 #[macro_use]
 pub extern crate validators;
 pub extern crate chrono;
@@ -384,29 +386,33 @@ pub extern crate chrono_tz;
 #[macro_use]
 extern crate lazy_static;
 extern crate base64_stream;
+extern crate idna;
 extern crate mime;
 extern crate mime_guess;
 extern crate percent_encoding;
 extern crate regex;
-extern crate idna;
 
 macro_rules! fmt_gg {
-    (0, $t:ident, $p:expr, $f:ident) => { // *1
+    (0, $t:ident, $p:expr, $f:ident) => {
+        // *1
         if let Some(p) = &$p {
             $t::fmt(p, $f)?;
         }
     };
-    (1, $t:ident, $p:expr, $f:ident) => { // 1
+    (1, $t:ident, $p:expr, $f:ident) => {
+        // 1
         $t::fmt(&$p, $f)?;
     };
-    (2, $t:ident, $p:expr, $f:ident) => { // *
+    (2, $t:ident, $p:expr, $f:ident) => {
+        // *
         if let Some(p) = &$p {
             for e in p.as_hash_set() {
                 $t::fmt(e, $f)?;
             }
         }
     };
-    (3, $t:ident, $p:expr, $f:ident) => { // 1*
+    (3, $t:ident, $p:expr, $f:ident) => {
+        // 1*
         for e in $p.as_hash_set() {
             $t::fmt(e, $f)?;
         }
@@ -421,13 +427,13 @@ macro_rules! fmt_g {
 
 mod escaping;
 pub mod parameters;
-pub mod values;
 pub mod properties;
+pub mod values;
 
-use std::fmt::{self, Display, Formatter};
 use std::collections::HashSet;
-use std::io;
+use std::fmt::{self, Display, Formatter};
 use std::fs;
+use std::io;
 use std::path::Path;
 
 use regex::Regex;
@@ -436,9 +442,17 @@ use validators::ValidatedCustomizedStringError;
 use self::properties::*;
 
 pub use mime_guess::Mime;
+use percent_encoding::{AsciiSet, CONTROLS};
+
+const FRAGMENT_PERCENT_ENCODE_SET: &AsciiSet =
+    &CONTROLS.add(b' ').add(b'"').add(b'<').add(b'>').add(b'`');
+
+const PATH_PERCENT_ENCODE_SET: &AsciiSet =
+    &FRAGMENT_PERCENT_ENCODE_SET.add(b'#').add(b'?').add(b'{').add(b'}');
 
 lazy_static! {
-    static ref TEXT_RE: Regex = { Regex::new(r"^([^\x00-\x08\x0A-\x1F\x7F]|\n\r|\r\n|\n)*$").unwrap() };
+    static ref TEXT_RE: Regex =
+        { Regex::new(r"^([^\x00-\x08\x0A-\x1F\x7F]|\n\r|\r\n|\n)*$").unwrap() };
     static ref SAFE_RE: Regex = { Regex::new(r"^[^\x00-\x1F\x22\x3A\x3B\x7F]*$").unwrap() };
     static ref QSAFE_RE: Regex = { Regex::new(r"^[^\x00-\x1F\x22\x7F]*$").unwrap() };
     static ref IANA_TOKEN_RE: Regex = { Regex::new(r"^[a-zA-Z0-9\-]+$").unwrap() };
@@ -498,6 +512,13 @@ pub enum VCardError {
     EmptyFormatName,
 }
 
+impl From<ValidatedCustomizedStringError> for VCardError {
+    #[inline]
+    fn from(err: ValidatedCustomizedStringError) -> Self {
+        VCardError::FormatError(err)
+    }
+}
+
 impl VCard {
     pub fn from_formatted_names(formatted_names: Set<FormattedName>) -> Result<VCard, VCardError> {
         let mut has_formatted_names = false;
@@ -517,7 +538,9 @@ impl VCard {
 
         Ok(VCard {
             begin: properties::Begin,
-            version: properties::Version::from_version_value(values::version_value::VersionValue::V4P0),
+            version: properties::Version::from_version_value(
+                values::version_value::VersionValue::V4P0,
+            ),
             formatted_names,
             names: None,
             nicknames: None,
@@ -564,14 +587,14 @@ impl VCard {
     }
 
     pub fn from_formatted_name_string(formatted_name: String) -> Result<VCard, VCardError> {
-        let text = values::text::Text::from_string(formatted_name).map_err(|err| VCardError::FormatError(err))?;
+        let text = values::text::Text::from_string(formatted_name)?;
         let formatted_name = FormattedName::from_text(text);
 
         Self::from_formatted_name(formatted_name)
     }
 
     pub fn from_formatted_name_str(formatted_name: &str) -> Result<VCard, VCardError> {
-        let text = values::text::Text::from_str(formatted_name).map_err(|err| VCardError::FormatError(err))?;
+        let text = values::text::Text::from_str(formatted_name)?;
         let formatted_name = FormattedName::from_text(text);
 
         Self::from_formatted_name(formatted_name)
@@ -585,6 +608,7 @@ impl VCard {
 }
 
 impl Display for VCard {
+    #[allow(clippy::cognitive_complexity)]
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         macro_rules! fmt {
             ($c:tt, $p:ident) => {

@@ -17,7 +17,15 @@ pub struct AddressValue {
 }
 
 impl AddressValue {
-    pub fn from_components(post_office_box: Option<Component>, extension: Option<Component>, street: Option<Component>, locality: Option<Component>, region: Option<Component>, code: Option<Component>, country: Option<Component>) -> AddressValue {
+    pub fn from_components(
+        post_office_box: Option<Component>,
+        extension: Option<Component>,
+        street: Option<Component>,
+        locality: Option<Component>,
+        region: Option<Component>,
+        code: Option<Component>,
+        country: Option<Component>,
+    ) -> AddressValue {
         AddressValue {
             post_office_box,
             extension,

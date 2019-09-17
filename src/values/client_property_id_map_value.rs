@@ -24,20 +24,32 @@ pub enum ClientPropertyIDMapValueError {
 }
 
 impl ClientPropertyIDMapValue {
-    pub fn from_u8_with_uri(d1: u8, uri: URI) -> Result<ClientPropertyIDMapValue, ClientPropertyIDMapValueError> {
+    pub fn from_u8_with_uri(
+        d1: u8,
+        uri: URI,
+    ) -> Result<ClientPropertyIDMapValue, ClientPropertyIDMapValueError> {
         if d1 > 9 {
             return Err(ClientPropertyIDMapValueError::OutOfRange);
         }
 
-        Ok(ClientPropertyIDMapValue { d1, inner: ClientPropertyIDMapValueInner::URI(uri) })
+        Ok(ClientPropertyIDMapValue {
+            d1,
+            inner: ClientPropertyIDMapValueInner::URI(uri),
+        })
     }
 
-    pub fn from_u8_with_uuid(d1: u8, uuid: UUID) -> Result<ClientPropertyIDMapValue, ClientPropertyIDMapValueError> {
+    pub fn from_u8_with_uuid(
+        d1: u8,
+        uuid: UUID,
+    ) -> Result<ClientPropertyIDMapValue, ClientPropertyIDMapValueError> {
         if d1 > 9 {
             return Err(ClientPropertyIDMapValueError::OutOfRange);
         }
 
-        Ok(ClientPropertyIDMapValue { d1, inner: ClientPropertyIDMapValueInner::UUID(uuid) })
+        Ok(ClientPropertyIDMapValue {
+            d1,
+            inner: ClientPropertyIDMapValueInner::UUID(uuid),
+        })
     }
 }
 

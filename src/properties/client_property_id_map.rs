@@ -1,7 +1,7 @@
-use super::super::values::Value;
-use super::super::values::client_property_id_map_value::ClientPropertyIDMapValue;
-use super::super::parameters::Parameter;
 use super::super::parameters::any::Any;
+use super::super::parameters::Parameter;
+use super::super::values::client_property_id_map_value::ClientPropertyIDMapValue;
+use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
@@ -16,7 +16,9 @@ pub struct ClientPropertyIDMap {
 }
 
 impl ClientPropertyIDMap {
-    pub fn from_client_property_id_map_value(client_property_id_map_value: ClientPropertyIDMapValue) -> ClientPropertyIDMap {
+    pub fn from_client_property_id_map_value(
+        client_property_id_map_value: ClientPropertyIDMapValue,
+    ) -> ClientPropertyIDMap {
         ClientPropertyIDMap {
             any: None,
             value: client_property_id_map_value,

@@ -15,7 +15,13 @@ pub struct NameValue {
 }
 
 impl NameValue {
-    pub fn from_components(last_name: Option<Component>, first_name: Option<Component>, middle_name: Option<Component>, name_prefix: Option<Component>, name_suffix: Option<Component>) -> NameValue {
+    pub fn from_components(
+        last_name: Option<Component>,
+        first_name: Option<Component>,
+        middle_name: Option<Component>,
+        name_prefix: Option<Component>,
+        name_suffix: Option<Component>,
+    ) -> NameValue {
         NameValue {
             last_name,
             first_name,

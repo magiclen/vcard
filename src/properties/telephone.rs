@@ -1,13 +1,13 @@
-use super::super::values::Value;
-use super::super::values::telephone_value::TelephoneValue;
-use super::super::values::text::Text;
-use super::super::parameters::Parameter;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::preference::Preference;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
-use super::super::parameters::typ::TypeWithTelType;
 use super::super::parameters::media_type::MediaType;
+use super::super::parameters::preference::Preference;
+use super::super::parameters::property_id::PropertyID;
+use super::super::parameters::typ::TypeWithTelType;
+use super::super::parameters::Parameter;
+use super::super::values::telephone_value::TelephoneValue;
+use super::super::values::text::Text;
+use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
@@ -16,6 +16,7 @@ use std::fmt::{self, Display, Formatter, Write};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[allow(clippy::large_enum_variant)]
 pub enum Telephone {
     Text {
         typ: Option<TypeWithTelType>,
@@ -65,7 +66,11 @@ impl Telephone {
     }
 
     pub fn is_empty(&self) -> bool {
-        if let Telephone::Text { value, .. } = self {
+        if let Telephone::Text {
+            value,
+            ..
+        } = self
+        {
             return value.is_empty();
         }
 
@@ -88,7 +93,14 @@ impl Property for Telephone {
         }
 
         match self {
-            Telephone::Text { typ, property_id, preference, alternative_id, any, value } => {
+            Telephone::Text {
+                typ,
+                property_id,
+                preference,
+                alternative_id,
+                any,
+                value,
+            } => {
                 fmt!(0, typ);
                 fmt!(0, property_id);
                 fmt!(0, preference);
@@ -99,7 +111,15 @@ impl Property for Telephone {
 
                 Value::fmt(value, f)?;
             }
-            Telephone::TelephoneValue { typ, media_type, property_id, preference, alternative_id, any, value } => {
+            Telephone::TelephoneValue {
+                typ,
+                media_type,
+                property_id,
+                preference,
+                alternative_id,
+                any,
+                value,
+            } => {
                 fmt!(0, typ);
                 fmt!(0, media_type);
                 fmt!(0, property_id);

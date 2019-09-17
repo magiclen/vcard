@@ -1,4 +1,6 @@
-use super::super::values::type_value::{TypeValue, TypeValueWithTelephoneType, TypeValueWithRelatedType};
+use super::super::values::type_value::{
+    TypeValue, TypeValueWithRelatedType, TypeValueWithTelephoneType,
+};
 use super::super::values::Value;
 use super::super::Set;
 use super::*;
@@ -14,7 +16,9 @@ pub struct Type {
 
 impl Type {
     pub fn from_type_values(type_values: Set<TypeValue>) -> Type {
-        Type { type_values }
+        Type {
+            type_values,
+        }
     }
 }
 
@@ -71,7 +75,9 @@ pub struct TypeWithTelType {
 
 impl TypeWithTelType {
     pub fn from_type_values(type_values: Set<TypeValueWithTelephoneType>) -> TypeWithTelType {
-        TypeWithTelType { type_values }
+        TypeWithTelType {
+            type_values,
+        }
     }
 }
 
@@ -128,7 +134,9 @@ pub struct TypeWithRelatedType {
 
 impl TypeWithRelatedType {
     pub fn from_type_values(type_values: Set<TypeValueWithRelatedType>) -> TypeWithRelatedType {
-        TypeWithRelatedType { type_values }
+        TypeWithRelatedType {
+            type_values,
+        }
     }
 }
 

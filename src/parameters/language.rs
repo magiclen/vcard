@@ -12,7 +12,9 @@ pub struct Language {
 
 impl Language {
     pub fn from_language_tag(language_tag: LanguageTag) -> Language {
-        Language { language_tag }
+        Language {
+            language_tag,
+        }
     }
 }
 

@@ -14,7 +14,9 @@ pub struct PropertyID {
 
 impl PropertyID {
     pub fn from_ids(ids: Set<PropertyIDValue>) -> PropertyID {
-        PropertyID { ids }
+        PropertyID {
+            ids,
+        }
     }
 }
 

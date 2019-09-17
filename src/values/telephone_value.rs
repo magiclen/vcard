@@ -5,7 +5,7 @@ use std::fmt::Display;
 
 use regex::Regex;
 
-use validators::{Validated, ValidatedWrapper, ValidatedCustomizedPhoneNumberError};
+use validators::{Validated, ValidatedCustomizedPhoneNumberError, ValidatedWrapper};
 
 lazy_static! {
     static ref TEL_EXTENSION_RE: Regex = { Regex::new(r"^[\-0-9]+$").unwrap() };
@@ -37,7 +37,10 @@ impl TelephoneValue {
         let extension = match extension {
             Some(extension) => {
                 let extension = SPACES_RE.replace_all(extension.as_ref(), "-");
-                Some(TelephoneExtension::from_str(extension.as_ref()).map_err(|_| ValidatedCustomizedPhoneNumberError::IncorrectFormat)?)
+                Some(
+                    TelephoneExtension::from_str(extension.as_ref())
+                        .map_err(|_| ValidatedCustomizedPhoneNumberError::IncorrectFormat)?,
+                )
             }
             None => None,
         };
@@ -55,7 +58,10 @@ impl Value for TelephoneValue {
             TelephoneValue::URI(uri) => {
                 Value::fmt(uri, f)?;
             }
-            TelephoneValue::TelephoneNumber { telephone_number, extension } => {
+            TelephoneValue::TelephoneNumber {
+                telephone_number,
+                extension,
+            } => {
                 f.write_fmt(format_args!("tel:{}", telephone_number))?;
                 if let Some(extension) = extension {
                     f.write_str(";ext=")?;

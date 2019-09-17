@@ -1,11 +1,11 @@
-use super::super::values::Value;
-use super::super::values::name_value::NameValue;
-use super::super::parameters::Parameter;
-use super::super::parameters::property_id::PropertyID;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
-use super::super::parameters::sort_as::SortAs;
 use super::super::parameters::language::Language;
+use super::super::parameters::property_id::PropertyID;
+use super::super::parameters::sort_as::SortAs;
+use super::super::parameters::Parameter;
+use super::super::values::name_value::NameValue;
+use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
@@ -32,7 +32,7 @@ impl Name {
             property_id: None,
             alternative_id: None,
             any: None,
-            value: name_value
+            value: name_value,
         }
     }
 

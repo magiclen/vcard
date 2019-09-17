@@ -1,4 +1,5 @@
 use super::*;
+use crate::PATH_PERCENT_ENCODE_SET;
 
 use regex::Regex;
 
@@ -12,7 +13,10 @@ validated_customized_regex_string!(pub LanguageTag, ref LANGUAGE_TAG_RE);
 
 impl Value for LanguageTag {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        f.write_str(&percent_encoding::utf8_percent_encode(self.as_str(), percent_encoding::DEFAULT_ENCODE_SET).to_string())?;
+        f.write_str(
+            &percent_encoding::utf8_percent_encode(self.as_str(), PATH_PERCENT_ENCODE_SET)
+                .to_string(),
+        )?;
 
         Ok(())
     }

@@ -1,11 +1,11 @@
-use super::super::values::Value;
-use super::super::values::date_time::*;
-use super::super::values::text::Text;
-use super::super::parameters::Parameter;
-use super::super::parameters::calscale::Calscale;
 use super::super::parameters::alternative_id::AlternativeID;
 use super::super::parameters::any::Any;
+use super::super::parameters::calscale::Calscale;
 use super::super::parameters::language::Language;
+use super::super::parameters::Parameter;
+use super::super::values::date_time::*;
+use super::super::values::text::Text;
+use super::super::values::Value;
 use super::super::Set;
 use super::*;
 
@@ -64,7 +64,11 @@ impl Birthday {
     }
 
     pub fn is_empty(&self) -> bool {
-        if let Birthday::Text { value, .. } = self {
+        if let Birthday::Text {
+            value,
+            ..
+        } = self
+        {
             return value.is_empty();
         }
 
@@ -87,7 +91,12 @@ impl Property for Birthday {
         }
 
         match self {
-            Birthday::DateOrDateTime { calscale, alternative_id, any, value } => {
+            Birthday::DateOrDateTime {
+                calscale,
+                alternative_id,
+                any,
+                value,
+            } => {
                 fmt!(0, calscale);
                 fmt!(0, alternative_id);
                 fmt!(2, any);
@@ -96,7 +105,11 @@ impl Property for Birthday {
 
                 Value::fmt(value, f)?;
             }
-            Birthday::DateAndOrTime { alternative_id, any, value } => {
+            Birthday::DateAndOrTime {
+                alternative_id,
+                any,
+                value,
+            } => {
                 fmt!(0, alternative_id);
                 fmt!(2, any);
 
@@ -104,7 +117,12 @@ impl Property for Birthday {
 
                 Value::fmt(value, f)?;
             }
-            Birthday::Text { language, alternative_id, any, value } => {
+            Birthday::Text {
+                language,
+                alternative_id,
+                any,
+                value,
+            } => {
                 fmt!(0, language);
                 fmt!(0, alternative_id);
                 fmt!(2, any);

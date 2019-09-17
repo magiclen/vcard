@@ -1,5 +1,5 @@
-use super::super::values::Value;
 use super::super::values::time_zone_value::TimeZoneValue;
+use super::super::values::Value;
 use super::*;
 
 use std::fmt::{Display, Write};
@@ -8,13 +8,13 @@ use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct TimeZone {
-    time_zone_value: TimeZoneValue
+    time_zone_value: TimeZoneValue,
 }
 
 impl TimeZone {
     pub fn from_time_zone_value(time_zone_value: TimeZoneValue) -> TimeZone {
         TimeZone {
-            time_zone_value
+            time_zone_value,
         }
     }
 }

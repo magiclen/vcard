@@ -11,7 +11,9 @@ pub struct Boolean {
 
 impl Boolean {
     pub fn from_bool(b: bool) -> Boolean {
-        Boolean { boolean: b }
+        Boolean {
+            boolean: b,
+        }
     }
 }
 

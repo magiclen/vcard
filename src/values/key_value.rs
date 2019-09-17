@@ -1,5 +1,5 @@
-use super::uri::URI;
 use super::text::Text;
+use super::uri::URI;
 use super::*;
 
 use std::fmt::Display;

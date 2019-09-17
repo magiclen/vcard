@@ -1,5 +1,5 @@
-use super::super::values::Value;
 use super::super::values::calscale_value::CalscaleValue;
+use super::super::values::Value;
 use super::Parameter;
 
 use std::fmt::{self, Display, Formatter};
@@ -13,7 +13,9 @@ pub struct Calscale {
 
 impl Calscale {
     pub fn from_calscale_value(calscale_value: CalscaleValue) -> Calscale {
-        Calscale { calscale_value }
+        Calscale {
+            calscale_value,
+        }
     }
 }
 

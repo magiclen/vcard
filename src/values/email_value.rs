@@ -1,5 +1,5 @@
-pub use super::super::validators::email::Email as EmailValue;
 use super::super::escaping::*;
+pub use super::super::validators::email::Email as EmailValue;
 use super::*;
 
 impl Value for EmailValue {

@@ -13,7 +13,9 @@ pub struct Value {
 
 impl Value {
     pub fn from_value_type(value_type: ValueType) -> Value {
-        Value { value_type }
+        Value {
+            value_type,
+        }
     }
 }
 

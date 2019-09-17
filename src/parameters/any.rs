@@ -1,7 +1,7 @@
-use super::super::{IanaToken, XName};
-use super::super::values::Value;
 use super::super::values::parameter_value::ParameterValues;
+use super::super::values::Value;
 use super::super::Set;
+use super::super::{IanaToken, XName};
 use super::Parameter;
 
 use std::fmt::{self, Display, Formatter, Write};
@@ -9,7 +9,7 @@ use std::hash::{Hash, Hasher};
 
 use validators::{Validated, ValidatedWrapper};
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq)]
 pub enum Any {
     IanaToken(IanaToken, ParameterValues),
     XName(XName, ParameterValues),
@@ -18,12 +18,8 @@ pub enum Any {
 impl Any {
     pub fn is_empty(&self) -> bool {
         match self {
-            Any::IanaToken(_, v) => {
-                v.is_empty()
-            }
-            Any::XName(_, v) => {
-                v.is_empty()
-            }
+            Any::IanaToken(_, v) => v.is_empty(),
+            Any::XName(_, v) => v.is_empty(),
         }
     }
 }
@@ -74,6 +70,26 @@ impl Value for Any {
 impl Display for Any {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
         Parameter::fmt(self, f)
+    }
+}
+
+impl PartialEq for Any {
+    #[inline]
+    fn eq(&self, other: &Any) -> bool {
+        match self {
+            Any::IanaToken(a, b) => {
+                match other {
+                    Any::IanaToken(aa, bb) => a == aa && b == bb,
+                    _ => false,
+                }
+            }
+            Any::XName(a, b) => {
+                match other {
+                    Any::XName(aa, bb) => a == aa && b == bb,
+                    _ => false,
+                }
+            }
+        }
     }
 }
 
