@@ -431,6 +431,7 @@ pub mod properties;
 pub mod values;
 
 use std::collections::HashSet;
+use std::error::Error;
 use std::fmt::{self, Display, Formatter};
 use std::fs;
 use std::io;
@@ -511,6 +512,20 @@ pub enum VCardError {
     FormatError(ValidatedCustomizedStringError),
     EmptyFormatName,
 }
+
+impl Display for VCardError {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        match self {
+            VCardError::FormatError(err) => Display::fmt(err, f),
+            VCardError::EmptyFormatName => {
+                f.write_str("A VCard should have at least one formatted name.")
+            }
+        }
+    }
+}
+
+impl Error for VCardError {}
 
 impl From<ValidatedCustomizedStringError> for VCardError {
     #[inline]

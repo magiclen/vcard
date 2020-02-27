@@ -1,5 +1,6 @@
 use super::*;
 
+use std::cmp::Ordering;
 use std::fmt::{Display, Write};
 
 use chrono::prelude::*;
@@ -881,14 +882,16 @@ impl Value for Timestamp {
         f.write_fmt(format_args!("{:02}", self.second))?;
 
         if let Some(mut offset_minutes) = self.offset_minutes {
-            if offset_minutes > 0 {
-                f.write_char('+')?;
-            } else if offset_minutes < 0 {
-                f.write_char('-')?;
-                offset_minutes = -offset_minutes;
-            } else {
-                f.write_char('Z')?;
-                return Ok(());
+            match offset_minutes.cmp(&0) {
+                Ordering::Greater => f.write_char('+')?,
+                Ordering::Less => {
+                    f.write_char('-')?;
+                    offset_minutes = -offset_minutes;
+                }
+                Ordering::Equal => {
+                    f.write_char('Z')?;
+                    return Ok(());
+                }
             }
 
             let m = offset_minutes / 60;
