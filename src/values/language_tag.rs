@@ -6,7 +6,7 @@ use regex::Regex;
 // TODO: not implement yet, refer to [RFC5646]
 
 lazy_static! {
-    static ref LANGUAGE_TAG_RE: Regex = { Regex::new(r"^[\S]+$").unwrap() };
+    static ref LANGUAGE_TAG_RE: Regex = Regex::new(r"^[\S]+$").unwrap();
 }
 
 validated_customized_regex_string!(pub LanguageTag, ref LANGUAGE_TAG_RE);

@@ -8,9 +8,9 @@ use regex::Regex;
 use validators::{Validated, ValidatedCustomizedPhoneNumberError, ValidatedWrapper};
 
 lazy_static! {
-    static ref TEL_EXTENSION_RE: Regex = { Regex::new(r"^[\-0-9]+$").unwrap() };
-    static ref SPACES_RE: Regex = { Regex::new("[ ]+").unwrap() };
-    static ref PLUS_RE: Regex = { Regex::new(r"\+").unwrap() };
+    static ref TEL_EXTENSION_RE: Regex = Regex::new(r"^[\-0-9]+$").unwrap();
+    static ref SPACES_RE: Regex = Regex::new("[ ]+").unwrap();
+    static ref PLUS_RE: Regex = Regex::new(r"\+").unwrap();
 }
 
 validated_customized_phone_number!(pub TelephoneNumber);

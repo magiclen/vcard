@@ -452,13 +452,12 @@ const PATH_PERCENT_ENCODE_SET: &AsciiSet =
     &FRAGMENT_PERCENT_ENCODE_SET.add(b'#').add(b'?').add(b'{').add(b'}');
 
 lazy_static! {
-    static ref TEXT_RE: Regex =
-        { Regex::new(r"^([^\x00-\x08\x0A-\x1F\x7F]|\n\r|\r\n|\n)*$").unwrap() };
-    static ref SAFE_RE: Regex = { Regex::new(r"^[^\x00-\x1F\x22\x3A\x3B\x7F]*$").unwrap() };
-    static ref QSAFE_RE: Regex = { Regex::new(r"^[^\x00-\x1F\x22\x7F]*$").unwrap() };
-    static ref IANA_TOKEN_RE: Regex = { Regex::new(r"^[a-zA-Z0-9\-]+$").unwrap() };
-    static ref X_NAME_RE: Regex = { Regex::new(r"^[xX]-[a-zA-Z0-9\-]+$").unwrap() };
-    static ref X_PROPERTY_NAME_RE: Regex = { Regex::new(r"^X-[A-Z0-9\-]+$").unwrap() };
+    static ref TEXT_RE: Regex = Regex::new(r"^([^\x00-\x08\x0A-\x1F\x7F]|\n\r|\r\n|\n)*$").unwrap();
+    static ref SAFE_RE: Regex = Regex::new(r"^[^\x00-\x1F\x22\x3A\x3B\x7F]*$").unwrap();
+    static ref QSAFE_RE: Regex = Regex::new(r"^[^\x00-\x1F\x22\x7F]*$").unwrap();
+    static ref IANA_TOKEN_RE: Regex = Regex::new(r"^[a-zA-Z0-9\-]+$").unwrap();
+    static ref X_NAME_RE: Regex = Regex::new(r"^[xX]-[a-zA-Z0-9\-]+$").unwrap();
+    static ref X_PROPERTY_NAME_RE: Regex = Regex::new(r"^X-[A-Z0-9\-]+$").unwrap();
 }
 
 validated_customized_ranged_length_hash_set!(pub Set, 1, usize::max_value());

@@ -2,11 +2,11 @@ use regex::Regex;
 use std::borrow::Cow;
 
 lazy_static! {
-    static ref NEW_LINE_RE: Regex = { Regex::new(r"\n\r|\r\n|\n").unwrap() };
-    static ref COMMA_RE: Regex = { Regex::new(r",").unwrap() };
-    static ref SEMICOLON_RE: Regex = { Regex::new(r";").unwrap() };
-    static ref BACKSLASH_RE: Regex = { Regex::new(r"\\").unwrap() };
-    static ref TAB_RE: Regex = { Regex::new("\x09").unwrap() };
+    static ref NEW_LINE_RE: Regex = Regex::new(r"\n\r|\r\n|\n").unwrap();
+    static ref COMMA_RE: Regex = Regex::new(r",").unwrap();
+    static ref SEMICOLON_RE: Regex = Regex::new(r";").unwrap();
+    static ref BACKSLASH_RE: Regex = Regex::new(r"\\").unwrap();
+    static ref TAB_RE: Regex = Regex::new("\x09").unwrap();
 }
 
 pub(crate) fn escape_new_line(s: &str) -> Cow<'_, str> {

@@ -14,7 +14,7 @@ use regex::Regex;
 
 lazy_static! {
     static ref MEDIA_TYPE_SEGMENT_RE: Regex =
-        { Regex::new(r"^[^\x00-\x1F\x22\x3A\x3B\x7F]+$").unwrap() };
+        Regex::new(r"^[^\x00-\x1F\x22\x3A\x3B\x7F]+$").unwrap();
 }
 
 validated_customized_regex_string!(pub MediaTypeSegment, ref MEDIA_TYPE_SEGMENT_RE);
