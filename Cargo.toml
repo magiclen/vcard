@@ -1,6 +1,6 @@
 [package]
 name = "vcard"
-version = "0.4.4"
+version = "0.4.5"
 authors = ["Magic Len <len@magiclen.org>"]
 edition = "2018"
 repository = "https://github.com/magiclen/vcard"
@@ -10,6 +10,7 @@ categories = ["value-formatting", "parser-implementations"]
 description= "A pure Rust implementation of vCard based on RFC 6350."
 readme = "README.md"
 license = "MIT"
+include = ["src/**/*", "Cargo.toml"]
 
 [badges.travis-ci]
 repository = "magiclen/vcard"
