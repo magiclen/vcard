@@ -9,6 +9,7 @@ validated_customized_ranged_number!(pub Latitude, f64, -90.0, 90.0);
 validated_customized_ranged_number!(pub Longitude, f64, -180.0, 180.0);
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum GeoValue {
     URI(URI),
     LatLng(Latitude, Longitude),

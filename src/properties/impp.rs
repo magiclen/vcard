@@ -15,6 +15,7 @@ use std::fmt::{self, Display, Formatter, Write};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[allow(clippy::upper_case_acronyms)]
 pub struct IMPP {
     pub typ: Option<Type>,
     pub media_type: Option<MediaType>,

@@ -13,6 +13,7 @@ use base64_stream::ToBase64Reader;
 use mime::Mime;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[allow(clippy::upper_case_acronyms)]
 enum AudioValueInner {
     Base64(Mime, Base64),
     URI(URI),

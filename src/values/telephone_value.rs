@@ -17,6 +17,7 @@ validated_customized_phone_number!(pub TelephoneNumber);
 validated_customized_regex_string!(pub TelephoneExtension, ref TEL_EXTENSION_RE);
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum TelephoneValue {
     URI(URI),
     TelephoneNumber {

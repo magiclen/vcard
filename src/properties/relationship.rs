@@ -17,7 +17,7 @@ use std::fmt::{self, Display, Formatter, Write};
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
-#[allow(clippy::large_enum_variant)]
+#[allow(clippy::large_enum_variant, clippy::upper_case_acronyms)]
 pub enum Relationship {
     URI {
         typ: Option<TypeWithRelatedType>,

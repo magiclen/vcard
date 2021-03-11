@@ -147,7 +147,7 @@ impl Date {
     ) -> Result<Date, DateRangeError> {
         let year = date_time.year();
 
-        if year < 0 || year > 9999 {
+        if !(0..=9999).contains(&year) {
             return Err(DateRangeError::Year);
         }
 
@@ -834,7 +834,7 @@ impl Timestamp {
     ) -> Result<Timestamp, TimestampRangeError> {
         let year = date_time.year();
 
-        if year < 0 || year > 9999 {
+        if !(0..=9999).contains(&year) {
             return Err(TimestampRangeError::Date(DateRangeError::Year));
         }
 

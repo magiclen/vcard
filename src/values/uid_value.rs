@@ -8,6 +8,7 @@ use std::fmt::Display;
 use validators::{Validated, ValidatedWrapper};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[allow(clippy::upper_case_acronyms)]
 pub enum UIDValue {
     URI(URI),
     UUID(UUID),
