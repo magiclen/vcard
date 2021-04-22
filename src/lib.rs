@@ -377,7 +377,7 @@ println!("{}", vcard);
 ```
 */
 
-#![allow(clippy::trivial_regex)]
+#![allow(clippy::trivial_regex, clippy::manual_range_contains)]
 
 #[macro_use]
 pub extern crate validators;
