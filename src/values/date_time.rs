@@ -610,7 +610,7 @@ impl DateAndOrTime {
         if let DateAndOrTime::DateTime(dt) = self {
             Some(&dt.date)
         } else if let DateAndOrTime::Date(d) = self {
-            Some(&d)
+            Some(d)
         } else {
             None
         }
@@ -620,7 +620,7 @@ impl DateAndOrTime {
         if let DateAndOrTime::DateTime(dt) = self {
             Some(&dt.time)
         } else if let DateAndOrTime::Time(t) = self {
-            Some(&t)
+            Some(t)
         } else {
             None
         }
@@ -628,7 +628,7 @@ impl DateAndOrTime {
 
     pub fn get_date_time(&self) -> Option<&DateTime> {
         if let DateAndOrTime::DateTime(dt) = self {
-            Some(&dt)
+            Some(dt)
         } else {
             None
         }
@@ -682,7 +682,7 @@ pub enum DateOrDateTime {
 impl DateOrDateTime {
     pub fn get_date(&self) -> &Date {
         match self {
-            DateOrDateTime::Date(d) => &d,
+            DateOrDateTime::Date(d) => d,
             DateOrDateTime::DateTime(dt) => dt.get_date(),
         }
     }
@@ -697,7 +697,7 @@ impl DateOrDateTime {
 
     pub fn get_date_time(&self) -> Option<&DateTime> {
         if let DateOrDateTime::DateTime(dt) = self {
-            Some(&dt)
+            Some(dt)
         } else {
             None
         }

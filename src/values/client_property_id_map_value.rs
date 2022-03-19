@@ -57,7 +57,7 @@ impl ClientPropertyIDMapValue {
 impl ClientPropertyIDMapValue {
     pub fn get_uuid(&self) -> Option<&UUID> {
         if let ClientPropertyIDMapValueInner::UUID(uuid) = &self.inner {
-            return Some(&uuid);
+            return Some(uuid);
         }
 
         None
@@ -65,7 +65,7 @@ impl ClientPropertyIDMapValue {
 
     pub fn get_uri(&self) -> Option<&URI> {
         if let ClientPropertyIDMapValueInner::URI(uri) = &self.inner {
-            return Some(&uri);
+            return Some(uri);
         }
 
         None

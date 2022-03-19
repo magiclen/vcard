@@ -1,5 +1,3 @@
-extern crate vcard;
-
 use std::collections::HashSet;
 
 use vcard::properties::*;

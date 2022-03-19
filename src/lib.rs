@@ -6,8 +6,6 @@ A pure Rust implementation of vCard based on RFC 6350.
 ## Example
 
 ```rust,ignore
-extern crate vcard;
-
 use std::collections::HashSet;
 
 use vcard::{Set, VCard, XPropertyName, IanaToken};
@@ -377,20 +375,15 @@ println!("{}", vcard);
 ```
 */
 
-#![allow(clippy::trivial_regex, clippy::manual_range_contains)]
+#![allow(clippy::trivial_regex, clippy::manual_range_contains, clippy::transmute_num_to_bytes)]
 
 #[macro_use]
 pub extern crate validators;
 pub extern crate chrono;
 pub extern crate chrono_tz;
+
 #[macro_use]
 extern crate lazy_static;
-extern crate base64_stream;
-extern crate idna;
-extern crate mime;
-extern crate mime_guess;
-extern crate percent_encoding;
-extern crate regex;
 
 macro_rules! fmt_gg {
     (0, $t:ident, $p:expr, $f:ident) => {

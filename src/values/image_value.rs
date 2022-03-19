@@ -120,7 +120,7 @@ impl Value for ImageValue {
         match &self.inner {
             ImageValueInner::Base64(typ, base64) => {
                 f.write_str("data:")?;
-                f.write_str(&typ.to_string())?;
+                f.write_str(typ.as_ref())?;
                 f.write_str(";base64,")?;
                 f.write_str(base64.get_base64())?;
             }

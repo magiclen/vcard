@@ -8,8 +8,6 @@ A pure Rust implementation of vCard based on RFC 6350.
 ## Example
 
 ```rust
-extern crate vcard;
-
 use std::collections::HashSet;
 
 use vcard::{Set, VCard, XPropertyName, IanaToken};
