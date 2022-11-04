@@ -36,8 +36,13 @@ impl Date {
         if year > 9999 {
             return Err(DateRangeError::Year);
         }
+        if day == 0 {
+            return Err(DateRangeError::Day);
+        }
 
-        if month == 1 {
+        if month == 0 {
+            return Err(DateRangeError::Month);
+        } else if month == 1 {
             if day > 31 {
                 return Err(DateRangeError::Day);
             }
@@ -50,7 +55,7 @@ impl Date {
                 return Err(DateRangeError::Day);
             }
         } else if month <= 7 {
-            if day % 2 == 1 {
+            if month % 2 == 1 {
                 if day > 31 {
                     return Err(DateRangeError::Day);
                 }
@@ -58,7 +63,7 @@ impl Date {
                 return Err(DateRangeError::Day);
             }
         } else if month <= 12 {
-            if day % 2 == 1 {
+            if month % 2 == 1 {
                 if day > 30 {
                     return Err(DateRangeError::Day);
                 }
@@ -99,7 +104,13 @@ impl Date {
     }
 
     pub fn from_month_day(month: u8, day: u8) -> Result<Date, DateRangeError> {
-        if month == 1 {
+        if day == 0 {
+            return Err(DateRangeError::Day);
+        }
+
+        if month == 0 {
+            return Err(DateRangeError::Month);
+        } else if month == 1 {
             if day > 31 {
                 return Err(DateRangeError::Day);
             }
@@ -108,7 +119,7 @@ impl Date {
                 return Err(DateRangeError::Day);
             }
         } else if month <= 7 {
-            if day % 2 == 1 {
+            if month % 2 == 1 {
                 if day > 31 {
                     return Err(DateRangeError::Day);
                 }
@@ -116,7 +127,7 @@ impl Date {
                 return Err(DateRangeError::Day);
             }
         } else if month <= 12 {
-            if day % 2 == 1 {
+            if month % 2 == 1 {
                 if day > 30 {
                     return Err(DateRangeError::Day);
                 }
