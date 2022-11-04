@@ -36,6 +36,7 @@ impl Date {
         if year > 9999 {
             return Err(DateRangeError::Year);
         }
+
         if day == 0 {
             return Err(DateRangeError::Day);
         }
