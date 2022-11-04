@@ -17,11 +17,11 @@ base64-stream = "1.0.1"
 mime = "0.3.12"
 mime_guess = "2"
 chrono = "0.4.6"
-chrono-tz = "0.6"
+chrono-tz = "0.8"
 regex = "1.1"
 lazy_static = "1.1"
 percent-encoding = "2"
-idna = "0.2"
+idna = "0.3"
 
 [dependencies.validators]
 version = "0.20.2"
