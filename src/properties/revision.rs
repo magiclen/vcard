@@ -1,25 +1,26 @@
-use super::super::parameters::any::Any;
-use super::super::parameters::Parameter;
-use super::super::values::date_time::Timestamp;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{any::Any, Parameter},
+        values::{date_time::Timestamp, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Revision {
-    pub any: Option<Set<Any>>,
+    pub any:   Option<Set<Any>>,
     pub value: Timestamp,
 }
 
 impl Revision {
     pub fn from_timestamp(timestamp: Timestamp) -> Revision {
         Revision {
-            any: None,
-            value: timestamp,
+            any: None, value: timestamp
         }
     }
 

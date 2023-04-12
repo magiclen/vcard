@@ -1,44 +1,43 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::language::Language;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::sort_as::SortAs;
-use super::super::parameters::typ::Type;
-use super::super::parameters::Parameter;
-use super::super::values::text::Component;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, language::Language, preference::Preference,
+            property_id::PropertyID, sort_as::SortAs, typ::Type, Parameter,
+        },
+        values::{text::Component, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Organization {
-    pub typ: Option<Type>,
-    pub language: Option<Language>,
-    pub sort_as: Option<SortAs>,
-    pub property_id: Option<PropertyID>,
-    pub preference: Option<Preference>,
+    pub typ:            Option<Type>,
+    pub language:       Option<Language>,
+    pub sort_as:        Option<SortAs>,
+    pub property_id:    Option<PropertyID>,
+    pub preference:     Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
-    pub any: Option<Set<Any>>,
-    pub value: Set<Component>,
+    pub any:            Option<Set<Any>>,
+    pub value:          Set<Component>,
 }
 
 impl Organization {
     pub fn from_component_list(component_list: Set<Component>) -> Organization {
         Organization {
-            typ: None,
+            typ:      None,
             language: None,
-            sort_as: None,
+            sort_as:  None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: component_list,
+            any:            None,
+            value:          component_list,
         }
     }
 

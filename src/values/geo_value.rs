@@ -1,9 +1,8 @@
-use super::uri::URI;
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{uri::URI, *};
 
 validated_customized_ranged_number!(pub Latitude, f64, -90.0, 90.0);
 validated_customized_ranged_number!(pub Longitude, f64, -180.0, 180.0);
@@ -20,10 +19,10 @@ impl Value for GeoValue {
         match self {
             GeoValue::URI(uri) => {
                 Value::fmt(uri, f)?;
-            }
+            },
             GeoValue::LatLng(lat, lng) => {
                 f.write_fmt(format_args!("geo:{:.6}:{:.6}", lat.get_number(), lng.get_number()))?;
-            }
+            },
         }
 
         Ok(())

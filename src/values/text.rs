@@ -1,8 +1,9 @@
-use super::super::escaping::*;
-use super::super::TEXT_RE;
-use super::*;
-
 use std::fmt::{self, Formatter};
+
+use super::{
+    super::{escaping::*, TEXT_RE},
+    *,
+};
 
 validated_customized_regex_string!(pub Text, ref TEXT_RE);
 

@@ -1,44 +1,38 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::calscale::Calscale;
-use super::super::parameters::geo::Geo;
-use super::super::parameters::label::Label;
-use super::super::parameters::language::Language;
-use super::super::parameters::media_type::MediaType;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::sort_as::SortAs;
-use super::super::parameters::time_zone::TimeZone;
-use super::super::parameters::typ::Type;
-use super::super::parameters::value;
-use super::super::parameters::Parameter;
-use super::super::values::text::Text;
-use super::super::values::Value;
-use super::super::Set;
-use super::super::XPropertyName;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, calscale::Calscale, geo::Geo, label::Label,
+            language::Language, media_type::MediaType, preference::Preference,
+            property_id::PropertyID, sort_as::SortAs, time_zone::TimeZone, typ::Type, value,
+            Parameter,
+        },
+        values::{text::Text, Value},
+        Set, XPropertyName,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct XProperty {
-    pub typ: Option<Type>,
-    pub media_type: Option<MediaType>,
-    pub language: Option<Language>,
-    pub sort_as: Option<SortAs>,
-    pub calscale: Option<Calscale>,
-    pub geo: Option<Geo>,
-    pub label: Option<Label>,
-    pub time_zone: Option<TimeZone>,
-    pub property_id: Option<PropertyID>,
-    pub preference: Option<Preference>,
+    pub typ:            Option<Type>,
+    pub media_type:     Option<MediaType>,
+    pub language:       Option<Language>,
+    pub sort_as:        Option<SortAs>,
+    pub calscale:       Option<Calscale>,
+    pub geo:            Option<Geo>,
+    pub label:          Option<Label>,
+    pub time_zone:      Option<TimeZone>,
+    pub property_id:    Option<PropertyID>,
+    pub preference:     Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
-    pub any: Option<Set<Any>>,
-    pub value_type: Option<value::Value>,
-    pub name: XPropertyName,
-    pub value: Text,
+    pub any:            Option<Set<Any>>,
+    pub value_type:     Option<value::Value>,
+    pub name:           XPropertyName,
+    pub value:          Text,
 }
 
 impl XProperty {

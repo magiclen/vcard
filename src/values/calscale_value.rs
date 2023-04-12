@@ -1,9 +1,11 @@
-use super::super::{IanaToken, XName};
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::{IanaToken, XName},
+    *,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum CalscaleValue {

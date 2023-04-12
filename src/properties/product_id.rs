@@ -1,25 +1,26 @@
-use super::super::parameters::any::Any;
-use super::super::parameters::Parameter;
-use super::super::values::product_id_value::ProductIDValue;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{any::Any, Parameter},
+        values::{product_id_value::ProductIDValue, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ProductID {
-    pub any: Option<Set<Any>>,
+    pub any:   Option<Set<Any>>,
     pub value: ProductIDValue,
 }
 
 impl ProductID {
     pub fn from_product_id_value(product_id_value: ProductIDValue) -> ProductID {
         ProductID {
-            any: None,
-            value: product_id_value,
+            any: None, value: product_id_value
         }
     }
 

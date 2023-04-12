@@ -1,41 +1,41 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::media_type::MediaType;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::typ::Type;
-use super::super::parameters::Parameter;
-use super::super::values::geo_value::GeoValue;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, media_type::MediaType, preference::Preference,
+            property_id::PropertyID, typ::Type, Parameter,
+        },
+        values::{geo_value::GeoValue, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Geo {
-    pub typ: Option<Type>,
-    pub media_type: Option<MediaType>,
-    pub property_id: Option<PropertyID>,
-    pub preference: Option<Preference>,
+    pub typ:            Option<Type>,
+    pub media_type:     Option<MediaType>,
+    pub property_id:    Option<PropertyID>,
+    pub preference:     Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
-    pub any: Option<Set<Any>>,
-    pub value: GeoValue,
+    pub any:            Option<Set<Any>>,
+    pub value:          GeoValue,
 }
 
 impl Geo {
     pub fn from_geo_value(geo_value: GeoValue) -> Geo {
         Geo {
-            typ: None,
+            typ:        None,
             media_type: None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: geo_value,
+            any:            None,
+            value:          geo_value,
         }
     }
 }

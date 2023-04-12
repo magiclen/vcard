@@ -1,10 +1,11 @@
-use super::super::values;
-use super::super::values::value_type::ValueType;
-use super::Parameter;
-
 use std::fmt::{self, Display, Formatter};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::{values, values::value_type::ValueType},
+    Parameter,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Value {

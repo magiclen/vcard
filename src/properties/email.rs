@@ -1,26 +1,27 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::typ::Type;
-use super::super::parameters::Parameter;
-use super::super::values::email_value::EmailValue;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, preference::Preference,
+            property_id::PropertyID, typ::Type, Parameter,
+        },
+        values::{email_value::EmailValue, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Email {
-    pub typ: Option<Type>,
-    pub property_id: Option<PropertyID>,
-    pub preference: Option<Preference>,
+    pub typ:            Option<Type>,
+    pub property_id:    Option<PropertyID>,
+    pub preference:     Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
-    pub any: Option<Set<Any>>,
-    pub value: EmailValue,
+    pub any:            Option<Set<Any>>,
+    pub value:          EmailValue,
 }
 
 impl Email {
@@ -28,11 +29,11 @@ impl Email {
         Email {
             typ: None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: email_value,
+            any:            None,
+            value:          email_value,
         }
     }
 }

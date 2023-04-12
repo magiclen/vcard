@@ -1,19 +1,18 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::media_type::MediaType;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::typ::TypeWithTelType;
-use super::super::parameters::Parameter;
-use super::super::values::telephone_value::TelephoneValue;
-use super::super::values::text::Text;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, media_type::MediaType, preference::Preference,
+            property_id::PropertyID, typ::TypeWithTelType, Parameter,
+        },
+        values::{telephone_value::TelephoneValue, text::Text, Value},
+        Set,
+    },
+    *,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[allow(clippy::large_enum_variant)]
@@ -21,21 +20,21 @@ pub enum Telephone {
     Text {
         typ: Option<TypeWithTelType>,
 
-        property_id: Option<PropertyID>,
-        preference: Option<Preference>,
+        property_id:    Option<PropertyID>,
+        preference:     Option<Preference>,
         alternative_id: Option<AlternativeID>,
-        any: Option<Set<Any>>,
-        value: Text,
+        any:            Option<Set<Any>>,
+        value:          Text,
     },
     TelephoneValue {
-        typ: Option<TypeWithTelType>,
+        typ:        Option<TypeWithTelType>,
         media_type: Option<MediaType>,
 
-        property_id: Option<PropertyID>,
-        preference: Option<Preference>,
+        property_id:    Option<PropertyID>,
+        preference:     Option<Preference>,
         alternative_id: Option<AlternativeID>,
-        any: Option<Set<Any>>,
-        value: TelephoneValue,
+        any:            Option<Set<Any>>,
+        value:          TelephoneValue,
     },
 }
 
@@ -44,31 +43,30 @@ impl Telephone {
         Telephone::Text {
             typ: None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: text,
+            any:            None,
+            value:          text,
         }
     }
 
     pub fn from_telephone_value(telephone_value: TelephoneValue) -> Telephone {
         Telephone::TelephoneValue {
-            typ: None,
+            typ:        None,
             media_type: None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: telephone_value,
+            any:            None,
+            value:          telephone_value,
         }
     }
 
     pub fn is_empty(&self) -> bool {
         if let Telephone::Text {
-            value,
-            ..
+            value, ..
         } = self
         {
             return value.is_empty();
@@ -110,7 +108,7 @@ impl Property for Telephone {
                 f.write_char(':')?;
 
                 Value::fmt(value, f)?;
-            }
+            },
             Telephone::TelephoneValue {
                 typ,
                 media_type,
@@ -130,7 +128,7 @@ impl Property for Telephone {
                 f.write_str(";VALUE=uri:")?;
 
                 Value::fmt(value, f)?;
-            }
+            },
         }
 
         f.write_str("\r\n")?;

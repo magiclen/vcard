@@ -1,8 +1,8 @@
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Boolean {
@@ -12,7 +12,7 @@ pub struct Boolean {
 impl Boolean {
     pub fn from_bool(b: bool) -> Boolean {
         Boolean {
-            boolean: b,
+            boolean: b
         }
     }
 }

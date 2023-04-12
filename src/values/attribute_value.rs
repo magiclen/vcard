@@ -1,16 +1,16 @@
-use super::*;
-use crate::PATH_PERCENT_ENCODE_SET;
-
 use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::*;
+use crate::PATH_PERCENT_ENCODE_SET;
 
 // TODO: not implement yet, refer to [RFC2045]
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct AttributeValue {
     attribute: String,
-    value: String,
+    value:     String,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -19,8 +19,7 @@ pub enum AttributeValueError {}
 impl AttributeValue {
     pub fn from_str(attribute: &str, value: &str) -> Result<AttributeValue, AttributeValueError> {
         Ok(AttributeValue {
-            attribute: attribute.to_string(),
-            value: value.to_string(),
+            attribute: attribute.to_string(), value: value.to_string()
         })
     }
 

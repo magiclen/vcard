@@ -1,14 +1,13 @@
-use super::text::Component;
-use super::*;
-
 use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{text::Component, *};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct NameValue {
-    last_name: Option<Component>,
-    first_name: Option<Component>,
+    last_name:   Option<Component>,
+    first_name:  Option<Component>,
     middle_name: Option<Component>,
     name_prefix: Option<Component>,
     name_suffix: Option<Component>,

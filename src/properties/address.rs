@@ -1,50 +1,48 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::geo::Geo;
-use super::super::parameters::label::Label;
-use super::super::parameters::language::Language;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::time_zone::TimeZone;
-use super::super::parameters::typ::Type;
-use super::super::parameters::Parameter;
-use super::super::values::address_value::AddressValue;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, geo::Geo, label::Label, language::Language,
+            preference::Preference, property_id::PropertyID, time_zone::TimeZone, typ::Type,
+            Parameter,
+        },
+        values::{address_value::AddressValue, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Address {
-    pub label: Option<Label>,
-    pub language: Option<Language>,
-    pub geo: Option<Geo>,
-    pub time_zone: Option<TimeZone>,
-    pub typ: Option<Type>,
-    pub property_id: Option<PropertyID>,
-    pub preference: Option<Preference>,
+    pub label:          Option<Label>,
+    pub language:       Option<Language>,
+    pub geo:            Option<Geo>,
+    pub time_zone:      Option<TimeZone>,
+    pub typ:            Option<Type>,
+    pub property_id:    Option<PropertyID>,
+    pub preference:     Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
-    pub any: Option<Set<Any>>,
-    pub value: AddressValue,
+    pub any:            Option<Set<Any>>,
+    pub value:          AddressValue,
 }
 
 impl Address {
     pub fn from_address_value(address_value: AddressValue) -> Address {
         Address {
-            label: None,
-            language: None,
-            geo: None,
+            label:     None,
+            language:  None,
+            geo:       None,
             time_zone: None,
-            typ: None,
+            typ:       None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: address_value,
+            any:            None,
+            value:          address_value,
         }
     }
 

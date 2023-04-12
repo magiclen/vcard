@@ -1,26 +1,27 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::media_type::MediaType;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::Parameter;
-use super::super::values::uri::URI;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, media_type::MediaType, preference::Preference,
+            property_id::PropertyID, Parameter,
+        },
+        values::{uri::URI, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Member {
-    pub media_type: Option<MediaType>,
-    pub property_id: Option<PropertyID>,
-    pub preference: Option<Preference>,
+    pub media_type:     Option<MediaType>,
+    pub property_id:    Option<PropertyID>,
+    pub preference:     Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
-    pub any: Option<Set<Any>>,
-    pub value: URI,
+    pub any:            Option<Set<Any>>,
+    pub value:          URI,
 }
 
 impl Member {
@@ -28,11 +29,11 @@ impl Member {
         Member {
             media_type: None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: uri,
+            any:            None,
+            value:          uri,
         }
     }
 }

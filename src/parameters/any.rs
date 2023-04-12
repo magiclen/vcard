@@ -1,13 +1,17 @@
-use super::super::values::parameter_value::ParameterValues;
-use super::super::values::Value;
-use super::super::Set;
-use super::super::{IanaToken, XName};
-use super::Parameter;
-
-use std::fmt::{self, Display, Formatter, Write};
-use std::hash::{Hash, Hasher};
+use std::{
+    fmt::{self, Display, Formatter, Write},
+    hash::{Hash, Hasher},
+};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::{
+        values::{parameter_value::ParameterValues, Value},
+        IanaToken, Set, XName,
+    },
+    Parameter,
+};
 
 #[derive(Clone, Debug, Eq)]
 pub enum Any {
@@ -36,11 +40,11 @@ impl Parameter for Any {
             Any::IanaToken(a, b) => {
                 f.write_str(a.as_str())?;
                 b
-            }
+            },
             Any::XName(a, b) => {
                 f.write_str(a.as_str())?;
                 b
-            }
+            },
         };
 
         f.write_char('=')?;
@@ -77,18 +81,14 @@ impl PartialEq for Any {
     #[inline]
     fn eq(&self, other: &Any) -> bool {
         match self {
-            Any::IanaToken(a, b) => {
-                match other {
-                    Any::IanaToken(aa, bb) => a == aa && b == bb,
-                    _ => false,
-                }
-            }
-            Any::XName(a, b) => {
-                match other {
-                    Any::XName(aa, bb) => a == aa && b == bb,
-                    _ => false,
-                }
-            }
+            Any::IanaToken(a, b) => match other {
+                Any::IanaToken(aa, bb) => a == aa && b == bb,
+                _ => false,
+            },
+            Any::XName(a, b) => match other {
+                Any::XName(aa, bb) => a == aa && b == bb,
+                _ => false,
+            },
         }
     }
 }
@@ -99,11 +99,11 @@ impl Hash for Any {
             Any::XName(a, b) => {
                 state.write(a.as_str().as_bytes());
                 b.hash(state);
-            }
+            },
             Any::IanaToken(a, b) => {
                 state.write(a.as_str().as_bytes());
                 b.hash(state);
-            }
+            },
         }
     }
 }

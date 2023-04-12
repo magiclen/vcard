@@ -1,42 +1,42 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::media_type::MediaType;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::typ::Type;
-use super::super::parameters::Parameter;
-use super::super::values::uri::URI;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, media_type::MediaType, preference::Preference,
+            property_id::PropertyID, typ::Type, Parameter,
+        },
+        values::{uri::URI, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
 pub struct IMPP {
-    pub typ: Option<Type>,
-    pub media_type: Option<MediaType>,
-    pub property_id: Option<PropertyID>,
-    pub preference: Option<Preference>,
+    pub typ:            Option<Type>,
+    pub media_type:     Option<MediaType>,
+    pub property_id:    Option<PropertyID>,
+    pub preference:     Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
-    pub any: Option<Set<Any>>,
-    pub value: URI,
+    pub any:            Option<Set<Any>>,
+    pub value:          URI,
 }
 
 impl IMPP {
     pub fn from_uri(uri: URI) -> IMPP {
         IMPP {
-            typ: None,
+            typ:        None,
             media_type: None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: uri,
+            any:            None,
+            value:          uri,
         }
     }
 }

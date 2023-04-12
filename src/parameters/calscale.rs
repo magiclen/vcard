@@ -1,10 +1,11 @@
-use super::super::values::calscale_value::CalscaleValue;
-use super::super::values::Value;
-use super::Parameter;
-
 use std::fmt::{self, Display, Formatter};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::values::{calscale_value::CalscaleValue, Value},
+    Parameter,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Calscale {

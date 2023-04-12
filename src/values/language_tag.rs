@@ -1,7 +1,7 @@
+use regex::Regex;
+
 use super::*;
 use crate::PATH_PERCENT_ENCODE_SET;
-
-use regex::Regex;
 
 // TODO: not implement yet, refer to [RFC5646]
 

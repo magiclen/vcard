@@ -1,8 +1,8 @@
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum VersionValue {

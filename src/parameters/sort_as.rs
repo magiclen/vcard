@@ -1,9 +1,11 @@
-use super::super::values::{parameter_value::ParameterValues, Value};
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::values::{parameter_value::ParameterValues, Value},
+    *,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct SortAs {

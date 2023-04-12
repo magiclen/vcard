@@ -1,34 +1,33 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::calscale::Calscale;
-use super::super::parameters::Parameter;
-use super::super::values::date_time::*;
-use super::super::values::text::Text;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{alternative_id::AlternativeID, any::Any, calscale::Calscale, Parameter},
+        values::{date_time::*, text::Text, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Anniversary {
     DateOrDateTime {
-        calscale: Option<Calscale>,
+        calscale:       Option<Calscale>,
         alternative_id: Option<AlternativeID>,
-        any: Option<Set<Any>>,
-        value: DateOrDateTime,
+        any:            Option<Set<Any>>,
+        value:          DateOrDateTime,
     },
     DateAndOrTime {
         alternative_id: Option<AlternativeID>,
-        any: Option<Set<Any>>,
-        value: DateAndOrTime,
+        any:            Option<Set<Any>>,
+        value:          DateAndOrTime,
     },
     Text {
         alternative_id: Option<AlternativeID>,
-        any: Option<Set<Any>>,
-        value: Text,
+        any:            Option<Set<Any>>,
+        value:          Text,
     },
 }
 
@@ -38,31 +37,28 @@ impl Anniversary {
             calscale: None,
 
             alternative_id: None,
-            any: None,
-            value: date_or_date_time,
+            any:            None,
+            value:          date_or_date_time,
         }
     }
 
     pub fn from_date_and_or_time(date_and_or_time: DateAndOrTime) -> Anniversary {
         Anniversary::DateAndOrTime {
             alternative_id: None,
-            any: None,
-            value: date_and_or_time,
+            any:            None,
+            value:          date_and_or_time,
         }
     }
 
     pub fn from_text(text: Text) -> Anniversary {
         Anniversary::Text {
-            alternative_id: None,
-            any: None,
-            value: text,
+            alternative_id: None, any: None, value: text
         }
     }
 
     pub fn is_empty(&self) -> bool {
         if let Anniversary::Text {
-            value,
-            ..
+            value, ..
         } = self
         {
             return value.is_empty();
@@ -100,7 +96,7 @@ impl Property for Anniversary {
                 f.write_char(':')?;
 
                 Value::fmt(value, f)?;
-            }
+            },
             Anniversary::DateAndOrTime {
                 alternative_id,
                 any,
@@ -112,7 +108,7 @@ impl Property for Anniversary {
                 f.write_char(':')?;
 
                 Value::fmt(value, f)?;
-            }
+            },
             Anniversary::Text {
                 alternative_id,
                 any,
@@ -124,7 +120,7 @@ impl Property for Anniversary {
                 f.write_str(";VALUE=text:")?;
 
                 Value::fmt(value, f)?;
-            }
+            },
         }
 
         f.write_str("\r\n")?;

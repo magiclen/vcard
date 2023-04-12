@@ -1,44 +1,43 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::language::Language;
-use super::super::parameters::media_type::MediaType;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::typ::Type;
-use super::super::parameters::Parameter;
-use super::super::values::audio_value::AudioValue;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, language::Language, media_type::MediaType,
+            preference::Preference, property_id::PropertyID, typ::Type, Parameter,
+        },
+        values::{audio_value::AudioValue, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Sound {
-    pub typ: Option<Type>,
-    pub media_type: Option<MediaType>,
-    pub language: Option<Language>,
-    pub property_id: Option<PropertyID>,
-    pub preference: Option<Preference>,
+    pub typ:            Option<Type>,
+    pub media_type:     Option<MediaType>,
+    pub language:       Option<Language>,
+    pub property_id:    Option<PropertyID>,
+    pub preference:     Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
-    pub any: Option<Set<Any>>,
-    pub value: AudioValue,
+    pub any:            Option<Set<Any>>,
+    pub value:          AudioValue,
 }
 
 impl Sound {
     pub fn from_sound_value(sound_value: AudioValue) -> Sound {
         Sound {
-            typ: None,
+            typ:        None,
             media_type: None,
-            language: None,
+            language:   None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: sound_value,
+            any:            None,
+            value:          sound_value,
         }
     }
 }

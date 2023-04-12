@@ -1,25 +1,26 @@
-use super::super::parameters::any::Any;
-use super::super::parameters::Parameter;
-use super::super::values::version_value::VersionValue;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{any::Any, Parameter},
+        values::{version_value::VersionValue, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Version {
-    pub any: Option<Set<Any>>,
+    pub any:   Option<Set<Any>>,
     pub value: VersionValue,
 }
 
 impl Version {
     pub fn from_version_value(version_value: VersionValue) -> Version {
         Version {
-            any: None,
-            value: version_value,
+            any: None, value: version_value
         }
     }
 }

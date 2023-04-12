@@ -1,19 +1,18 @@
-use super::text::Component;
-use super::*;
-
 use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{text::Component, *};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct AddressValue {
     post_office_box: Option<Component>,
-    extension: Option<Component>,
-    street: Option<Component>,
-    locality: Option<Component>,
-    region: Option<Component>,
-    code: Option<Component>,
-    country: Option<Component>,
+    extension:       Option<Component>,
+    street:          Option<Component>,
+    locality:        Option<Component>,
+    region:          Option<Component>,
+    code:            Option<Component>,
+    country:         Option<Component>,
 }
 
 impl AddressValue {

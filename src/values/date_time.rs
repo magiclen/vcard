@@ -1,10 +1,12 @@
-use super::*;
-
-use std::cmp::Ordering;
-use std::fmt::{Display, Write};
+use std::{
+    cmp::Ordering,
+    fmt::{Display, Write},
+};
 
 use chrono::prelude::*;
 use validators::{Validated, ValidatedWrapper};
+
+use super::*;
 
 fn is_leap(year: u16) -> bool {
     (year % 4 == 0) && (year % 100 != 0) || year % 400 == 0
@@ -76,7 +78,7 @@ impl Date {
         }
 
         Ok(Date {
-            inner: DateInner::YearMonthDay(year, month, day),
+            inner: DateInner::YearMonthDay(year, month, day)
         })
     }
 
@@ -90,7 +92,7 @@ impl Date {
         }
 
         Ok(Date {
-            inner: DateInner::YearMonth(year, month),
+            inner: DateInner::YearMonth(year, month)
         })
     }
 
@@ -100,7 +102,7 @@ impl Date {
         }
 
         Ok(Date {
-            inner: DateInner::Year(year),
+            inner: DateInner::Year(year)
         })
     }
 
@@ -140,7 +142,7 @@ impl Date {
         }
 
         Ok(Date {
-            inner: DateInner::MonthDay(month, day),
+            inner: DateInner::MonthDay(month, day)
         })
     }
 
@@ -150,7 +152,7 @@ impl Date {
         }
 
         Ok(Date {
-            inner: DateInner::Day(day),
+            inner: DateInner::Day(day)
         })
     }
 
@@ -170,7 +172,7 @@ impl Date {
         let day = date_time.day() as u8;
 
         Ok(Date {
-            inner: DateInner::YearMonthDay(year, month, day),
+            inner: DateInner::YearMonthDay(year, month, day)
         })
     }
 }
@@ -178,7 +180,7 @@ impl Date {
 impl Date {
     pub fn get_year(&self) -> Option<u16> {
         match self.inner {
-            DateInner::YearMonthDay(year, _, _) => Some(year),
+            DateInner::YearMonthDay(year, ..) => Some(year),
             DateInner::YearMonth(year, _) => Some(year),
             DateInner::Year(year) => Some(year),
             _ => None,
@@ -211,24 +213,24 @@ impl Value for Date {
                 f.write_fmt(format_args!("{:04}", year))?;
                 f.write_fmt(format_args!("{:02}", month))?;
                 f.write_fmt(format_args!("{:02}", day))?;
-            }
+            },
             DateInner::YearMonth(year, month) => {
                 f.write_fmt(format_args!("{:04}", year))?;
                 f.write_char('-')?;
                 f.write_fmt(format_args!("{:02}", month))?;
-            }
+            },
             DateInner::Year(year) => {
                 f.write_fmt(format_args!("{:04}", year))?;
-            }
+            },
             DateInner::MonthDay(month, day) => {
                 f.write_str("--")?;
                 f.write_fmt(format_args!("{:02}", month))?;
                 f.write_fmt(format_args!("{:02}", day))?;
-            }
+            },
             DateInner::Day(day) => {
                 f.write_str("---")?;
                 f.write_fmt(format_args!("{:02}", day))?;
-            }
+            },
         }
 
         Ok(())
@@ -296,7 +298,7 @@ impl Time {
         }
 
         Ok(Time {
-            inner: TimeInner::HourMinuteSecond(hour, minute, second),
+            inner: TimeInner::HourMinuteSecond(hour, minute, second)
         })
     }
 
@@ -309,7 +311,7 @@ impl Time {
         }
 
         Ok(Time {
-            inner: TimeInner::HourMinute(hour, minute),
+            inner: TimeInner::HourMinute(hour, minute)
         })
     }
 
@@ -319,7 +321,7 @@ impl Time {
         }
 
         Ok(Time {
-            inner: TimeInner::Hour(hour),
+            inner: TimeInner::Hour(hour)
         })
     }
 
@@ -332,7 +334,7 @@ impl Time {
         }
 
         Ok(Time {
-            inner: TimeInner::MinuteSecond(minute, second),
+            inner: TimeInner::MinuteSecond(minute, second)
         })
     }
 
@@ -342,7 +344,7 @@ impl Time {
         }
 
         Ok(Time {
-            inner: TimeInner::Second(second),
+            inner: TimeInner::Second(second)
         })
     }
 
@@ -362,7 +364,7 @@ impl Time {
         }
 
         Ok(Time {
-            inner: TimeInner::HourMinuteSecondUtc(hour, minute, second),
+            inner: TimeInner::HourMinuteSecondUtc(hour, minute, second)
         })
     }
 
@@ -386,7 +388,7 @@ impl Time {
         }
 
         Ok(Time {
-            inner: TimeInner::HourMinuteSecondZone(hour, minute, second, offset_minutes),
+            inner: TimeInner::HourMinuteSecondZone(hour, minute, second, offset_minutes)
         })
     }
 
@@ -402,11 +404,11 @@ impl Time {
 
         if offset_minutes == 0 {
             Time {
-                inner: TimeInner::HourMinuteSecondUtc(hour, minute, second),
+                inner: TimeInner::HourMinuteSecondUtc(hour, minute, second)
             }
         } else {
             Time {
-                inner: TimeInner::HourMinuteSecondZone(hour, minute, second, offset_minutes),
+                inner: TimeInner::HourMinuteSecondZone(hour, minute, second, offset_minutes)
             }
         }
     }
@@ -415,11 +417,11 @@ impl Time {
 impl Time {
     pub fn get_hour(&self) -> Option<u8> {
         match self.inner {
-            TimeInner::HourMinuteSecond(hour, _, _) => Some(hour),
+            TimeInner::HourMinuteSecond(hour, ..) => Some(hour),
             TimeInner::HourMinute(hour, _) => Some(hour),
             TimeInner::Hour(hour) => Some(hour),
-            TimeInner::HourMinuteSecondUtc(hour, _, _) => Some(hour),
-            TimeInner::HourMinuteSecondZone(hour, _, _, _) => Some(hour),
+            TimeInner::HourMinuteSecondUtc(hour, ..) => Some(hour),
+            TimeInner::HourMinuteSecondZone(hour, ..) => Some(hour),
             _ => None,
         }
     }
@@ -430,7 +432,7 @@ impl Time {
             TimeInner::HourMinute(_, minute) => Some(minute),
             TimeInner::MinuteSecond(minute, _) => Some(minute),
             TimeInner::HourMinuteSecondUtc(_, minute, _) => Some(minute),
-            TimeInner::HourMinuteSecondZone(_, minute, _, _) => Some(minute),
+            TimeInner::HourMinuteSecondZone(_, minute, ..) => Some(minute),
             _ => None,
         }
     }
@@ -462,29 +464,29 @@ impl Value for Time {
                 f.write_fmt(format_args!("{:02}", hour))?;
                 f.write_fmt(format_args!("{:02}", minute))?;
                 f.write_fmt(format_args!("{:02}", second))?;
-            }
+            },
             TimeInner::HourMinute(hour, minute) => {
                 f.write_fmt(format_args!("{:02}", hour))?;
                 f.write_fmt(format_args!("{:02}", minute))?;
-            }
+            },
             TimeInner::Hour(hour) => {
                 f.write_fmt(format_args!("{:02}", hour))?;
-            }
+            },
             TimeInner::MinuteSecond(minute, second) => {
                 f.write_char('-')?;
                 f.write_fmt(format_args!("{:02}", minute))?;
                 f.write_fmt(format_args!("{:02}", second))?;
-            }
+            },
             TimeInner::Second(second) => {
                 f.write_str("--")?;
                 f.write_fmt(format_args!("{:02}", second))?;
-            }
+            },
             TimeInner::HourMinuteSecondUtc(hour, minute, second) => {
                 f.write_fmt(format_args!("{:02}", hour))?;
                 f.write_fmt(format_args!("{:02}", minute))?;
                 f.write_fmt(format_args!("{:02}", second))?;
                 f.write_char('Z')?;
-            }
+            },
             TimeInner::HourMinuteSecondZone(hour, minute, second, mut offset_minutes) => {
                 f.write_fmt(format_args!("{:02}", hour))?;
                 f.write_fmt(format_args!("{:02}", minute))?;
@@ -499,7 +501,7 @@ impl Value for Time {
 
                 f.write_fmt(format_args!("{:02}", offset_minutes / 60))?;
                 f.write_fmt(format_args!("{:02}", offset_minutes % 60))?;
-            }
+            },
         }
 
         Ok(())
@@ -652,13 +654,13 @@ impl Value for DateAndOrTime {
         match self {
             DateAndOrTime::Date(d) => {
                 Value::fmt(d, f)?;
-            }
+            },
             DateAndOrTime::Time(t) => {
                 Value::fmt(t, f)?;
-            }
+            },
             DateAndOrTime::DateTime(dt) => {
                 Value::fmt(dt, f)?;
-            }
+            },
         }
 
         Ok(())
@@ -721,10 +723,10 @@ impl Value for DateOrDateTime {
         match self {
             DateOrDateTime::Date(d) => {
                 Value::fmt(d, f)?;
-            }
+            },
             DateOrDateTime::DateTime(dt) => {
                 Value::fmt(dt, f)?;
-            }
+            },
         }
 
         Ok(())
@@ -753,12 +755,12 @@ impl ValidatedWrapper for DateOrDateTime {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Timestamp {
-    year: u16,
-    month: u8,
-    day: u8,
-    hour: u8,
-    minute: u8,
-    second: u8,
+    year:           u16,
+    month:          u8,
+    day:            u8,
+    hour:           u8,
+    minute:         u8,
+    second:         u8,
     offset_minutes: Option<i16>,
 }
 
@@ -899,11 +901,11 @@ impl Value for Timestamp {
                 Ordering::Less => {
                     f.write_char('-')?;
                     offset_minutes = -offset_minutes;
-                }
+                },
                 Ordering::Equal => {
                     f.write_char('Z')?;
                     return Ok(());
-                }
+                },
             }
 
             let m = offset_minutes / 60;

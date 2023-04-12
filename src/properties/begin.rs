@@ -1,8 +1,8 @@
-use super::*;
-
 use std::fmt::{self, Display, Formatter};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::*;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Begin;

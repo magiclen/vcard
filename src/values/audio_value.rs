@@ -1,16 +1,15 @@
-use super::super::values::uri::URI;
-use super::*;
-
-use std::fmt::Display;
-use std::fs::File;
-use std::io::{self, Read};
-use std::path::Path;
-
-use validators::base64::Base64;
-use validators::{Validated, ValidatedWrapper};
+use std::{
+    fmt::Display,
+    fs::File,
+    io::{self, Read},
+    path::Path,
+};
 
 use base64_stream::ToBase64Reader;
 use mime::Mime;
+use validators::{base64::Base64, Validated, ValidatedWrapper};
+
+use super::{super::values::uri::URI, *};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
@@ -45,13 +44,13 @@ impl AudioValue {
         }
 
         Ok(AudioValue {
-            inner: AudioValueInner::Base64(mime_type, base64),
+            inner: AudioValueInner::Base64(mime_type, base64)
         })
     }
 
     pub fn from_uri(uri: URI) -> AudioValue {
         AudioValue {
-            inner: AudioValueInner::URI(uri),
+            inner: AudioValueInner::URI(uri)
         }
     }
 
@@ -74,29 +73,25 @@ impl AudioValue {
 
         let mime_type = match mime_type {
             Some(audio_type) => audio_type,
-            None => {
-                match path.extension() {
+            None => match path.extension() {
+                Some(ext) => match ext.to_str() {
                     Some(ext) => {
-                        match ext.to_str() {
-                            Some(ext) => {
-                                let mime_type = mime_guess::from_ext(ext).first_or_octet_stream();
+                        let mime_type = mime_guess::from_ext(ext).first_or_octet_stream();
 
-                                if mime_type.type_() != mime::AUDIO {
-                                    return Err(AudioValueError::MediaTypeNotAudio);
-                                }
-
-                                mime_type
-                            }
-                            None => {
-                                return Err(AudioValueError::FileMediaTypeCannotBeDefined);
-                            }
+                        if mime_type.type_() != mime::AUDIO {
+                            return Err(AudioValueError::MediaTypeNotAudio);
                         }
-                    }
+
+                        mime_type
+                    },
                     None => {
                         return Err(AudioValueError::FileMediaTypeCannotBeDefined);
-                    }
-                }
-            }
+                    },
+                },
+                None => {
+                    return Err(AudioValueError::FileMediaTypeCannotBeDefined);
+                },
+            },
         };
 
         let mut reader = ToBase64Reader::new(File::open(path)?);
@@ -110,7 +105,7 @@ impl AudioValue {
         let base64 = unsafe { Base64::from_string_unchecked(base64) };
 
         Ok(AudioValue {
-            inner: AudioValueInner::Base64(mime_type, base64),
+            inner: AudioValueInner::Base64(mime_type, base64)
         })
     }
 }
@@ -123,10 +118,10 @@ impl Value for AudioValue {
                 f.write_str(typ.as_ref())?;
                 f.write_str(";base64,")?;
                 f.write_str(base64.get_base64())?;
-            }
+            },
             AudioValueInner::URI(uri) => {
                 f.write_str(uri.get_full_uri())?;
-            }
+            },
         }
 
         Ok(())

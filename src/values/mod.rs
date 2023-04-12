@@ -1,9 +1,12 @@
-use super::Set;
+use std::{
+    collections::HashSet,
+    fmt::{self, Formatter, Write},
+    hash::Hash,
+};
 
-use std::collections::HashSet;
-use std::fmt::{self, Formatter, Write};
-use std::hash::Hash;
 use validators::ValidatedWrapper;
+
+use super::Set;
 
 pub mod address_value;
 pub mod attribute_value;

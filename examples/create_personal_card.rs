@@ -1,23 +1,27 @@
 use std::collections::HashSet;
 
-use vcard::properties::*;
-use vcard::values::address_value::AddressValue;
-use vcard::values::date_time::{Date, DateAndOrTime, Timestamp};
-use vcard::values::email_value::EmailValue;
-use vcard::values::gender_value::{GenderValue, SexType};
-use vcard::values::image_value::ImageValue;
-use vcard::values::language_tag::LanguageTag;
-use vcard::values::name_value::NameValue;
-use vcard::values::telephone_value::TelephoneValue;
-use vcard::values::text::{Component, Text};
-use vcard::values::type_value::{TypeValue, TypeValueWithTelephoneType};
-use vcard::values::url;
-use vcard::{IanaToken, Set, VCard, XPropertyName};
-
-use vcard::parameters::language::Language;
-use vcard::parameters::typ::{Type, TypeWithTelType};
-
-use vcard::chrono::prelude::*;
+use vcard::{
+    chrono::prelude::*,
+    parameters::{
+        language::Language,
+        typ::{Type, TypeWithTelType},
+    },
+    properties::*,
+    values::{
+        address_value::AddressValue,
+        date_time::{Date, DateAndOrTime, Timestamp},
+        email_value::EmailValue,
+        gender_value::{GenderValue, SexType},
+        image_value::ImageValue,
+        language_tag::LanguageTag,
+        name_value::NameValue,
+        telephone_value::TelephoneValue,
+        text::{Component, Text},
+        type_value::{TypeValue, TypeValueWithTelephoneType},
+        url,
+    },
+    IanaToken, Set, VCard, XPropertyName,
+};
 
 #[cfg(windows)]
 const PHOTO_PATH: &str = r"examples\data\photo.png";
@@ -195,8 +199,7 @@ fn main() {
             };
 
             if let Telephone::TelephoneValue {
-                ref mut typ,
-                ..
+                ref mut typ, ..
             } = telephone
             {
                 *typ = Some(TypeWithTelType::from_type_values(type_values));
@@ -223,8 +226,7 @@ fn main() {
             };
 
             if let Telephone::TelephoneValue {
-                ref mut typ,
-                ..
+                ref mut typ, ..
             } = telephone
             {
                 *typ = Some(TypeWithTelType::from_type_values(type_values));
@@ -251,8 +253,7 @@ fn main() {
             };
 
             if let Telephone::TelephoneValue {
-                ref mut typ,
-                ..
+                ref mut typ, ..
             } = telephone
             {
                 *typ = Some(TypeWithTelType::from_type_values(type_values));

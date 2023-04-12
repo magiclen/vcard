@@ -1,10 +1,11 @@
-use super::super::values::geo_value::GeoValue;
-use super::super::values::Value;
-use super::*;
-
 use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::values::{geo_value::GeoValue, Value},
+    *,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Geo {

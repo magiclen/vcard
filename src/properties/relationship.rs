@@ -1,77 +1,74 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::language::Language;
-use super::super::parameters::media_type::MediaType;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::typ::TypeWithRelatedType;
-use super::super::parameters::Parameter;
-use super::super::values::text::Text;
-use super::super::values::uri::URI;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, language::Language, media_type::MediaType,
+            preference::Preference, property_id::PropertyID, typ::TypeWithRelatedType, Parameter,
+        },
+        values::{text::Text, uri::URI, Value},
+        Set,
+    },
+    *,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[allow(clippy::large_enum_variant, clippy::upper_case_acronyms)]
 pub enum Relationship {
     URI {
-        typ: Option<TypeWithRelatedType>,
+        typ:        Option<TypeWithRelatedType>,
         media_type: Option<MediaType>,
 
-        property_id: Option<PropertyID>,
-        preference: Option<Preference>,
+        property_id:    Option<PropertyID>,
+        preference:     Option<Preference>,
         alternative_id: Option<AlternativeID>,
-        any: Option<Set<Any>>,
-        value: URI,
+        any:            Option<Set<Any>>,
+        value:          URI,
     },
     Text {
-        typ: Option<TypeWithRelatedType>,
+        typ:      Option<TypeWithRelatedType>,
         language: Option<Language>,
 
-        property_id: Option<PropertyID>,
-        preference: Option<Preference>,
+        property_id:    Option<PropertyID>,
+        preference:     Option<Preference>,
         alternative_id: Option<AlternativeID>,
-        any: Option<Set<Any>>,
-        value: Text,
+        any:            Option<Set<Any>>,
+        value:          Text,
     },
 }
 
 impl Relationship {
     pub fn from_text(text: Text) -> Relationship {
         Relationship::Text {
-            typ: None,
+            typ:      None,
             language: None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: text,
+            any:            None,
+            value:          text,
         }
     }
 
     pub fn from_uri(uri: URI) -> Relationship {
         Relationship::URI {
-            typ: None,
+            typ:        None,
             media_type: None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: uri,
+            any:            None,
+            value:          uri,
         }
     }
 
     pub fn is_empty(&self) -> bool {
         if let Relationship::Text {
-            value,
-            ..
+            value, ..
         } = self
         {
             return value.is_empty();
@@ -115,7 +112,7 @@ impl Property for Relationship {
                 f.write_char(':')?;
 
                 Value::fmt(value, f)?;
-            }
+            },
             Relationship::Text {
                 typ,
                 language,
@@ -135,7 +132,7 @@ impl Property for Relationship {
                 f.write_str(";VALUE=text:")?;
 
                 Value::fmt(value, f)?;
-            }
+            },
         }
 
         f.write_str("\r\n")?;

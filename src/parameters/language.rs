@@ -1,9 +1,8 @@
-use super::super::values::language_tag::LanguageTag;
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{super::values::language_tag::LanguageTag, *};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Language {

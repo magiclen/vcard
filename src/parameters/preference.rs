@@ -1,10 +1,11 @@
-use super::super::values::preference_value::PreferenceValue;
-use super::super::values::Value;
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::values::{preference_value::PreferenceValue, Value},
+    *,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Preference {

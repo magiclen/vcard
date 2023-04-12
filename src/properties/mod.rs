@@ -38,43 +38,16 @@ mod url;
 mod version;
 mod x_property;
 
-pub use self::address::Address;
-pub use self::anniversary::Anniversary;
-pub use self::begin::Begin;
-pub use self::birthday::Birthday;
-pub use self::calendar_address_uri::CalendarAddressURI;
-pub use self::calendar_uri::CalendarURI;
-pub use self::category::Category;
-pub use self::client_property_id_map::ClientPropertyIDMap;
-pub use self::email::Email;
-pub use self::end::End;
-pub use self::fburl::FBURL;
-pub use self::formatted_name::FormattedName;
-pub use self::gender::Gender;
-pub use self::geo::Geo;
-pub use self::impp::IMPP;
-pub use self::key::Key;
-pub use self::language::Language;
-pub use self::logo::Logo;
-pub use self::member::Member;
-pub use self::name::Name;
-pub use self::nickname::NickName;
-pub use self::note::Note;
-pub use self::organization::Organization;
-pub use self::photo::Photo;
-pub use self::product_id::ProductID;
-pub use self::relationship::Relationship;
-pub use self::revision::Revision;
-pub use self::role::Role;
-pub use self::sound::Sound;
-pub use self::source::Source;
-pub use self::telephone::Telephone;
-pub use self::time_zone::TimeZone;
-pub use self::title::Title;
-pub use self::uid::UID;
-pub use self::url::URL;
-pub use self::version::Version;
-pub use self::x_property::XProperty;
+pub use self::{
+    address::Address, anniversary::Anniversary, begin::Begin, birthday::Birthday,
+    calendar_address_uri::CalendarAddressURI, calendar_uri::CalendarURI, category::Category,
+    client_property_id_map::ClientPropertyIDMap, email::Email, end::End, fburl::FBURL,
+    formatted_name::FormattedName, gender::Gender, geo::Geo, impp::IMPP, key::Key,
+    language::Language, logo::Logo, member::Member, name::Name, nickname::NickName, note::Note,
+    organization::Organization, photo::Photo, product_id::ProductID, relationship::Relationship,
+    revision::Revision, role::Role, sound::Sound, source::Source, telephone::Telephone,
+    time_zone::TimeZone, title::Title, uid::UID, url::URL, version::Version, x_property::XProperty,
+};
 
 pub trait Property {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error>;

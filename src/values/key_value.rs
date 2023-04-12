@@ -1,10 +1,8 @@
-use super::text::Text;
-use super::uri::URI;
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{text::Text, uri::URI, *};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
@@ -18,10 +16,10 @@ impl Value for KeyValue {
         match self {
             KeyValue::URI(uri) => {
                 Value::fmt(uri, f)?;
-            }
+            },
             KeyValue::Text(text) => {
                 Value::fmt(text, f)?;
-            }
+            },
         }
 
         Ok(())

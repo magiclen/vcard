@@ -1,10 +1,11 @@
-use super::super::values::time_zone_value::TimeZoneValue;
-use super::super::values::Value;
-use super::*;
-
 use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::values::{time_zone_value::TimeZoneValue, Value},
+    *,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct TimeZone {
@@ -26,12 +27,12 @@ impl Parameter for TimeZone {
         match &self.time_zone_value {
             TimeZoneValue::Tz(_) => {
                 Value::fmt(&self.time_zone_value, f)?;
-            }
+            },
             TimeZoneValue::URI(_) => {
                 f.write_char('\"')?;
                 Value::fmt(&self.time_zone_value, f)?;
                 f.write_char('\"')?;
-            }
+            },
         }
 
         Ok(())

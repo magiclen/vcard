@@ -1,11 +1,8 @@
-use super::text::Text;
-use super::uri::URI;
-use super::uuid::UUID;
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{text::Text, uri::URI, uuid::UUID, *};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
@@ -34,13 +31,13 @@ impl Value for UIDValue {
         match self {
             UIDValue::URI(uri) => {
                 Value::fmt(uri, f)?;
-            }
+            },
             UIDValue::UUID(uuid) => {
                 Value::fmt(uuid, f)?;
-            }
+            },
             UIDValue::Text(t) => {
                 Value::fmt(t, f)?;
-            }
+            },
         }
 
         Ok(())

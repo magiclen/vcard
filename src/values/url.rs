@@ -1,10 +1,11 @@
+use std::fmt::Write;
+
+use idna::domain_to_ascii;
+use validators::host::Host;
+
 pub use super::super::validators::http_ftp_url::HttpFtpUrlLocalableWithProtocol as URL;
 use super::*;
 use crate::PATH_PERCENT_ENCODE_SET;
-
-use idna::domain_to_ascii;
-use std::fmt::Write;
-use validators::host::Host;
 
 impl Value for URL {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
@@ -22,10 +23,10 @@ impl Value for URL {
             match domain_to_ascii(domain.get_full_domain_without_port()) {
                 Ok(domain_without_port) => {
                     f.write_str(&domain_without_port)?;
-                }
+                },
                 Err(_) => {
                     return Err(fmt::Error);
-                }
+                },
             }
 
             if let Some(port) = domain.get_port() {

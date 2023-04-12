@@ -1,26 +1,27 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::preference::Preference;
-use super::super::parameters::property_id::PropertyID;
-use super::super::parameters::typ::Type;
-use super::super::parameters::Parameter;
-use super::super::values::language_tag::LanguageTag;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, preference::Preference,
+            property_id::PropertyID, typ::Type, Parameter,
+        },
+        values::{language_tag::LanguageTag, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Language {
-    pub typ: Option<Type>,
-    pub property_id: Option<PropertyID>,
-    pub preference: Option<Preference>,
+    pub typ:            Option<Type>,
+    pub property_id:    Option<PropertyID>,
+    pub preference:     Option<Preference>,
     pub alternative_id: Option<AlternativeID>,
-    pub any: Option<Set<Any>>,
-    pub value: LanguageTag,
+    pub any:            Option<Set<Any>>,
+    pub value:          LanguageTag,
 }
 
 impl Language {
@@ -28,11 +29,11 @@ impl Language {
         Language {
             typ: None,
 
-            property_id: None,
-            preference: None,
+            property_id:    None,
+            preference:     None,
             alternative_id: None,
-            any: None,
-            value: language_tag,
+            any:            None,
+            value:          language_tag,
         }
     }
 }

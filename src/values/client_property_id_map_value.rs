@@ -1,10 +1,8 @@
-use super::uri::URI;
-use super::uuid::UUID;
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{uri::URI, uuid::UUID, *};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
@@ -15,7 +13,7 @@ enum ClientPropertyIDMapValueInner {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ClientPropertyIDMapValue {
-    d1: u8,
+    d1:    u8,
     inner: ClientPropertyIDMapValueInner,
 }
 
@@ -79,10 +77,10 @@ impl Value for ClientPropertyIDMapValue {
         match &self.inner {
             ClientPropertyIDMapValueInner::URI(uri) => {
                 Value::fmt(uri, f)?;
-            }
+            },
             ClientPropertyIDMapValueInner::UUID(uuid) => {
                 Value::fmt(uuid, f)?;
-            }
+            },
         }
 
         Ok(())

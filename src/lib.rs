@@ -423,20 +423,20 @@ pub mod parameters;
 pub mod properties;
 pub mod values;
 
-use std::collections::HashSet;
-use std::error::Error;
-use std::fmt::{self, Display, Formatter};
-use std::fs;
-use std::io;
-use std::path::Path;
+use std::{
+    collections::HashSet,
+    error::Error,
+    fmt::{self, Display, Formatter},
+    fs, io,
+    path::Path,
+};
 
+pub use mime_guess::Mime;
+use percent_encoding::{AsciiSet, CONTROLS};
 use regex::Regex;
 use validators::ValidatedCustomizedStringError;
 
 use self::properties::*;
-
-pub use mime_guess::Mime;
-use percent_encoding::{AsciiSet, CONTROLS};
 
 const FRAGMENT_PERCENT_ENCODE_SET: &AsciiSet =
     &CONTROLS.add(b' ').add(b'"').add(b'<').add(b'>').add(b'`');
@@ -460,43 +460,43 @@ validated_customized_regex_string!(pub XPropertyName, ref X_PROPERTY_NAME_RE);
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct VCard {
-    pub begin: Begin,
-    pub version: Version,
-    pub formatted_names: Set<FormattedName>,
-    pub names: Option<Set<Name>>,
-    pub nicknames: Option<Set<NickName>>,
-    pub uid: Option<UID>,
-    pub keys: Option<Set<Key>>,
-    pub gender: Option<Gender>,
-    pub birthdays: Option<Set<Birthday>>,
-    pub anniversaries: Option<Set<Anniversary>>,
-    pub addresses: Option<Set<Address>>,
-    pub telephones: Option<Set<Telephone>>,
-    pub emails: Option<Set<Email>>,
-    pub titles: Option<Set<Title>>,
-    pub roles: Option<Set<Role>>,
-    pub photos: Option<Set<Photo>>,
-    pub logos: Option<Set<Logo>>,
-    pub urls: Option<Set<URL>>,
-    pub sounds: Option<Set<Sound>>,
-    pub organizations: Option<Set<Organization>>,
-    pub members: Option<Set<Member>>,
-    pub relationships: Option<Set<Relationship>>,
-    pub categories: Option<Set<Category>>,
-    pub notes: Option<Set<Note>>,
-    pub languages: Option<Set<Language>>,
-    pub time_zones: Option<Set<TimeZone>>,
-    pub geos: Option<Set<TimeZone>>,
-    pub impps: Option<Set<IMPP>>,
-    pub sources: Option<Set<Source>>,
-    pub product_id: Option<ProductID>,
+    pub begin:                   Begin,
+    pub version:                 Version,
+    pub formatted_names:         Set<FormattedName>,
+    pub names:                   Option<Set<Name>>,
+    pub nicknames:               Option<Set<NickName>>,
+    pub uid:                     Option<UID>,
+    pub keys:                    Option<Set<Key>>,
+    pub gender:                  Option<Gender>,
+    pub birthdays:               Option<Set<Birthday>>,
+    pub anniversaries:           Option<Set<Anniversary>>,
+    pub addresses:               Option<Set<Address>>,
+    pub telephones:              Option<Set<Telephone>>,
+    pub emails:                  Option<Set<Email>>,
+    pub titles:                  Option<Set<Title>>,
+    pub roles:                   Option<Set<Role>>,
+    pub photos:                  Option<Set<Photo>>,
+    pub logos:                   Option<Set<Logo>>,
+    pub urls:                    Option<Set<URL>>,
+    pub sounds:                  Option<Set<Sound>>,
+    pub organizations:           Option<Set<Organization>>,
+    pub members:                 Option<Set<Member>>,
+    pub relationships:           Option<Set<Relationship>>,
+    pub categories:              Option<Set<Category>>,
+    pub notes:                   Option<Set<Note>>,
+    pub languages:               Option<Set<Language>>,
+    pub time_zones:              Option<Set<TimeZone>>,
+    pub geos:                    Option<Set<TimeZone>>,
+    pub impps:                   Option<Set<IMPP>>,
+    pub sources:                 Option<Set<Source>>,
+    pub product_id:              Option<ProductID>,
     pub client_property_id_maps: Option<Set<ClientPropertyIDMap>>,
-    pub fburls: Option<Set<FBURL>>,
-    pub calendar_uris: Option<Set<CalendarURI>>,
-    pub calendar_address_uris: Option<Set<CalendarAddressURI>>,
-    pub x_properties: Option<Set<XProperty>>,
-    pub revision: Option<Revision>,
-    pub end: End,
+    pub fburls:                  Option<Set<FBURL>>,
+    pub calendar_uris:           Option<Set<CalendarURI>>,
+    pub calendar_address_uris:   Option<Set<CalendarAddressURI>>,
+    pub x_properties:            Option<Set<XProperty>>,
+    pub revision:                Option<Revision>,
+    pub end:                     End,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -512,7 +512,7 @@ impl Display for VCardError {
             VCardError::FormatError(err) => Display::fmt(err, f),
             VCardError::EmptyFormatName => {
                 f.write_str("A VCard should have at least one formatted name.")
-            }
+            },
         }
     }
 }

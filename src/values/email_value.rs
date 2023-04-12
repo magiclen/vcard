@@ -1,6 +1,5 @@
-use super::super::escaping::*;
 pub use super::super::validators::email::Email as EmailValue;
-use super::*;
+use super::{super::escaping::*, *};
 
 impl Value for EmailValue {
     fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {

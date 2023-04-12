@@ -1,25 +1,26 @@
-use super::super::parameters::any::Any;
-use super::super::parameters::Parameter;
-use super::super::values::gender_value::GenderValue;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{any::Any, Parameter},
+        values::{gender_value::GenderValue, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Gender {
-    pub any: Option<Set<Any>>,
+    pub any:   Option<Set<Any>>,
     pub value: GenderValue,
 }
 
 impl Gender {
     pub fn from_gender_value(gender_value: GenderValue) -> Gender {
         Gender {
-            any: None,
-            value: gender_value,
+            any: None, value: gender_value
         }
     }
 

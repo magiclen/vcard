@@ -1,16 +1,20 @@
-use super::super::{QSAFE_RE, SAFE_RE};
-use super::*;
-
-use std::fmt::{Display, Write};
-use std::str::FromStr;
+use std::{
+    fmt::{Display, Write},
+    str::FromStr,
+};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::{QSAFE_RE, SAFE_RE},
+    *,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ParameterValue {
     qsafe: bool,
     comma: bool,
-    text: String,
+    text:  String,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -203,10 +207,10 @@ impl Value for ParameterValues {
                             f.write_str(&e.text)?;
                             break;
                         }
-                    }
+                    },
                     None => {
                         break;
-                    }
+                    },
                 }
             }
 

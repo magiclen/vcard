@@ -1,9 +1,8 @@
-use super::text::Text;
-use super::*;
-
 use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{text::Text, *};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub enum SexType {
@@ -28,7 +27,7 @@ impl SexType {
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct GenderValue {
-    sex_type: Option<SexType>,
+    sex_type:        Option<SexType>,
     gender_identity: Option<Text>,
 }
 

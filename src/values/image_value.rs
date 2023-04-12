@@ -1,16 +1,15 @@
-use super::super::values::uri::URI;
-use super::*;
-
-use std::fmt::Display;
-use std::fs::File;
-use std::io::{self, Read};
-use std::path::Path;
-
-use validators::base64::Base64;
-use validators::{Validated, ValidatedWrapper};
+use std::{
+    fmt::Display,
+    fs::File,
+    io::{self, Read},
+    path::Path,
+};
 
 use base64_stream::ToBase64Reader;
 use mime::Mime;
+use validators::{base64::Base64, Validated, ValidatedWrapper};
+
+use super::{super::values::uri::URI, *};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
@@ -45,13 +44,13 @@ impl ImageValue {
         }
 
         Ok(ImageValue {
-            inner: ImageValueInner::Base64(mime_type, base64),
+            inner: ImageValueInner::Base64(mime_type, base64)
         })
     }
 
     pub fn from_uri(uri: URI) -> ImageValue {
         ImageValue {
-            inner: ImageValueInner::URI(uri),
+            inner: ImageValueInner::URI(uri)
         }
     }
 
@@ -74,29 +73,25 @@ impl ImageValue {
 
         let mime_type = match mime_type {
             Some(image_type) => image_type,
-            None => {
-                match path.extension() {
+            None => match path.extension() {
+                Some(ext) => match ext.to_str() {
                     Some(ext) => {
-                        match ext.to_str() {
-                            Some(ext) => {
-                                let mime_type = mime_guess::from_ext(ext).first_or_octet_stream();
+                        let mime_type = mime_guess::from_ext(ext).first_or_octet_stream();
 
-                                if mime_type.type_() != mime::IMAGE {
-                                    return Err(ImageValueError::MediaTypeNotImage);
-                                }
-
-                                mime_type
-                            }
-                            None => {
-                                return Err(ImageValueError::FileMediaTypeCannotBeDefined);
-                            }
+                        if mime_type.type_() != mime::IMAGE {
+                            return Err(ImageValueError::MediaTypeNotImage);
                         }
-                    }
+
+                        mime_type
+                    },
                     None => {
                         return Err(ImageValueError::FileMediaTypeCannotBeDefined);
-                    }
-                }
-            }
+                    },
+                },
+                None => {
+                    return Err(ImageValueError::FileMediaTypeCannotBeDefined);
+                },
+            },
         };
 
         let mut reader = ToBase64Reader::new(File::open(path)?);
@@ -110,7 +105,7 @@ impl ImageValue {
         let base64 = unsafe { Base64::from_string_unchecked(base64) };
 
         Ok(ImageValue {
-            inner: ImageValueInner::Base64(mime_type, base64),
+            inner: ImageValueInner::Base64(mime_type, base64)
         })
     }
 }
@@ -123,10 +118,10 @@ impl Value for ImageValue {
                 f.write_str(typ.as_ref())?;
                 f.write_str(";base64,")?;
                 f.write_str(base64.get_base64())?;
-            }
+            },
             ImageValueInner::URI(uri) => {
                 f.write_str(uri.get_full_uri())?;
-            }
+            },
         }
 
         Ok(())

@@ -1,9 +1,8 @@
-use super::super::values::text::Text;
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{super::values::text::Text, *};
 
 // TODO: not implement yet, refer to [ISO9070] and [RFC3406]
 
@@ -29,7 +28,7 @@ impl Value for ProductIDValue {
         match self {
             ProductIDValue::Text(text) => {
                 Value::fmt(text, f)?;
-            }
+            },
         }
 
         Ok(())

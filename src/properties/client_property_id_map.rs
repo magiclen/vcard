@@ -1,17 +1,19 @@
-use super::super::parameters::any::Any;
-use super::super::parameters::Parameter;
-use super::super::values::client_property_id_map_value::ClientPropertyIDMapValue;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{any::Any, Parameter},
+        values::{client_property_id_map_value::ClientPropertyIDMapValue, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct ClientPropertyIDMap {
-    pub any: Option<Set<Any>>,
+    pub any:   Option<Set<Any>>,
     pub value: ClientPropertyIDMapValue,
 }
 
@@ -20,8 +22,7 @@ impl ClientPropertyIDMap {
         client_property_id_map_value: ClientPropertyIDMapValue,
     ) -> ClientPropertyIDMap {
         ClientPropertyIDMap {
-            any: None,
-            value: client_property_id_map_value,
+            any: None, value: client_property_id_map_value
         }
     }
 }

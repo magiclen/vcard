@@ -1,14 +1,16 @@
-use super::super::values::attribute_value::AttributeValue;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-use crate::PATH_PERCENT_ENCODE_SET;
-
 use std::fmt::{Display, Write};
 
+use regex::Regex;
 use validators::{Validated, ValidatedCustomizedStringError, ValidatedWrapper};
 
-use regex::Regex;
+use super::{
+    super::{
+        values::{attribute_value::AttributeValue, Value},
+        Set,
+    },
+    *,
+};
+use crate::PATH_PERCENT_ENCODE_SET;
 
 // TODO not implement yet, refer to [RFC4288]
 
@@ -21,8 +23,8 @@ validated_customized_regex_string!(pub MediaTypeSegment, ref MEDIA_TYPE_SEGMENT_
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct MediaType {
-    type_name: MediaTypeSegment,
-    subtype_name: MediaTypeSegment,
+    type_name:        MediaTypeSegment,
+    subtype_name:     MediaTypeSegment,
     attribute_values: Option<Set<AttributeValue>>,
 }
 

@@ -1,36 +1,37 @@
-use super::super::parameters::alternative_id::AlternativeID;
-use super::super::parameters::any::Any;
-use super::super::parameters::calscale::Calscale;
-use super::super::parameters::language::Language;
-use super::super::parameters::Parameter;
-use super::super::values::date_time::*;
-use super::super::values::text::Text;
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{self, Display, Formatter, Write};
 
 use validators::{Validated, ValidatedWrapper};
 
+use super::{
+    super::{
+        parameters::{
+            alternative_id::AlternativeID, any::Any, calscale::Calscale, language::Language,
+            Parameter,
+        },
+        values::{date_time::*, text::Text, Value},
+        Set,
+    },
+    *,
+};
+
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub enum Birthday {
     DateOrDateTime {
-        calscale: Option<Calscale>,
+        calscale:       Option<Calscale>,
         alternative_id: Option<AlternativeID>,
-        any: Option<Set<Any>>,
-        value: DateOrDateTime,
+        any:            Option<Set<Any>>,
+        value:          DateOrDateTime,
     },
     DateAndOrTime {
         alternative_id: Option<AlternativeID>,
-        any: Option<Set<Any>>,
-        value: DateAndOrTime,
+        any:            Option<Set<Any>>,
+        value:          DateAndOrTime,
     },
     Text {
-        language: Option<Language>,
+        language:       Option<Language>,
         alternative_id: Option<AlternativeID>,
-        any: Option<Set<Any>>,
-        value: Text,
+        any:            Option<Set<Any>>,
+        value:          Text,
     },
 }
 
@@ -40,16 +41,16 @@ impl Birthday {
             calscale: None,
 
             alternative_id: None,
-            any: None,
-            value: date_or_date_time,
+            any:            None,
+            value:          date_or_date_time,
         }
     }
 
     pub fn from_date_and_or_time(date_and_or_time: DateAndOrTime) -> Birthday {
         Birthday::DateAndOrTime {
             alternative_id: None,
-            any: None,
-            value: date_and_or_time,
+            any:            None,
+            value:          date_and_or_time,
         }
     }
 
@@ -58,15 +59,14 @@ impl Birthday {
             language: None,
 
             alternative_id: None,
-            any: None,
-            value: text,
+            any:            None,
+            value:          text,
         }
     }
 
     pub fn is_empty(&self) -> bool {
         if let Birthday::Text {
-            value,
-            ..
+            value, ..
         } = self
         {
             return value.is_empty();
@@ -104,7 +104,7 @@ impl Property for Birthday {
                 f.write_char(':')?;
 
                 Value::fmt(value, f)?;
-            }
+            },
             Birthday::DateAndOrTime {
                 alternative_id,
                 any,
@@ -116,7 +116,7 @@ impl Property for Birthday {
                 f.write_char(':')?;
 
                 Value::fmt(value, f)?;
-            }
+            },
             Birthday::Text {
                 language,
                 alternative_id,
@@ -130,7 +130,7 @@ impl Property for Birthday {
                 f.write_str(";VALUE=text:")?;
 
                 Value::fmt(value, f)?;
-            }
+            },
         }
 
         f.write_str("\r\n")?;

@@ -1,13 +1,17 @@
-use super::super::values::type_value::{
-    TypeValue, TypeValueWithRelatedType, TypeValueWithTelephoneType,
-};
-use super::super::values::Value;
-use super::super::Set;
-use super::*;
-
 use std::fmt::{Display, Write};
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::{
+        values::{
+            type_value::{TypeValue, TypeValueWithRelatedType, TypeValueWithTelephoneType},
+            Value,
+        },
+        Set,
+    },
+    *,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Type {

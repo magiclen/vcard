@@ -1,11 +1,9 @@
-use super::uri::URI;
-use super::*;
-
 use std::fmt::Display;
 
 use regex::Regex;
-
 use validators::{Validated, ValidatedCustomizedPhoneNumberError, ValidatedWrapper};
+
+use super::{uri::URI, *};
 
 lazy_static! {
     static ref TEL_EXTENSION_RE: Regex = Regex::new(r"^[\-0-9]+$").unwrap();
@@ -22,7 +20,7 @@ pub enum TelephoneValue {
     URI(URI),
     TelephoneNumber {
         telephone_number: TelephoneNumber,
-        extension: Option<TelephoneExtension>,
+        extension:        Option<TelephoneExtension>,
     },
 }
 
@@ -42,7 +40,7 @@ impl TelephoneValue {
                     TelephoneExtension::from_str(extension.as_ref())
                         .map_err(|_| ValidatedCustomizedPhoneNumberError::IncorrectFormat)?,
                 )
-            }
+            },
             None => None,
         };
 
@@ -58,7 +56,7 @@ impl Value for TelephoneValue {
         match self {
             TelephoneValue::URI(uri) => {
                 Value::fmt(uri, f)?;
-            }
+            },
             TelephoneValue::TelephoneNumber {
                 telephone_number,
                 extension,
@@ -68,7 +66,7 @@ impl Value for TelephoneValue {
                     f.write_str(";ext=")?;
                     f.write_str(extension.as_str())?;
                 }
-            }
+            },
         }
 
         Ok(())

@@ -1,9 +1,8 @@
-use super::uri::URI;
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{uri::URI, *};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 #[allow(clippy::upper_case_acronyms)]
@@ -17,10 +16,10 @@ impl Value for TimeZoneValue {
         match self {
             TimeZoneValue::Tz(tz) => {
                 f.write_fmt(format_args!("{:?}", tz))?;
-            }
+            },
             TimeZoneValue::URI(uri) => {
                 Value::fmt(uri, f)?;
-            }
+            },
         }
 
         Ok(())

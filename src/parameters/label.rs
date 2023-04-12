@@ -1,9 +1,11 @@
-use super::super::values::{parameter_value::ParameterValue, Value};
-use super::*;
-
 use std::fmt::Display;
 
 use validators::{Validated, ValidatedWrapper};
+
+use super::{
+    super::values::{parameter_value::ParameterValue, Value},
+    *,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 pub struct Label {
