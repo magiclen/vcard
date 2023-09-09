@@ -1,9 +1,9 @@
 [package]
 name = "vcard"
-version = "0.4.12"
+version = "0.4.13"
 authors = ["Magic Len <len@magiclen.org>"]
 edition = "2021"
-rust-version = "1.60"
+rust-version = "1.65"
 repository = "https://github.com/magiclen/vcard"
 homepage = "https://magiclen.org/vcard"
 keywords = ["vcard", "rfc6350", "rfc-6350"]
@@ -21,7 +21,7 @@ chrono-tz = "0.8"
 regex = "1.1"
 lazy_static = "1.1"
 percent-encoding = "2"
-idna = "0.3"
+idna = "0.4"
 
 [dependencies.validators]
 version = "0.20.2"
