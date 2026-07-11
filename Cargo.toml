@@ -16,9 +16,9 @@ include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
 base64 = "0.22"
 chrono = "0.4.25"
 chrono-tz = "0.10"
-language-tags = "0.3"
 mime = "0.3.4"
 mime_guess = "2"
+oxilangtag = "0.1"
 url = "2"
 
 [dependencies.validators]

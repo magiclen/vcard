@@ -63,9 +63,9 @@ pub use chrono;
 pub use chrono_tz;
 pub use error::{InvalidValueError, ParseError, ParseErrorKind, ValidationError};
 pub use fold::FoldingWriter;
-pub use language_tags;
 pub use mime;
 pub use mime_guess;
+pub use oxilangtag;
 pub use parameters::{
     AnyParameter, Calscale, Parameters, Phonetic, Pid, Pref, PropId, Script, TypeValue, TzParam,
 };

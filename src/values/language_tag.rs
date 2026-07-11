@@ -7,9 +7,9 @@ use crate::error::InvalidValueError;
 
 /// A language tag value defined by RFC 5646, e.g. `zh-Hant-TW`.
 ///
-/// It is backed by [`language_tags::LanguageTag`] which checks that the tag is well-formed.
+/// It is backed by [`oxilangtag::LanguageTag`] which checks that the tag is well-formed.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct LanguageTag(language_tags::LanguageTag);
+pub struct LanguageTag(oxilangtag::LanguageTag<String>);
 
 impl LanguageTag {
     /// Returns the language tag as a string slice.
@@ -18,16 +18,16 @@ impl LanguageTag {
         self.0.as_str()
     }
 
-    /// Returns a reference to the underlying `language_tags::LanguageTag`.
+    /// Returns a reference to the underlying `oxilangtag::LanguageTag`.
     #[inline]
-    pub const fn as_language_tag(&self) -> &language_tags::LanguageTag {
+    pub const fn as_language_tag(&self) -> &oxilangtag::LanguageTag<String> {
         &self.0
     }
 }
 
-impl From<language_tags::LanguageTag> for LanguageTag {
+impl From<oxilangtag::LanguageTag<String>> for LanguageTag {
     #[inline]
-    fn from(tag: language_tags::LanguageTag) -> Self {
+    fn from(tag: oxilangtag::LanguageTag<String>) -> Self {
         Self(tag)
     }
 }
@@ -37,7 +37,7 @@ impl FromStr for LanguageTag {
 
     #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        language_tags::LanguageTag::parse(s)
+        oxilangtag::LanguageTag::parse(s.to_string())
             .map(Self)
             .map_err(|_| InvalidValueError::new("language tag"))
     }
