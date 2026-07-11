@@ -1,23 +1,51 @@
-use regex::Regex;
+use std::{
+    fmt::{self, Display, Formatter},
+    str::FromStr,
+};
 
-use super::*;
-use crate::PATH_PERCENT_ENCODE_SET;
+use crate::error::InvalidValueError;
 
-// TODO: not implement yet, refer to [RFC5646]
+/// A language tag value defined by RFC 5646, e.g. `zh-Hant-TW`.
+///
+/// It is backed by [`language_tags::LanguageTag`] which checks that the tag is well-formed.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct LanguageTag(language_tags::LanguageTag);
 
-lazy_static! {
-    static ref LANGUAGE_TAG_RE: Regex = Regex::new(r"^[\S]+$").unwrap();
+impl LanguageTag {
+    /// Returns the language tag as a string slice.
+    #[inline]
+    pub fn as_str(&self) -> &str {
+        self.0.as_str()
+    }
+
+    /// Returns a reference to the underlying `language_tags::LanguageTag`.
+    #[inline]
+    pub const fn as_language_tag(&self) -> &language_tags::LanguageTag {
+        &self.0
+    }
 }
 
-validated_customized_regex_string!(pub LanguageTag, ref LANGUAGE_TAG_RE);
+impl From<language_tags::LanguageTag> for LanguageTag {
+    #[inline]
+    fn from(tag: language_tags::LanguageTag) -> Self {
+        Self(tag)
+    }
+}
 
-impl Value for LanguageTag {
-    fn fmt(&self, f: &mut Formatter) -> Result<(), fmt::Error> {
-        f.write_str(
-            &percent_encoding::utf8_percent_encode(self.as_str(), PATH_PERCENT_ENCODE_SET)
-                .to_string(),
-        )?;
+impl FromStr for LanguageTag {
+    type Err = InvalidValueError;
 
-        Ok(())
+    #[inline]
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        language_tags::LanguageTag::parse(s)
+            .map(Self)
+            .map_err(|_| InvalidValueError::new("language tag"))
+    }
+}
+
+impl Display for LanguageTag {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.write_str(self.as_str())
     }
 }

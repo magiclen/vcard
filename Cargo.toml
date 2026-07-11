@@ -1,28 +1,27 @@
 [package]
 name = "vcard"
-version = "0.4.13"
+version = "0.5.0"
 authors = ["Magic Len <len@magiclen.org>"]
-edition = "2021"
-rust-version = "1.65"
+edition = "2024"
+rust-version = "1.89"
 repository = "https://github.com/magiclen/vcard"
 homepage = "https://magiclen.org/vcard"
-keywords = ["vcard", "rfc6350", "rfc-6350"]
-categories = ["value-formatting", "parser-implementations"]
-description = "A pure Rust implementation of vCard based on RFC 6350."
+keywords = ["vcard", "vcf", "rfc6350", "rfc9554", "parser"]
+categories = ["parser-implementations", "value-formatting"]
+description = "A pure Rust implementation of vCard 4.0 for generating and parsing vCards, based on RFC 6350 and RFC 9554."
 license = "MIT"
 include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
 
 [dependencies]
-base64-stream = "2"
-mime = "0.3.12"
+base64 = "0.22"
+chrono = "0.4.25"
+chrono-tz = "0.10"
+language-tags = "0.3"
+mime = "0.3.4"
 mime_guess = "2"
-chrono = "0.4.6"
-chrono-tz = "0.8"
-regex = "1.1"
-lazy_static = "1.1"
-percent-encoding = "2"
-idna = "0.4"
+url = "2"
 
 [dependencies.validators]
-version = "0.20.2"
-features = ["phone-number"]
+version = "0.26"
+default-features = false
+features = ["std", "derive", "email", "phone", "uuid"]
