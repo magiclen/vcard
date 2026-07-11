@@ -375,7 +375,7 @@ println!("{}", vcard);
 ```
 */
 
-#![allow(clippy::trivial_regex, clippy::manual_range_contains, clippy::transmute_num_to_bytes)]
+#![allow(clippy::trivial_regex, clippy::manual_range_contains)]
 
 #[macro_use]
 pub extern crate validators;
@@ -453,7 +453,7 @@ lazy_static! {
     static ref X_PROPERTY_NAME_RE: Regex = Regex::new(r"^X-[A-Z0-9\-]+$").unwrap();
 }
 
-validated_customized_ranged_length_hash_set!(pub Set, 1, usize::max_value());
+validated_customized_ranged_length_hash_set!(pub Set, 1, usize::MAX);
 validated_customized_regex_string!(pub IanaToken, ref IANA_TOKEN_RE);
 validated_customized_regex_string!(pub XName, ref X_NAME_RE);
 validated_customized_regex_string!(pub XPropertyName, ref X_PROPERTY_NAME_RE);
