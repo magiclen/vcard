@@ -37,10 +37,32 @@ END:VCARD
 */
 ```
 
-A property that can appear several times is a `Vec` field, and a property that can appear at most once is an `Option` field.
+Every property is stored in a `Vec` field, and an empty list means that the property is absent.
+A property limited to one logical instance can have several representations when they all share the same ALTID.
 Every property carries its parameters in a shared `Parameters` struct and can have a group name.
+Use `VCard::validate` to check required properties, ALTID cardinality, the group kind for MEMBER, and the service type for text SOCIALPROFILE values.
 
 Use `VCard::save_to_file` to write the vCard to a file, and `vcard::values::Uri::from_file` to embed a photo, a logo or a sound as a base64 data URI.
+
+## Migrating property fields
+
+The former `Option` property fields are now `Vec` fields so that ALTID representations can be kept together.
+Replace assignments such as `vcard.birthday = Some(birthday)` with `vcard.birthdays.push(birthday)`.
+
+| Property | Former field | Current field |
+| --- | --- | --- |
+| KIND | `kind` | `kinds` |
+| BDAY | `birthday` | `birthdays` |
+| ANNIVERSARY | `anniversary` | `anniversaries` |
+| GENDER | `gender` | `genders` |
+| PRODID | `product_id` | `product_ids` |
+| REV | `revision` | `revisions` |
+| UID | `uid` | `uids` |
+| CREATED | `created` | `created` |
+| LANGUAGE | `language` | `languages` |
+
+Use `vcard::values::Date::try_from_year` to check that a year is within `0..=9999`.
+The unchecked `Date::from_year` method is deprecated and keeps its previous behavior.
 
 ## Parsing vCards
 

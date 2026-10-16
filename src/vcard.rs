@@ -2,7 +2,8 @@
 
 use std::{
     fmt::{self, Display, Formatter, Write as _},
-    fs, io,
+    fs::File,
+    io::{self, BufWriter, Write as _},
     path::Path,
 };
 
@@ -13,29 +14,29 @@ use crate::{
         Address, Anniversary, Birthday, CalendarAddressUri, CalendarUri, Categories, ClientPidMap,
         Created, Email, ExtensionProperty, Fburl, FormattedName, Gender, Geo, GramGender, Impp,
         Key, Kind, Lang, Language, Logo, Member, Name, Nickname, Note, Org, Photo, ProdId,
-        Pronouns, Related, Rev, Role, SocialProfile, Sound, Source, Tel, TimeZone, Title, Uid, Url,
-        Xml, write_property,
+        Pronouns, Property, Related, Rev, Role, SocialProfile, Sound, Source, Tel, TimeZone, Title,
+        Uid, Url, Xml, write_property,
     },
-    values::KindValue,
+    values::{KindValue, TextOrUri},
 };
 
 /// Calls another macro with the whole property table.
 ///
-/// Every entry is `(field, "NAME", cardinality)` where the cardinality is `many` for a `Vec` field or `one` for an `Option` field.
+/// Every entry is `(field, "NAME", parse_limit)`, where `one` allows one logical property and `many` has no parser limit.
 /// This table drives both the serializer and the parser dispatch, so the two can never get out of sync.
 macro_rules! for_each_property {
     ($callback:ident) => {
         $callback! {
             (sources, "SOURCE", many),
-            (kind, "KIND", one),
+            (kinds, "KIND", one),
             (xmls, "XML", many),
             (formatted_names, "FN", many),
             (names, "N", many),
             (nicknames, "NICKNAME", many),
             (photos, "PHOTO", many),
-            (birthday, "BDAY", one),
-            (anniversary, "ANNIVERSARY", one),
-            (gender, "GENDER", one),
+            (birthdays, "BDAY", one),
+            (anniversaries, "ANNIVERSARY", one),
+            (genders, "GENDER", one),
             (addresses, "ADR", many),
             (telephones, "TEL", many),
             (emails, "EMAIL", many),
@@ -51,10 +52,10 @@ macro_rules! for_each_property {
             (relations, "RELATED", many),
             (categories, "CATEGORIES", many),
             (notes, "NOTE", many),
-            (product_id, "PRODID", one),
-            (revision, "REV", one),
+            (product_ids, "PRODID", one),
+            (revisions, "REV", one),
             (sounds, "SOUND", many),
-            (uid, "UID", one),
+            (uids, "UID", one),
             (client_pid_maps, "CLIENTPIDMAP", many),
             (urls, "URL", many),
             (keys, "KEY", many),
@@ -63,7 +64,7 @@ macro_rules! for_each_property {
             (calendar_uris, "CALURI", many),
             (created, "CREATED", one),
             (gram_genders, "GRAMGENDER", many),
-            (language, "LANGUAGE", one),
+            (languages, "LANGUAGE", one),
             (pronouns, "PRONOUNS", many),
             (social_profiles, "SOCIALPROFILE", many),
         }
@@ -74,8 +75,8 @@ pub(crate) use for_each_property;
 
 /// A vCard as defined by RFC 6350 and extended by RFC 9554.
 ///
-/// A property whose cardinality allows several instances is a `Vec` field where an empty list means the property is absent.
-/// A property that can appear at most once is an `Option` field.
+/// Every property is stored in a `Vec` field where an empty list means the property is absent.
+/// A property limited to one logical instance can have several representations when they all share the same ALTID.
 /// The BEGIN, END and VERSION properties have no fields because they are handled automatically.
 ///
 /// # Examples
@@ -94,8 +95,8 @@ pub(crate) use for_each_property;
 pub struct VCard {
     /// The SOURCE properties.
     pub sources:               Vec<Source>,
-    /// The KIND property.
-    pub kind:                  Option<Kind>,
+    /// The KIND properties, which share the same ALTID when there are several of them.
+    pub kinds:                 Vec<Kind>,
     /// The XML properties.
     pub xmls:                  Vec<Xml>,
     /// The FN properties, where at least one is required for a valid vCard.
@@ -106,12 +107,12 @@ pub struct VCard {
     pub nicknames:             Vec<Nickname>,
     /// The PHOTO properties.
     pub photos:                Vec<Photo>,
-    /// The BDAY property.
-    pub birthday:              Option<Birthday>,
-    /// The ANNIVERSARY property.
-    pub anniversary:           Option<Anniversary>,
-    /// The GENDER property.
-    pub gender:                Option<Gender>,
+    /// The BDAY properties, which share the same ALTID when there are several of them.
+    pub birthdays:             Vec<Birthday>,
+    /// The ANNIVERSARY properties, which share the same ALTID when there are several of them.
+    pub anniversaries:         Vec<Anniversary>,
+    /// The GENDER properties, which share the same ALTID when there are several of them.
+    pub genders:               Vec<Gender>,
     /// The ADR properties.
     pub addresses:             Vec<Address>,
     /// The TEL properties.
@@ -142,14 +143,14 @@ pub struct VCard {
     pub categories:            Vec<Categories>,
     /// The NOTE properties.
     pub notes:                 Vec<Note>,
-    /// The PRODID property.
-    pub product_id:            Option<ProdId>,
-    /// The REV property.
-    pub revision:              Option<Rev>,
+    /// The PRODID properties, which share the same ALTID when there are several of them.
+    pub product_ids:           Vec<ProdId>,
+    /// The REV properties, which share the same ALTID when there are several of them.
+    pub revisions:             Vec<Rev>,
     /// The SOUND properties.
     pub sounds:                Vec<Sound>,
-    /// The UID property.
-    pub uid:                   Option<Uid>,
+    /// The UID properties, which share the same ALTID when there are several of them.
+    pub uids:                  Vec<Uid>,
     /// The CLIENTPIDMAP properties.
     pub client_pid_maps:       Vec<ClientPidMap>,
     /// The URL properties.
@@ -162,12 +163,12 @@ pub struct VCard {
     pub calendar_address_uris: Vec<CalendarAddressUri>,
     /// The CALURI properties.
     pub calendar_uris:         Vec<CalendarUri>,
-    /// The CREATED property defined by RFC 9554.
-    pub created:               Option<Created>,
+    /// The CREATED properties defined by RFC 9554, which share the same ALTID when there are several of them.
+    pub created:               Vec<Created>,
     /// The GRAMGENDER properties defined by RFC 9554.
     pub gram_genders:          Vec<GramGender>,
-    /// The LANGUAGE property defined by RFC 9554.
-    pub language:              Option<Language>,
+    /// The LANGUAGE properties defined by RFC 9554, which share the same ALTID when there are several of them.
+    pub languages:             Vec<Language>,
     /// The PRONOUNS properties defined by RFC 9554.
     pub pronouns:              Vec<Pronouns>,
     /// The SOCIALPROFILE properties defined by RFC 9554.
@@ -190,16 +191,45 @@ impl VCard {
 
     /// Checks the semantic rules that the type system cannot enforce.
     ///
-    /// It currently checks that at least one FN property exists and that MEMBER is only used when KIND is `group`.
+    /// Checks required properties, ALTID cardinality, the group kind for MEMBER, and the service type for text SOCIALPROFILE values.
     pub fn validate(&self) -> Result<(), ValidationError> {
         if self.formatted_names.is_empty() {
             return Err(ValidationError::MissingFormattedName);
         }
 
         if !self.members.is_empty()
-            && !self.kind.as_ref().is_some_and(|kind| kind.value == KindValue::Group)
+            && (self.kinds.is_empty()
+                || self.kinds.iter().any(|kind| kind.value != KindValue::Group))
         {
             return Err(ValidationError::MemberWithoutGroupKind);
+        }
+
+        macro_rules! validate_field {
+            (many, $field:ident, $name:literal) => {};
+            (one, $field:ident, $name:literal) => {
+                if !has_single_logical_property(&self.$field) {
+                    return Err(ValidationError::DuplicateProperty(String::from($name)));
+                }
+            };
+        }
+
+        macro_rules! validate_fields {
+            ($(($field:ident, $name:literal, $limit:tt)),* $(,)?) => {
+                $(validate_field!($limit, $field, $name);)*
+            };
+        }
+
+        for_each_property!(validate_fields);
+
+        if !has_single_logical_property(&self.names) {
+            return Err(ValidationError::DuplicateProperty(String::from("N")));
+        }
+
+        if self.social_profiles.iter().any(|profile| {
+            matches!(&profile.value, TextOrUri::Text(_))
+                && profile.parameters.service_type.is_none()
+        }) {
+            return Err(ValidationError::SocialProfileWithoutServiceType);
         }
 
         Ok(())
@@ -208,22 +238,23 @@ impl VCard {
     /// Serializes this vCard and writes it to a file.
     #[inline]
     pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), io::Error> {
-        fs::write(path, self.to_string())
+        let mut file = BufWriter::new(File::create(path)?);
+
+        write!(file, "{self}")?;
+
+        file.flush()
     }
 }
 
-/// Writes the properties of one field, which is a `Vec` or an `Option` depending on the cardinality.
-macro_rules! write_field {
-    (many, $vcard:expr, $field:ident, $name:literal, $w:expr) => {
-        for property in &$vcard.$field {
-            write_property($w, $name, property)?;
-        }
-    };
-    (one, $vcard:expr, $field:ident, $name:literal, $w:expr) => {
-        if let Some(property) = &$vcard.$field {
-            write_property($w, $name, property)?;
-        }
-    };
+fn has_single_logical_property<V>(properties: &[Property<V>]) -> bool {
+    if properties.len() < 2 {
+        return true;
+    }
+
+    let altid = properties[0].parameters.altid.as_deref();
+
+    altid.is_some()
+        && properties[1..].iter().all(|property| property.parameters.altid.as_deref() == altid)
 }
 
 impl Display for VCard {
@@ -237,8 +268,10 @@ impl Display for VCard {
         w.end_line()?;
 
         macro_rules! write_fields {
-            ($(($field:ident, $name:literal, $card:tt)),* $(,)?) => {
-                $(write_field!($card, self, $field, $name, &mut w);)*
+            ($(($field:ident, $name:literal, $limit:tt)),* $(,)?) => {
+                $(for property in &self.$field {
+                    write_property(&mut w, $name, property)?;
+                })*
             };
         }
 

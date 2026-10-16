@@ -42,7 +42,7 @@ fn rfc6350_author_card() {
 
     assert_eq!(
         DateAndOrTimeOrText::from(Date::from_month_day(2, 3).unwrap()),
-        vcard.birthday.as_ref().unwrap().value
+        vcard.birthdays[0].value
     );
 
     assert_eq!(
@@ -55,10 +55,10 @@ fn rfc6350_author_card() {
             )
             .unwrap()
         )),
-        vcard.anniversary.as_ref().unwrap().value
+        vcard.anniversaries[0].value
     );
 
-    assert_eq!(Some(Sex::Male), vcard.gender.as_ref().unwrap().value.sex);
+    assert_eq!(Some(Sex::Male), vcard.genders[0].value.sex);
 
     assert_eq!("fr", vcard.langs[0].value.as_str());
     assert_eq!(Some(Pref::new(1).unwrap()), vcard.langs[0].parameters.pref);
@@ -113,7 +113,7 @@ fn group_card() {
         .parse()
         .unwrap();
 
-    assert_eq!(KindValue::Group, vcard.kind.as_ref().unwrap().value);
+    assert_eq!(KindValue::Group, vcard.kinds[0].value);
     assert_eq!(2, vcard.members.len());
     assert_eq!("urn:uuid:03a0e51f-d1aa-4385-8a53-e29025acd8af", vcard.members[0].value.as_str());
 
@@ -177,11 +177,16 @@ fn missing_formatted_name() {
 
 #[test]
 fn duplicate_single_property() {
-    let error = "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\nBDAY:19900102\r\nBDAY:19900103\r\nEND:\
-                 VCARD\r\n"
+    for (first, second) in [("", ""), (";ALTID=1", ";ALTID=2"), (";ALTID=1", ""), ("", ";ALTID=1")]
+    {
+        let error = format!(
+            "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\nBDAY{first}:19900102\r\nBDAY{second}:\
+             19900103\r\nEND:VCARD\r\n"
+        )
         .parse::<VCard>()
         .unwrap_err();
 
-    assert_eq!(5, error.line);
-    assert_eq!(ParseErrorKind::DuplicateProperty(String::from("BDAY")), error.kind);
+        assert_eq!(5, error.line);
+        assert_eq!(ParseErrorKind::DuplicateProperty(String::from("BDAY")), error.kind);
+    }
 }

@@ -41,6 +41,10 @@ pub enum ValidationError {
     MissingFormattedName,
     /// The MEMBER property can only be used when the KIND property is set to `group`.
     MemberWithoutGroupKind,
+    /// A property limited to one logical instance has representations without a shared ALTID.
+    DuplicateProperty(String),
+    /// A text SOCIALPROFILE property must have a SERVICE-TYPE parameter.
+    SocialProfileWithoutServiceType,
 }
 
 impl Display for ValidationError {
@@ -50,6 +54,12 @@ impl Display for ValidationError {
             Self::MissingFormattedName => f.write_str("a vCard must have at least one FN property"),
             Self::MemberWithoutGroupKind => {
                 f.write_str("the MEMBER property can only be used when KIND is group")
+            },
+            Self::DuplicateProperty(name) => {
+                write!(f, "the property {name} has more than one logical instance")
+            },
+            Self::SocialProfileWithoutServiceType => {
+                f.write_str("a text SOCIALPROFILE property must have a SERVICE-TYPE parameter")
             },
         }
     }
@@ -101,7 +111,7 @@ pub enum ParseErrorKind {
         /// The name of the property whose value is invalid.
         property: String,
     },
-    /// A property whose cardinality is at most one appears more than once.
+    /// A property whose cardinality is at most one has multiple logical instances without a shared ALTID.
     DuplicateProperty(String),
     /// The vCard does not contain any FN property.
     MissingFormattedName,

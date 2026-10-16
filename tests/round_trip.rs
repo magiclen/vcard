@@ -171,3 +171,54 @@ fn parameter_text_and_uri_values() {
 
     assert_eq!(vcard, vcard.to_string().parse::<VCard>().unwrap());
 }
+
+#[test]
+fn single_properties_keep_altid_representations() {
+    let input = concat!(
+        "BEGIN:VCARD\r\n",
+        "VERSION:4.0\r\n",
+        "KIND;ALTID=1:group\r\n",
+        "KIND;ALTID=1:group\r\n",
+        "FN:The Doe family\r\n",
+        "N;ALTID=1;LANGUAGE=en:Doe;John;;;\r\n",
+        "N;ALTID=1;LANGUAGE=zh-Hant:杜;約翰;;;\r\n",
+        "BDAY;ALTID=1:19900102\r\n",
+        "BDAY;VALUE=text;ALTID=1:January 2\\, 1990\r\n",
+        "ANNIVERSARY;ALTID=1:20000102\r\n",
+        "ANNIVERSARY;VALUE=text;ALTID=1:January 2\\, 2000\r\n",
+        "GENDER;ALTID=1;LANGUAGE=en:M;Man\r\n",
+        "GENDER;ALTID=1;LANGUAGE=zh-Hant:M;男性\r\n",
+        "MEMBER:urn:example:member\r\n",
+        "PRODID;ALTID=1;LANGUAGE=en:Address Book\r\n",
+        "PRODID;ALTID=1;LANGUAGE=zh-Hant:通訊錄\r\n",
+        "REV;ALTID=1:20161231T235960Z\r\n",
+        "REV;ALTID=1:20170101T075960+0800\r\n",
+        "UID;ALTID=1:urn:example:doe-family\r\n",
+        "UID;VALUE=text;ALTID=1:doe-family\r\n",
+        "CREATED;ALTID=1:20000102T120000Z\r\n",
+        "CREATED;ALTID=1:20000102T200000+0800\r\n",
+        "LANGUAGE;ALTID=1:en\r\n",
+        "LANGUAGE;ALTID=1:EN\r\n",
+        "END:VCARD\r\n",
+    );
+
+    let vcard: VCard = input.parse().unwrap();
+
+    for (name, count) in [
+        ("KIND", vcard.kinds.len()),
+        ("N", vcard.names.len()),
+        ("BDAY", vcard.birthdays.len()),
+        ("ANNIVERSARY", vcard.anniversaries.len()),
+        ("GENDER", vcard.genders.len()),
+        ("PRODID", vcard.product_ids.len()),
+        ("REV", vcard.revisions.len()),
+        ("UID", vcard.uids.len()),
+        ("CREATED", vcard.created.len()),
+        ("LANGUAGE", vcard.languages.len()),
+    ] {
+        assert_eq!(2, count, "the {name} representations were lost");
+    }
+
+    assert!(vcard.validate().is_ok());
+    assert_eq!(vcard, vcard.to_string().parse::<VCard>().unwrap());
+}

@@ -203,20 +203,22 @@ fn add_property(
                 value: parse_value!($property_name),
             })
         };
-        (one, $field:ident, $property_name:literal) => {
-            if vcard.$field.is_some() {
+        (one, $field:ident, $property_name:literal) => {{
+            if let Some(first) = vcard.$field.first()
+                && (parameters.altid.is_none() || first.parameters.altid != parameters.altid)
+            {
                 return Err(ParseError {
                     line: number,
                     kind: ParseErrorKind::DuplicateProperty(String::from($property_name)),
                 });
-            } else {
-                vcard.$field = Some(Property {
-                    group,
-                    parameters,
-                    value: parse_value!($property_name),
-                })
             }
-        };
+
+            vcard.$field.push(Property {
+                group,
+                parameters,
+                value: parse_value!($property_name),
+            })
+        }};
     }
 
     macro_rules! dispatch {

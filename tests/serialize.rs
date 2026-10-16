@@ -19,7 +19,7 @@ fn basic_v4p0() {
 fn personal_card() {
     let mut vcard = VCard::new("David Wang");
 
-    vcard.kind = Some(Kind::new(KindValue::Individual));
+    vcard.kinds.push(Kind::new(KindValue::Individual));
 
     let mut formatted_name = FormattedName::from("王大衛");
     formatted_name.parameters.language = Some("zh-Hant".parse().unwrap());
@@ -33,9 +33,9 @@ fn personal_card() {
 
     vcard.nicknames.push(Nickname::new(vec![String::from("Dave"), String::from("大衛")]));
 
-    vcard.birthday = Some(Birthday::new(Date::from_year_month_day(1990, 1, 2).unwrap().into()));
+    vcard.birthdays.push(Birthday::new(Date::from_year_month_day(1990, 1, 2).unwrap().into()));
 
-    vcard.gender = Some(Gender::new(GenderValue {
+    vcard.genders.push(Gender::new(GenderValue {
         sex: Some(Sex::Male), identity: None
     }));
 
@@ -62,10 +62,11 @@ fn personal_card() {
 
     vcard.time_zones.push(TimeZone::new(TzValue::from_time_zone(chrono_tz::Tz::Asia__Taipei)));
 
-    vcard.revision = Some(Rev::new("20080124T195509Z".parse().unwrap()));
+    vcard.revisions.push(Rev::new("20080124T195509Z".parse().unwrap()));
 
-    vcard.uid =
-        Some(Uid::new(TextOrUri::from_uuid_str("550e8400-e29b-41d4-a716-446655440000").unwrap()));
+    vcard
+        .uids
+        .push(Uid::new(TextOrUri::from_uuid_str("550e8400-e29b-41d4-a716-446655440000").unwrap()));
 
     vcard.urls.push(Url::new("https://magiclen.org".parse().unwrap()));
 
@@ -102,7 +103,7 @@ fn escaping() {
         ..NameValue::default()
     }));
 
-    vcard.gender = Some(Gender::new(GenderValue {
+    vcard.genders.push(Gender::new(GenderValue {
         sex:      Some(Sex::Other),
         identity: Some(String::from("it's complicated")),
     }));
@@ -194,13 +195,13 @@ fn rfc9554_card() {
     note.parameters.author_name = Some(String::from("Jane \"JD\" Doe"));
     vcard.notes.push(note);
 
-    vcard.created = Some(Created::new("20220705T093412Z".parse().unwrap()));
+    vcard.created.push(Created::new("20220705T093412Z".parse().unwrap()));
 
     let mut gram_gender = GramGender::new(GramGenderValue::Feminine);
     gram_gender.parameters.language = Some("de".parse().unwrap());
     vcard.gram_genders.push(gram_gender);
 
-    vcard.language = Some(Language::new("zh-Hant".parse().unwrap()));
+    vcard.languages.push(Language::new("zh-Hant".parse().unwrap()));
 
     let mut pronouns = Pronouns::from("xe/xir");
     pronouns.parameters.pref = Some(Pref::new(1).unwrap());
