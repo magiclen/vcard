@@ -36,9 +36,9 @@ fn rfc6350_author_card() {
     assert_eq!("Simon Perreault", vcard.formatted_names[0].value);
 
     let name = &vcard.names[0].value;
-    assert_eq!(name.family_names, ["Perreault"]);
-    assert_eq!(name.given_names, ["Simon"]);
-    assert_eq!(name.honorific_suffixes, ["ing. jr", "M.Sc."]);
+    assert_eq!(vec!["Perreault"], name.family_names);
+    assert_eq!(vec!["Simon"], name.given_names);
+    assert_eq!(vec!["ing. jr", "M.Sc."], name.honorific_suffixes);
 
     assert_eq!(
         DateAndOrTimeOrText::from(Date::from_month_day(2, 3).unwrap()),
@@ -68,26 +68,23 @@ fn rfc6350_author_card() {
 
     // The folded ADR line must be unfolded before being split into components.
     let address = &vcard.addresses[0].value;
-    assert_eq!(address.extended_addresses, ["Suite D2-630"]);
-    assert_eq!(address.street_addresses, ["2875 Laurier"]);
-    assert_eq!(address.localities, ["Quebec"]);
-    assert_eq!(address.regions, ["QC"]);
-    assert_eq!(address.postal_codes, ["G1V 2M2"]);
-    assert_eq!(address.countries, ["Canada"]);
+    assert_eq!(vec!["Suite D2-630"], address.extended_addresses);
+    assert_eq!(vec!["2875 Laurier"], address.street_addresses);
+    assert_eq!(vec!["Quebec"], address.localities);
+    assert_eq!(vec!["QC"], address.regions);
+    assert_eq!(vec!["G1V 2M2"], address.postal_codes);
+    assert_eq!(vec!["Canada"], address.countries);
 
     // The quoted TYPE list form must be accepted and split into values.
     let telephone = &vcard.telephones[0];
     assert_eq!(TelValue::Uri("tel:+1-418-656-9254;ext=102".parse().unwrap()), telephone.value);
-    assert_eq!(telephone.parameters.types, [TypeValue::Work, TypeValue::Voice]);
+    assert_eq!(vec![TypeValue::Work, TypeValue::Voice], telephone.parameters.types);
     assert_eq!(Some(Pref::new(1).unwrap()), telephone.parameters.pref);
 
-    assert_eq!(vcard.telephones[1].parameters.types, [
-        TypeValue::Work,
-        TypeValue::Cell,
-        TypeValue::Voice,
-        TypeValue::Video,
-        TypeValue::Text
-    ]);
+    assert_eq!(
+        vec![TypeValue::Work, TypeValue::Cell, TypeValue::Voice, TypeValue::Video, TypeValue::Text],
+        vcard.telephones[1].parameters.types
+    );
 
     assert_eq!("simon.perreault@viagenie.ca", vcard.emails[0].value.as_str());
 
@@ -148,13 +145,21 @@ fn extension_property() {
     assert_eq!("item1", extension.group.as_ref().unwrap().as_str());
     assert_eq!("X-FOO", extension.name.as_str());
     assert_eq!("X-BAR", extension.parameters.any[0].name.as_str());
-    assert_eq!(extension.parameters.any[0].values, ["1"]);
+    assert_eq!(vec!["1"], extension.parameters.any[0].values);
     assert_eq!("hello\\, world", extension.value);
 }
 
 #[test]
 fn lf_only_line_breaks() {
     let vcard: VCard = "BEGIN:VCARD\nVERSION:4.0\nFN:Magic Len\nEND:VCARD\n".parse().unwrap();
+
+    assert_eq!("Magic Len", vcard.formatted_names[0].value);
+}
+
+#[test]
+fn byte_order_mark() {
+    let vcard: VCard =
+        "\u{FEFF}BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Magic Len\r\nEND:VCARD\r\n".parse().unwrap();
 
     assert_eq!("Magic Len", vcard.formatted_names[0].value);
 }

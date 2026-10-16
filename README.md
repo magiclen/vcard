@@ -44,7 +44,7 @@ Use `VCard::validate` to check required properties, ALTID cardinality, the group
 
 Use `VCard::save_to_file` to write the vCard to a file, and `vcard::values::Uri::from_file` to embed a photo, a logo or a sound as a base64 data URI.
 
-## Migrating property fields
+## Migrating from 0.5 to 0.6
 
 The former `Option` property fields are now `Vec` fields so that ALTID representations can be kept together.
 Replace assignments such as `vcard.birthday = Some(birthday)` with `vcard.birthdays.push(birthday)`.
@@ -61,8 +61,8 @@ Replace assignments such as `vcard.birthday = Some(birthday)` with `vcard.birthd
 | CREATED | `created` | `created` |
 | LANGUAGE | `language` | `languages` |
 
-Use `vcard::values::Date::try_from_year` to check that a year is within `0..=9999`.
-The unchecked `Date::from_year` method is deprecated and keeps its previous behavior.
+`vcard::values::Date::from_year` now returns a `Result` like the other `Date` constructors.
+Every `Date` constructor rejects a year outside `0..=9999`.
 
 ## Parsing vCards
 

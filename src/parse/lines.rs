@@ -5,6 +5,7 @@ use std::borrow::Cow;
 /// Iterates over unfolded logical lines together with their first physical line numbers.
 ///
 /// Both CRLF and bare LF line breaks are accepted, and blank lines are skipped.
+/// A byte order mark at the start of the input is ignored.
 pub(crate) struct LogicalLines<'a> {
     input:       &'a str,
     position:    usize,
@@ -15,8 +16,8 @@ impl<'a> LogicalLines<'a> {
     #[inline]
     pub(crate) fn new(input: &'a str) -> Self {
         Self {
-            input,
-            position: 0,
+            input:       input.strip_prefix('\u{FEFF}').unwrap_or(input),
+            position:    0,
             line_number: 1,
         }
     }

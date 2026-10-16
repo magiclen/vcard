@@ -191,3 +191,19 @@ pub(crate) fn write_param_value(w: &mut impl Write, s: &str) -> fmt::Result {
         write_caret_encoded(w, s)
     }
 }
+
+/// Writes a URI parameter value inside double quotes.
+/// A double quote cannot appear inside a quoted parameter value, so it is percent-encoded as `%22`.
+pub(crate) fn write_quoted_uri(w: &mut impl Write, uri: &str) -> fmt::Result {
+    w.write_char('"')?;
+
+    for (i, part) in uri.split('"').enumerate() {
+        if i > 0 {
+            w.write_str("%22")?;
+        }
+
+        w.write_str(part)?;
+    }
+
+    w.write_char('"')
+}

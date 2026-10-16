@@ -136,7 +136,7 @@ impl Display for ParseErrorKind {
                 property,
             } => write!(f, "the value of the property {property} is invalid"),
             Self::DuplicateProperty(name) => {
-                write!(f, "the property {name} appears more than once")
+                write!(f, "the property {name} has more than one logical instance")
             },
             Self::MissingFormattedName => f.write_str("the vCard does not have any FN property"),
         }

@@ -16,7 +16,7 @@ use vcard::{
 
 let mut vcard = VCard::new("David Wang");
 
-let mut name = Name::new(NameValue {
+let name = Name::new(NameValue {
     family_names: vec![String::from("Wang")],
     given_names: vec![String::from("David")],
     ..NameValue::default()

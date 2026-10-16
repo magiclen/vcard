@@ -2,20 +2,26 @@ use vcard::{SocialProfile, VCard, ValidationError, values::TextOrUri};
 
 #[test]
 fn names_need_a_shared_altid() {
-    let mut vcard: VCard = "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\nN:Doe;John;;;\r\nN:杜;約翰;;;\
-                            \r\nEND:VCARD\r\n"
-        .parse()
-        .unwrap();
-
-    assert_eq!(Err(ValidationError::DuplicateProperty(String::from("N"))), vcard.validate());
-
-    for name in &mut vcard.names {
-        name.parameters.altid = Some(String::from("1"));
-    }
+    let mut vcard: VCard = concat!(
+        "BEGIN:VCARD\r\n",
+        "VERSION:4.0\r\n",
+        "FN:Test\r\n",
+        "N;ALTID=1:Doe;John;;;\r\n",
+        "N;ALTID=1:杜;約翰;;;\r\n",
+        "END:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
 
     assert!(vcard.validate().is_ok());
 
     vcard.names[1].parameters.altid = Some(String::from("2"));
+
+    assert_eq!(Err(ValidationError::DuplicateProperty(String::from("N"))), vcard.validate());
+
+    for name in &mut vcard.names {
+        name.parameters.altid = None;
+    }
 
     assert_eq!(Err(ValidationError::DuplicateProperty(String::from("N"))), vcard.validate());
 }

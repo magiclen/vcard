@@ -23,7 +23,7 @@ use crate::{
 /// Calls another macro with the whole property table.
 ///
 /// Every entry is `(field, "NAME", parse_limit)`, where `one` allows one logical property and `many` has no parser limit.
-/// This table drives both the serializer and the parser dispatch, so the two can never get out of sync.
+/// This table drives the serializer, the parser dispatch and the validator, so they can never get out of sync.
 macro_rules! for_each_property {
     ($callback:ident) => {
         $callback! {
@@ -31,7 +31,7 @@ macro_rules! for_each_property {
             (kinds, "KIND", one),
             (xmls, "XML", many),
             (formatted_names, "FN", many),
-            (names, "N", many),
+            (names, "N", one),
             (nicknames, "NICKNAME", many),
             (photos, "PHOTO", many),
             (birthdays, "BDAY", one),
@@ -220,10 +220,6 @@ impl VCard {
         }
 
         for_each_property!(validate_fields);
-
-        if !has_single_logical_property(&self.names) {
-            return Err(ValidationError::DuplicateProperty(String::from("N")));
-        }
 
         if self.social_profiles.iter().any(|profile| {
             matches!(&profile.value, TextOrUri::Text(_))

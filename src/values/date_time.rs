@@ -215,17 +215,9 @@ impl Date {
         })
     }
 
-    /// Creates a date with only a year without checking the four-digit year limit.
-    /// Use [`Date::try_from_year`] to validate the year.
-    #[deprecated(since = "0.5.0", note = "use `try_from_year()` instead")]
-    pub const fn from_year(year: u16) -> Self {
-        Self {
-            year: Some(year), month: None, day: None
-        }
-    }
-
-    /// Creates a date with only a year within `0..=9999`, e.g. `1985`.
-    pub const fn try_from_year(year: u16) -> Result<Self, InvalidValueError> {
+    /// Creates a date with only a year, e.g. `1985`.
+    /// The year must be within `0..=9999`.
+    pub const fn from_year(year: u16) -> Result<Self, InvalidValueError> {
         if year > 9999 {
             return Err(DATE_ERROR);
         }
@@ -295,10 +287,6 @@ impl TryFrom<NaiveDate> for Date {
     fn try_from(date: NaiveDate) -> Result<Self, Self::Error> {
         let year = u16::try_from(date.year()).map_err(|_| DATE_ERROR)?;
 
-        if year > 9999 {
-            return Err(DATE_ERROR);
-        }
-
         Self::from_year_month_day(year, date.month() as u8, date.day() as u8)
     }
 }
@@ -348,7 +336,7 @@ impl FromStr for Date {
         }
 
         match bytes.len() {
-            4 => Self::try_from_year(parse_digits(bytes).ok_or(DATE_ERROR)?),
+            4 => Self::from_year(parse_digits(bytes).ok_or(DATE_ERROR)?),
             7 if bytes[4] == b'-' => Self::from_year_month(
                 parse_digits(&bytes[..4]).ok_or(DATE_ERROR)?,
                 parse_digits(&bytes[5..]).ok_or(DATE_ERROR)? as u8,

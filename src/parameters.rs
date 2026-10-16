@@ -10,7 +10,7 @@ use mime::Mime;
 use crate::{
     error::{InvalidValueError, ParseErrorKind},
     fold::FoldingWriter,
-    syntax::{caret_decode, write_param_value},
+    syntax::{caret_decode, write_param_value, write_quoted_uri},
     values::{LanguageTag, Timestamp, Token, Uri},
 };
 
@@ -387,6 +387,9 @@ impl Display for Script {
 }
 
 /// The value of the TZ parameter, which is a time zone text or a URI.
+///
+/// When parsing, a quoted value that is a valid URI becomes [`TzParam::Uri`], and any other value becomes [`TzParam::Text`].
+/// A text value that needs quotes, e.g. `GMT+08:00`, can therefore be read back as a URI.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TzParam {
     /// A time zone text, which should be a name from the IANA time zone database.
@@ -523,7 +526,8 @@ impl Parameters {
 
         if let Some(geo) = &self.geo {
             // The GEO parameter is always written inside double quotes, as its ABNF requires.
-            write!(w, ";GEO=\"{geo}\"")?;
+            w.write_str(";GEO=")?;
+            write_quoted_uri(w, geo.as_str())?;
         }
 
         if let Some(tz) = &self.tz {
@@ -532,7 +536,10 @@ impl Parameters {
                     w.write_str(";TZ=")?;
                     write_param_value(w, text)?;
                 },
-                TzParam::Uri(uri) => write!(w, ";TZ=\"{uri}\"")?,
+                TzParam::Uri(uri) => {
+                    w.write_str(";TZ=")?;
+                    write_quoted_uri(w, uri.as_str())?;
+                },
             }
         }
 
@@ -543,7 +550,8 @@ impl Parameters {
 
         if let Some(author) = &self.author {
             // The AUTHOR parameter is always written inside double quotes, as its ABNF requires.
-            write!(w, ";AUTHOR=\"{author}\"")?;
+            w.write_str(";AUTHOR=")?;
+            write_quoted_uri(w, author.as_str())?;
         }
 
         if let Some(author_name) = &self.author_name {

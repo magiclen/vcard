@@ -415,7 +415,7 @@ pub type FormattedName = Property<String>;
 
 /// The N property, which holds the structured name components.
 ///
-/// This crate stores N properties in a list because RFC 9554 allows several of them when they share the same ALTID, e.g. for phonetic representations.
+/// Several N properties are allowed only when they share the same ALTID, e.g. for translations or the phonetic representations of RFC 9554.
 pub type Name = Property<NameValue>;
 
 /// The NICKNAME property, which holds one or more nicknames.
