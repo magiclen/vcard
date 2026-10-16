@@ -162,7 +162,7 @@ pub(crate) fn caret_decode(s: &str) -> String {
         match chars.next() {
             Some('^') => out.push('^'),
             Some('\'') => out.push('"'),
-            Some('n') | Some('N') => out.push('\n'),
+            Some('n') => out.push('\n'),
             Some(other) => {
                 out.push('^');
                 out.push(other);

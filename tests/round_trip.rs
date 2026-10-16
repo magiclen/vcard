@@ -1,4 +1,4 @@
-use vcard::VCard;
+use vcard::{TzParam, VCard};
 
 /// Parses the input, serializes it, and parses it again, expecting both parses to give equal structures.
 fn assert_round_trip(input: &str) {
@@ -141,4 +141,33 @@ fn birthday_date_and_time_forms() {
 
         assert_canonical(&input);
     }
+}
+
+#[test]
+fn parameter_text_and_uri_values() {
+    let input = "BEGIN:VCARD\r\n\
+                 VERSION:4.0\r\n\
+                 FN:Parameters\r\n\
+                 ADR;TZ=\"Europe/Paris\";LABEL=A^NB^nC^^D^'E:;;;;;;\r\n\
+                 ADR;TZ=\"Europe/Paris, local\":;;;;;;\r\n\
+                 ADR;TZ=\"https://example.com/^n/^^/^'\":;;;;;;\r\n\
+                 NOTE;AUTHOR=\"https://example.com/^n/^^/^'\";GEO=\"https://example.com/^n/^^/^'\":Test\r\n\
+                 END:VCARD\r\n";
+
+    let vcard: VCard = input.parse().unwrap();
+
+    assert_eq!(Some(TzParam::Text(String::from("Europe/Paris"))), vcard.addresses[0].parameters.tz);
+    assert_eq!(Some("A^NB\nC^D\"E"), vcard.addresses[0].parameters.label.as_deref());
+    assert_eq!(
+        Some(TzParam::Text(String::from("Europe/Paris, local"))),
+        vcard.addresses[1].parameters.tz
+    );
+
+    let uri = "https://example.com/^n/^^/^'";
+
+    assert_eq!(Some(TzParam::Uri(uri.parse().unwrap())), vcard.addresses[2].parameters.tz);
+    assert_eq!(uri, vcard.notes[0].parameters.author.as_ref().unwrap().as_str());
+    assert_eq!(uri, vcard.notes[0].parameters.geo.as_ref().unwrap().as_str());
+
+    assert_eq!(vcard, vcard.to_string().parse::<VCard>().unwrap());
 }

@@ -635,19 +635,22 @@ impl Parameters {
                 },
                 "SORT-AS" => parameters.sort_as.extend(list_values(raw, false)),
                 "GEO" => {
-                    parameters.geo = Some(single_value(raw).parse().map_err(|_| invalid())?);
+                    parameters.geo = Some(unquote(raw).parse().map_err(|_| invalid())?);
                 },
                 "TZ" => {
-                    // A quoted TZ parameter carries a URI and a plain one carries text.
-                    parameters.tz = Some(if raw.starts_with('"') {
-                        TzParam::Uri(single_value(raw).parse().map_err(|_| invalid())?)
-                    } else {
-                        TzParam::Text(single_value(raw))
-                    });
+                    parameters.tz = Some(
+                        if raw.starts_with('"')
+                            && let Ok(uri) = unquote(raw).parse()
+                        {
+                            TzParam::Uri(uri)
+                        } else {
+                            TzParam::Text(single_value(raw))
+                        },
+                    );
                 },
                 "LABEL" => parameters.label = Some(single_value(raw)),
                 "AUTHOR" => {
-                    parameters.author = Some(single_value(raw).parse().map_err(|_| invalid())?);
+                    parameters.author = Some(unquote(raw).parse().map_err(|_| invalid())?);
                 },
                 "AUTHOR-NAME" => parameters.author_name = Some(single_value(raw)),
                 "CREATED" => {
