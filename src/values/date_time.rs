@@ -189,7 +189,12 @@ const DATE_ERROR: InvalidValueError = InvalidValueError::new("date");
 
 impl Date {
     /// Creates a complete date, validated against the real calendar.
+    /// The year must be within `0..=9999`.
     pub fn from_year_month_day(year: u16, month: u8, day: u8) -> Result<Self, InvalidValueError> {
+        if year > 9999 {
+            return Err(DATE_ERROR);
+        }
+
         NaiveDate::from_ymd_opt(i32::from(year), u32::from(month), u32::from(day))
             .ok_or(DATE_ERROR)?;
 
@@ -199,8 +204,9 @@ impl Date {
     }
 
     /// Creates a date with only a year and a month, e.g. `1985-04`.
+    /// The year must be within `0..=9999`.
     pub const fn from_year_month(year: u16, month: u8) -> Result<Self, InvalidValueError> {
-        if month < 1 || month > 12 {
+        if year > 9999 || month < 1 || month > 12 {
             return Err(DATE_ERROR);
         }
 
@@ -209,11 +215,24 @@ impl Date {
         })
     }
 
-    /// Creates a date with only a year, e.g. `1985`.
+    /// Creates a date with only a year without checking the four-digit year limit.
+    /// Use [`Date::try_from_year`] to validate the year.
+    #[deprecated(since = "0.5.0", note = "use `try_from_year()` instead")]
     pub const fn from_year(year: u16) -> Self {
         Self {
             year: Some(year), month: None, day: None
         }
+    }
+
+    /// Creates a date with only a year within `0..=9999`, e.g. `1985`.
+    pub const fn try_from_year(year: u16) -> Result<Self, InvalidValueError> {
+        if year > 9999 {
+            return Err(DATE_ERROR);
+        }
+
+        Ok(Self {
+            year: Some(year), month: None, day: None
+        })
     }
 
     /// Creates a date with only a month and a day, e.g. `--0412`.
@@ -329,7 +348,7 @@ impl FromStr for Date {
         }
 
         match bytes.len() {
-            4 => Ok(Self::from_year(parse_digits(bytes).ok_or(DATE_ERROR)?)),
+            4 => Self::try_from_year(parse_digits(bytes).ok_or(DATE_ERROR)?),
             7 if bytes[4] == b'-' => Self::from_year_month(
                 parse_digits(&bytes[..4]).ok_or(DATE_ERROR)?,
                 parse_digits(&bytes[5..]).ok_or(DATE_ERROR)? as u8,
@@ -675,8 +694,11 @@ impl Timestamp {
             return Err(TIMESTAMP_ERROR);
         }
 
+        // Keep the leap second marker when dropping the fractional part.
+        let nanosecond = date_time.nanosecond() / 1_000_000_000 * 1_000_000_000;
+
         Ok(Self {
-            date_time: date_time.with_nanosecond(0).unwrap(),
+            date_time: date_time.with_nanosecond(nanosecond).unwrap(),
             zone,
         })
     }
@@ -708,6 +730,12 @@ impl Timestamp {
 }
 
 impl From<chrono::DateTime<Utc>> for Timestamp {
+    /// Converts a UTC date and time, dropping the sub-second part.
+    ///
+    /// # Panics
+    ///
+    /// Panics when the year is outside `0..=9999`.
+    /// Use [`Timestamp::new`] to handle an out-of-range year as an error.
     #[inline]
     fn from(date_time: chrono::DateTime<Utc>) -> Self {
         Self::new(date_time.naive_utc(), Some(Zone::Utc)).unwrap()
@@ -715,8 +743,18 @@ impl From<chrono::DateTime<Utc>> for Timestamp {
 }
 
 impl From<chrono::DateTime<FixedOffset>> for Timestamp {
+    /// Converts a date and time, using UTC when its offset contains seconds.
+    ///
+    /// # Panics
+    ///
+    /// Panics when the resulting year is outside `0..=9999`.
+    /// Use [`Timestamp::new`] to handle an out-of-range year as an error.
     #[inline]
     fn from(date_time: chrono::DateTime<FixedOffset>) -> Self {
+        if date_time.offset().local_minus_utc() % 60 != 0 {
+            return Self::new(date_time.naive_utc(), Some(Zone::Utc)).unwrap();
+        }
+
         Self::new(date_time.naive_local(), Some(Zone::Offset((*date_time.offset()).into())))
             .unwrap()
     }
@@ -752,10 +790,14 @@ impl FromStr for Timestamp {
         )
         .ok_or(TIMESTAMP_ERROR)?;
 
-        let time = chrono::NaiveTime::from_hms_opt(
+        let second = u32::from(parse_digits(&bytes[13..15]).ok_or(TIMESTAMP_ERROR)?);
+        let (second, nanosecond) = if second == 60 { (59, 1_000_000_000) } else { (second, 0) };
+
+        let time = chrono::NaiveTime::from_hms_nano_opt(
             u32::from(parse_digits(&bytes[9..11]).ok_or(TIMESTAMP_ERROR)?),
             u32::from(parse_digits(&bytes[11..13]).ok_or(TIMESTAMP_ERROR)?),
-            u32::from(parse_digits(&bytes[13..15]).ok_or(TIMESTAMP_ERROR)?),
+            second,
+            nanosecond,
         )
         .ok_or(TIMESTAMP_ERROR)?;
 
