@@ -163,6 +163,7 @@ pub enum TypeValue {
     /// An address used for delivery, added by RFC 9554.
     Delivery,
     /// An extension value which is an IANA token or an x-name.
+    /// Known values must use their dedicated variants, which [`VCard::validate`](crate::VCard::validate) checks.
     Extension(Token),
 }
 
@@ -198,6 +199,16 @@ impl TypeValue {
             | Self::Agent
             | Self::Emergency => Some("RELATED"),
             Self::Work | Self::Home | Self::Billing | Self::Delivery | Self::Extension(_) => None,
+        }
+    }
+
+    /// Checks whether this is an extension value that spells a known value, which parsing never produces.
+    pub(crate) fn is_known_extension(&self) -> bool {
+        match self {
+            Self::Extension(token) => {
+                !matches!(Self::from_str(token.as_str()), Ok(Self::Extension(_)))
+            },
+            _ => false,
         }
     }
 }
@@ -289,6 +300,7 @@ pub enum Calscale {
     /// The Gregorian calendar, which is the only calendar system defined by RFC 6350.
     Gregorian,
     /// An extension value which is an IANA token or an x-name.
+    /// Known values must use their dedicated variants, which [`VCard::validate`](crate::VCard::validate) checks.
     Extension(Token),
 }
 
@@ -300,6 +312,12 @@ impl Calscale {
             Self::Gregorian => "gregorian",
             Self::Extension(token) => token.as_str(),
         }
+    }
+
+    /// Checks whether this is an extension value that spells `gregorian`, which parsing never produces.
+    #[inline]
+    pub(crate) fn is_known_extension(&self) -> bool {
+        matches!(self, Self::Extension(token) if token.as_str().eq_ignore_ascii_case("gregorian"))
     }
 }
 
@@ -336,7 +354,20 @@ pub enum Phonetic {
     /// An unknown phonetic system, where the SCRIPT parameter tells the used script.
     Script,
     /// An extension value which is an IANA token or an x-name.
+    /// Known values must use their dedicated variants, which [`VCard::validate`](crate::VCard::validate) checks.
     Extension(Token),
+}
+
+impl Phonetic {
+    /// Checks whether this is an extension value that spells a known value, which parsing never produces.
+    pub(crate) fn is_known_extension(&self) -> bool {
+        match self {
+            Self::Extension(token) => {
+                !matches!(Self::from_str(token.as_str()), Ok(Self::Extension(_)))
+            },
+            _ => false,
+        }
+    }
 }
 
 impl Display for Phonetic {

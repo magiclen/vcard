@@ -13,7 +13,7 @@ use crate::{
     calendar::lookup_calendar,
     error::ValidationError,
     fold::FoldingWriter,
-    parameters::{Parameters, Phonetic, TzParam, is_known_parameter},
+    parameters::{Calscale, Parameters, Phonetic, TzParam, is_known_parameter},
     property::{
         Address, Anniversary, Birthday, CalendarAddressUri, CalendarUri, Categories, ClientPidMap,
         Created, Email, ExtensionProperty, Fburl, FormattedName, Gender, Geo, GramGender, Impp,
@@ -205,6 +205,7 @@ impl VCard {
     /// Also checks phonetic representations, GRAMGENDER languages, LANGUAGE and USERNAME usage, and non-empty AUTHOR-NAME values.
     /// Checks PID sources, reserved extension names, generic parameter conflicts, and MEDIATYPE quoting.
     /// Checks TYPE usage, the date required by CALSCALE, and SORT-AS component counts.
+    /// Rejects extension variants that spell known TYPE, PHONETIC or CALSCALE values.
     /// Checks that each date has the same calendar as its CALSCALE parameter.
     /// Rejects forbidden ASCII control characters in text values, parameters and raw extension values.
     /// Use [`VCard::validate_with_calendars`] to check external calendar rules again after changing property parameters.
@@ -443,12 +444,19 @@ fn validate_parameters(
         return Err(invalid("TYPE"));
     }
 
-    if parameters
-        .types
-        .iter()
-        .any(|type_value| type_value.restricted_property().is_some_and(|property| property != name))
-    {
+    if parameters.types.iter().any(|type_value| {
+        type_value.is_known_extension()
+            || type_value.restricted_property().is_some_and(|property| property != name)
+    }) {
         return Err(invalid("TYPE"));
+    }
+
+    if parameters.phonetic.as_ref().is_some_and(Phonetic::is_known_extension) {
+        return Err(invalid("PHONETIC"));
+    }
+
+    if parameters.calscale.as_ref().is_some_and(Calscale::is_known_extension) {
+        return Err(invalid("CALSCALE"));
     }
 
     for pid in &parameters.pids {

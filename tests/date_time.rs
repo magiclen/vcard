@@ -18,7 +18,7 @@ fn leap_seconds_round_trip() {
 fn minute_aligned_offset_is_preserved() {
     let original =
         FixedOffset::east_opt(8 * 3600).unwrap().with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap();
-    let timestamp = Timestamp::from(original);
+    let timestamp = Timestamp::try_from(original).unwrap();
 
     assert_eq!("20260101T000000+0800", timestamp.to_string());
     assert_eq!(original, timestamp.to_fixed_offset().unwrap());

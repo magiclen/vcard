@@ -27,6 +27,8 @@ let mut telephone = Tel::new(TelValue::Uri("tel:+886-912-345-678".parse().unwrap
 telephone.parameters.types.push(TypeValue::Cell);
 vcard.telephones.push(telephone);
 
+vcard.validate().unwrap();
+
 println!("{vcard}");
 
 /*
@@ -48,6 +50,7 @@ CLIENTPIDMAP cannot have PID parameters either.
 TYPE parameters are checked against the RFC 6350 property restrictions, and the TEL-specific and RELATED values cannot be used on other properties.
 CALSCALE on BDAY and ANNIVERSARY requires a date or date-time value, and SORT-AS cannot have more entries than the N or ORG value has serialized components.
 Known property names belong in their dedicated fields, and known parameters belong in the named `Parameters` fields.
+Known TYPE, PHONETIC and CALSCALE values must use their dedicated enum variants instead of `Extension`.
 Typed values write their own VALUE parameters, so only extension properties can keep a VALUE parameter in `Parameters::any`.
 Text values and parameters cannot contain ASCII control characters other than tabs and line breaks, and line breaks are escaped when written.
 The raw values of extension properties cannot contain ASCII control characters other than tabs.
@@ -87,14 +90,17 @@ The VERSION value remains fixed at `4.0`, and an explicit VALUE parameter on it 
 Handle its result with `?` or `unwrap()`; a truncated time without an hour cannot have a zone.
 Parsing also rejects these combinations, following RFC 6350 erratum 3484.
 
+`Timestamp` now converts from `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>` with `TryFrom` instead of `From`, so a year outside `0..=9999` returns an error instead of panicking.
+
 `Uri::as_url` now returns `Option<&url::Url>`, and `Uri::into_url` returns `Result<url::Url, InvalidValueError>`.
 URIs outside the WHATWG URL syntax, such as `foo://[v1.example]/`, are validated against RFC 3986 and kept as written.
 Existing URL parsing and normalization remain available, including IDNA and percent encoding.
 Handle the optional or fallible URL conversion when your application needs a `url::Url`.
 
 N now follows the rule of the other properties limited to one logical instance, so parsing rejects several N properties unless they share an ALTID.
-Parsing is also stricter than in 0.5: known properties reject VALUE types they do not support, a repeated VALUE parameter is rejected, the RFC 9554 occurrence limits for parameters are checked, and content lines cannot contain ASCII control characters other than tabs.
+Parsing is also stricter than in 0.5: known properties reject VALUE types they do not support, a repeated VALUE parameter is rejected, the RFC 9554 occurrence limits for parameters are checked, content lines cannot contain ASCII control characters other than tabs, and PREF, PID and CLIENTPIDMAP numbers must be written with ASCII digits only.
 BDAY and ANNIVERSARY properties with an unknown or conflicting CALSCALE are ignored, and `^N` in a parameter value is no longer decoded as a newline because RFC 6868 defines only `^n`.
+MEDIATYPE values are no longer caret-decoded, and the GENDER identity now keeps everything after the first semicolon, so `GENDER:M;` gives an empty identity instead of `None`.
 `VCard::validate` checks many more RFC rules, so a card that passed in 0.5 can fail now.
 
 `TypeValue`, `KindValue`, `GramGenderValue`, `Phonetic` and `Calscale` are now `#[non_exhaustive]`, so add a wildcard arm when matching them.

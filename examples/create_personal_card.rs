@@ -61,5 +61,7 @@ fn main() {
 
     vcard.urls.push(Url::new("https://magiclen.org".parse().unwrap()));
 
+    vcard.validate().unwrap();
+
     print!("{vcard}");
 }

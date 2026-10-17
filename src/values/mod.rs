@@ -72,6 +72,7 @@ pub enum KindValue {
     /// A named geographical place.
     Location,
     /// An extension value which is an IANA token or an x-name.
+    /// Use the dedicated variants for known values, because parsing never produces this variant for them.
     Extension(Token),
 }
 
@@ -213,6 +214,7 @@ pub enum GramGenderValue {
     /// The neuter grammatical gender.
     Neuter,
     /// An extension value which is an IANA token or an x-name.
+    /// Use the dedicated variants for known values, because parsing never produces this variant for them.
     Extension(Token),
 }
 

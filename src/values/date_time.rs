@@ -870,34 +870,28 @@ impl Timestamp {
     }
 }
 
-impl From<chrono::DateTime<Utc>> for Timestamp {
-    /// Converts a UTC date and time, dropping the sub-second part.
-    ///
-    /// # Panics
-    ///
-    /// Panics when the year is outside `0..=9999`.
-    /// Use [`Timestamp::new`] to handle an out-of-range year as an error.
+impl TryFrom<chrono::DateTime<Utc>> for Timestamp {
+    type Error = InvalidValueError;
+
+    /// Converts a UTC date and time and drops the sub-second part, failing when the year is out of the `0..=9999` range.
     #[inline]
-    fn from(date_time: chrono::DateTime<Utc>) -> Self {
-        Self::new(date_time.naive_utc(), Some(Zone::Utc)).unwrap()
+    fn try_from(date_time: chrono::DateTime<Utc>) -> Result<Self, Self::Error> {
+        Self::new(date_time.naive_utc(), Some(Zone::Utc))
     }
 }
 
-impl From<chrono::DateTime<FixedOffset>> for Timestamp {
+impl TryFrom<chrono::DateTime<FixedOffset>> for Timestamp {
+    type Error = InvalidValueError;
+
     /// Converts a date and time, using UTC when its offset contains seconds.
-    ///
-    /// # Panics
-    ///
-    /// Panics when the resulting year is outside `0..=9999`.
-    /// Use [`Timestamp::new`] to handle an out-of-range year as an error.
+    /// It fails when the resulting year is out of the `0..=9999` range.
     #[inline]
-    fn from(date_time: chrono::DateTime<FixedOffset>) -> Self {
+    fn try_from(date_time: chrono::DateTime<FixedOffset>) -> Result<Self, Self::Error> {
         if date_time.offset().local_minus_utc() % 60 != 0 {
-            return Self::new(date_time.naive_utc(), Some(Zone::Utc)).unwrap();
+            return Self::new(date_time.naive_utc(), Some(Zone::Utc));
         }
 
         Self::new(date_time.naive_local(), Some(Zone::Offset((*date_time.offset()).into())))
-            .unwrap()
     }
 }
 

@@ -25,6 +25,8 @@ let mut telephone = Tel::new(TelValue::Uri("tel:+886-912-345-678".parse().unwrap
 telephone.parameters.types.push(TypeValue::Cell);
 vcard.telephones.push(telephone);
 
+vcard.validate().unwrap();
+
 println!("{vcard}");
 
 /*
@@ -56,6 +58,7 @@ CLIENTPIDMAP cannot have PID parameters either.
 TYPE parameters are checked against the RFC 6350 property restrictions, and the TEL-specific and RELATED values cannot be used on other properties.
 CALSCALE on BDAY and ANNIVERSARY requires a date or date-time value, and SORT-AS cannot have more entries than the N or ORG value has serialized components.
 Known property names belong in their dedicated fields, and known parameters belong in the named [`Parameters`] fields.
+Known TYPE, PHONETIC and CALSCALE values must use their dedicated enum variants instead of `Extension`.
 Typed values write their own VALUE parameters, so only extension properties can keep a VALUE parameter in [`Parameters::any`].
 Text values and parameters cannot contain ASCII control characters other than tabs and line breaks, and line breaks are escaped when written.
 The raw values of extension properties cannot contain ASCII control characters other than tabs.
@@ -65,7 +68,7 @@ Ordinary media types and token MIME parameters such as `text/plain;charset=utf-8
 MIME parameters containing double quotes, such as `text/plain;name="a,b"`, have ambiguous vCard quoting and are rejected by [`VCard::validate`].
 Call `validate` before writing a card that you build through its public fields.
 
-Use [`VCard::save_to_file`] to write the vCard to a file, and `vcard::values::Uri::from_file` to embed a photo, a logo or a sound as a base64 data URI.
+Use [`VCard::save_to_file`] to write the vCard to a file, and [`vcard::values::Uri::from_file`](values::Uri::from_file) to embed a photo, a logo or a sound as a base64 data URI.
 
 ## Migrating from 0.5 to 0.6
 
@@ -84,28 +87,31 @@ Replace assignments such as `vcard.birthday = Some(birthday)` with `vcard.birthd
 | CREATED | `created` | `created` |
 | LANGUAGE | `language` | `languages` |
 
-`vcard::values::Date::from_year` now returns a `Result` like the other `Date` constructors.
+[`vcard::values::Date::from_year`](values::Date::from_year) now returns a `Result` like the other `Date` constructors.
 Every `Date` constructor rejects a year outside `0..=9999`.
 
 `VCard` now has a `version_parameters: Parameters` field that preserves VERSION parameters.
 Add this field or use `..VCard::default()` when constructing a complete struct literal.
 The VERSION value remains fixed at `4.0`, and an explicit VALUE parameter on it must be `text` and is not kept, like the default VALUE of other properties.
 
-`Time::with_zone` now returns `Result<Time, InvalidValueError>`.
+[`Time::with_zone`](values::Time::with_zone) now returns `Result<Time, InvalidValueError>`.
 Handle its result with `?` or `unwrap()`; a truncated time without an hour cannot have a zone.
 Parsing also rejects these combinations, following RFC 6350 erratum 3484.
 
-`Uri::as_url` now returns `Option<&url::Url>`, and `Uri::into_url` returns `Result<url::Url, InvalidValueError>`.
+[`Timestamp`](values::Timestamp) now converts from `chrono::DateTime<Utc>` and `chrono::DateTime<FixedOffset>` with `TryFrom` instead of `From`, so a year outside `0..=9999` returns an error instead of panicking.
+
+[`Uri::as_url`](values::Uri::as_url) now returns `Option<&url::Url>`, and [`Uri::into_url`](values::Uri::into_url) returns `Result<url::Url, InvalidValueError>`.
 URIs outside the WHATWG URL syntax, such as `foo://[v1.example]/`, are validated against RFC 3986 and kept as written.
 Existing URL parsing and normalization remain available, including IDNA and percent encoding.
 Handle the optional or fallible URL conversion when your application needs a `url::Url`.
 
 N now follows the rule of the other properties limited to one logical instance, so parsing rejects several N properties unless they share an ALTID.
-Parsing is also stricter than in 0.5: known properties reject VALUE types they do not support, a repeated VALUE parameter is rejected, the RFC 9554 occurrence limits for parameters are checked, and content lines cannot contain ASCII control characters other than tabs.
+Parsing is also stricter than in 0.5: known properties reject VALUE types they do not support, a repeated VALUE parameter is rejected, the RFC 9554 occurrence limits for parameters are checked, content lines cannot contain ASCII control characters other than tabs, and PREF, PID and CLIENTPIDMAP numbers must be written with ASCII digits only.
 BDAY and ANNIVERSARY properties with an unknown or conflicting CALSCALE are ignored, and `^N` in a parameter value is no longer decoded as a newline because RFC 6868 defines only `^n`.
+MEDIATYPE values are no longer caret-decoded, and the GENDER identity now keeps everything after the first semicolon, so `GENDER:M;` gives an empty identity instead of `None`.
 [`VCard::validate`] checks many more RFC rules, so a card that passed in 0.5 can fail now.
 
-`TypeValue`, `KindValue`, `GramGenderValue`, `Phonetic` and `Calscale` are now `#[non_exhaustive]`, so add a wildcard arm when matching them.
+[`TypeValue`], [`KindValue`](values::KindValue), [`GramGenderValue`](values::GramGenderValue), [`Phonetic`] and [`Calscale`] are now `#[non_exhaustive]`, so add a wildcard arm when matching them.
 
 The public `base64` re-export now uses version 0.23.
 
@@ -132,7 +138,7 @@ URI parameters such as GEO, TZ and AUTHOR are written inside double quotes, so a
 
 ## Calendar extensions
 
-The `Date` constructors and `FromStr` use the Gregorian calendar, except `Date::from_calendar_parts`.
+The [`Date`](values::Date) constructors and `FromStr` use the Gregorian calendar, except [`Date::from_calendar_parts`](values::Date::from_calendar_parts).
 Other calendars are supplied by the application through the [`Calendar`] and [`CalendarRegistry`] traits; this crate does not provide any non-Gregorian calendar implementation or global registration.
 Handler names must be fixed lowercase tokens other than `gregorian`.
 Private calendar extensions should use an agreed `x-` name.
@@ -144,7 +150,7 @@ Date values, CALSCALE and the other parameters are kept together without convers
 BDAY and ANNIVERSARY properties with an unknown or conflicting CALSCALE are ignored before parsing their values or checking their cardinality, following RFC 6350 section 5.8.
 The default parsing methods therefore ignore all non-Gregorian BDAY and ANNIVERSARY properties.
 
-Use `DateParts` and `Date::from_calendar_parts` to build a date for an external calendar:
+Use [`DateParts`](values::DateParts) and [`Date::from_calendar_parts`](values::Date::from_calendar_parts) to build a date for an external calendar:
 
 ```rust
 use vcard::{Birthday, Calendar, InvalidValueError, Parameters, values::{Date, DateParts}};
@@ -166,8 +172,8 @@ fn make_calendar_birthday(
 
 The crate checks the RFC date shapes and numeric bounds before calling the handler: years remain within `0..=9999`, months within `1..=12`, and days within `1..=31`.
 A thirteenth month or leap-month marker cannot be written directly as an RFC 6350 DATE; it requires a separately agreed extension representation.
-`Date` keeps the calendar name as a `&'static str` and stays `Copy`.
-`Date::calendar_scale` returns that name, or `gregorian` for Gregorian dates.
+[`Date`](values::Date) keeps the calendar name as a `&'static str` and stays `Copy`.
+[`Date::calendar_scale`](values::Date::calendar_scale) returns that name, or `gregorian` for Gregorian dates.
 Date equality and hashing include the calendar name and numeric parts; other calendar metadata remains in the property's parameters.
 
 [`VCard::validate`] checks that each date matches its CALSCALE parameter.
