@@ -11,7 +11,8 @@ use crate::{
     error::{InvalidValueError, ParseErrorKind},
     fold::FoldingWriter,
     syntax::{
-        caret_decode, param_value_needs_quoting, parse_number, write_param_value, write_quoted_uri,
+        caret_decode, is_token, param_value_needs_quoting, parse_number, write_param_value,
+        write_quoted_uri,
     },
     values::{LanguageTag, Timestamp, Token, Uri},
 };
@@ -745,7 +746,13 @@ impl Parameters {
                         return Err(invalid());
                     }
 
-                    value_type = Some(single_value(raw).to_ascii_lowercase());
+                    let value = single_value(raw);
+
+                    if !is_token(&value) {
+                        return Err(invalid());
+                    }
+
+                    value_type = Some(value.to_ascii_lowercase());
                 },
                 "PREF" => parameters.pref = Some(single_value(raw).parse().map_err(|_| invalid())?),
                 "ALTID" => parameters.altid = Some(single_value(raw)),

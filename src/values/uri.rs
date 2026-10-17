@@ -10,7 +10,7 @@ use base64::Engine;
 use mime::Mime;
 use percent_encoding::{AsciiSet, NON_ALPHANUMERIC, utf8_percent_encode};
 
-use crate::error::InvalidValueError;
+use crate::{error::InvalidValueError, syntax::write_escaped_text};
 
 /// The bytes that need URL escaping in the media type of a `data:` URI.
 /// Letters, digits and the URL characters without a special meaning there are kept as they are.
@@ -96,18 +96,9 @@ impl Uri {
         Self::from_str(&unescape_uri_value(raw))
     }
 
-    /// Writes this URI as a vCard property value, where only backslashes are escaped.
-    /// Valid RFC 3986 URIs never contain backslashes, so they are written unchanged.
+    /// Writes this URI as a vCard property value, escaping backslashes and commas.
     pub(crate) fn write_vcard_value(&self, w: &mut impl fmt::Write) -> fmt::Result {
-        for (i, part) in self.as_str().split('\\').enumerate() {
-            if i > 0 {
-                w.write_str("\\\\")?;
-            }
-
-            w.write_str(part)?;
-        }
-
-        Ok(())
+        write_escaped_text(w, self.as_str(), false)
     }
 
     /// Builds a `data:` URI which embeds the given bytes with base64 encoding.

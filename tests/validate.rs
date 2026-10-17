@@ -1,6 +1,6 @@
 use vcard::{
-    AnyParameter, Calscale, ExtensionProperty, Name, Phonetic, Pref, SocialProfile, VCard,
-    ValidationError,
+    AnyParameter, Calscale, ExtensionProperty, Name, Phonetic, Pref, SocialProfile, TypeValue,
+    VCard, ValidationError,
     values::{NameValue, TextOrUri},
 };
 
@@ -285,6 +285,7 @@ fn type_parameters_follow_property_rules() {
     let card: VCard = concat!(
         "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
         "ADR;TYPE=billing:;;Main Street;Town;;;\r\n",
+        "ADR;TYPE=delivery:;;Main Street;Town;;;\r\n",
         "TEL;TYPE=cell:123\r\n",
         "EMAIL;TYPE=work:test@example.com\r\n",
         "RELATED;TYPE=friend:urn:example:friend\r\n",
@@ -320,6 +321,46 @@ fn type_parameters_follow_property_rules() {
             Err(ValidationError::InvalidParameter {
                 property:  name.to_string(),
                 parameter: String::from("TYPE"),
+            }),
+            card.validate()
+        );
+    }
+}
+
+#[test]
+fn known_values_cannot_be_extensions() {
+    let card: VCard = concat!(
+        "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+        "N;ALTID=1:Doe;John;;;\r\n",
+        "N;ALTID=1;PHONETIC=x-sound:do;jon;;;\r\n",
+        "BDAY;CALSCALE=gregorian:19900102\r\n",
+        "EMAIL;TYPE=x-cell:test@example.com\r\nEND:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
+
+    assert!(card.validate().is_ok());
+
+    let mut type_card = card.clone();
+    type_card.emails[0].parameters.types[0] = TypeValue::Extension("cell".parse().unwrap());
+
+    let mut phonetic_card = card.clone();
+    phonetic_card.names[1].parameters.phonetic =
+        Some(Phonetic::Extension("script".parse().unwrap()));
+
+    let mut calscale_card = card.clone();
+    calscale_card.birthdays[0].parameters.calscale =
+        Some(Calscale::Extension("GREGORIAN".parse().unwrap()));
+
+    for (card, property, parameter) in [
+        (type_card, "EMAIL", "TYPE"),
+        (phonetic_card, "N", "PHONETIC"),
+        (calscale_card, "BDAY", "CALSCALE"),
+    ] {
+        assert_eq!(
+            Err(ValidationError::InvalidParameter {
+                property:  String::from(property),
+                parameter: String::from(parameter),
             }),
             card.validate()
         );

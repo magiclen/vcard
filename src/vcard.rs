@@ -1,7 +1,7 @@
 //! The `VCard` struct and its serialization.
 
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     fmt::{self, Display, Formatter, Write as _},
     fs::File,
     io::{self, BufWriter, Write as _},
@@ -21,7 +21,7 @@ use crate::{
         Pronouns, Property, Related, Rev, Role, SocialProfile, Sound, Source, Tel, TimeZone, Title,
         Uid, Url, ValidateText, Xml, write_property,
     },
-    syntax::{is_valid_raw_text, is_valid_text},
+    syntax::{is_token, is_valid_raw_text, is_valid_text},
     values::{
         AddressValue, DateAndOrTime, DateAndOrTimeOrText, KindValue, LanguageTag, NameValue,
         TextOrUri,
@@ -330,13 +330,10 @@ impl VCard {
         validate_phonetic(&self.names, "N", NameValue::components)?;
         validate_phonetic(&self.addresses, "ADR", AddressValue::components)?;
 
-        for (i, gender) in self.gram_genders.iter().enumerate() {
-            if self.gram_genders[..i].iter().any(|other| {
-                same_language(
-                    gender.parameters.language.as_ref(),
-                    other.parameters.language.as_ref(),
-                )
-            }) {
+        let mut gram_gender_languages = HashSet::with_capacity(self.gram_genders.len());
+
+        for gender in &self.gram_genders {
+            if !gram_gender_languages.insert(language_key(gender.parameters.language.as_ref())) {
                 return Err(ValidationError::DuplicateGramGenderLanguage);
             }
         }
@@ -482,7 +479,11 @@ fn validate_parameters(
 
         match upper_name.as_str() {
             "VALUE" => {
-                if !allows_value_type || has_value_type || parameter.values.len() != 1 {
+                if !allows_value_type
+                    || has_value_type
+                    || parameter.values.len() != 1
+                    || !is_token(&parameter.values[0])
+                {
                     return Err(invalid(&upper_name));
                 }
 
@@ -562,23 +563,47 @@ fn validate_sort_as(
     Ok(())
 }
 
-/// Checks whether two optional language tags are the same, where two missing tags also count as the same.
-/// Language tags are compared case-insensitively.
-fn same_language(first: Option<&LanguageTag>, second: Option<&LanguageTag>) -> bool {
-    match (first, second) {
-        (Some(first), Some(second)) => first.as_str().eq_ignore_ascii_case(second.as_str()),
-        (None, None) => true,
-        _ => false,
-    }
+/// Returns a key that compares optional language tags case-insensitively, where a missing tag is also a key.
+/// Language tags contain only ASCII characters, so lowercasing them is enough.
+fn language_key(language: Option<&LanguageTag>) -> Option<String> {
+    language.map(|language| language.as_str().to_ascii_lowercase())
+}
+
+/// Returns a bit mask of the components that have at least one non-empty value.
+fn component_mask<const N: usize>(components: [&[String]; N]) -> u32 {
+    components.iter().enumerate().fold(0, |mask, (i, values)| {
+        if values.iter().any(|value| !value.is_empty()) { mask | 1 << i } else { mask }
+    })
 }
 
 /// Checks the PHONETIC rules of RFC 9554 section 4.6 for N or ADR properties.
+/// Hash lookups keep the cost linear, so large untrusted cards can be validated quickly.
 fn validate_phonetic<V, const N: usize>(
     properties: &[Property<V>],
     name: &str,
     components: fn(&V) -> [&[String]; N],
 ) -> Result<(), ValidationError> {
-    for (i, property) in properties.iter().enumerate() {
+    if properties.iter().all(|property| property.parameters.phonetic.is_none()) {
+        return Ok(());
+    }
+
+    // The component masks of the related properties, grouped by ALTID.
+    let mut related_masks: HashMap<&str, HashSet<u32>> = HashMap::new();
+
+    for property in properties {
+        if property.parameters.phonetic.is_none()
+            && let Some(altid) = &property.parameters.altid
+        {
+            related_masks
+                .entry(altid.as_str())
+                .or_default()
+                .insert(component_mask(components(&property.value)));
+        }
+    }
+
+    let mut languages = HashSet::new();
+
+    for property in properties {
         let parameters = &property.parameters;
 
         let Some(phonetic) = &parameters.phonetic else {
@@ -591,29 +616,19 @@ fn validate_phonetic<V, const N: usize>(
 
         let without_related = || ValidationError::PhoneticWithoutRelatedProperty(name.to_string());
 
-        let altid = parameters.altid.as_ref().ok_or_else(without_related)?;
-        let phonetic_components = components(&property.value);
+        let altid = parameters.altid.as_deref().ok_or_else(without_related)?;
+        let mask = component_mask(components(&property.value));
 
         // A component set in the phonetic value must also be set at the same position in the related value.
-        if !properties.iter().any(|related| {
-            related.parameters.phonetic.is_none()
-                && related.parameters.altid.as_ref() == Some(altid)
-                && components(&related.value).into_iter().zip(phonetic_components).all(
-                    |(original, pronounced)| {
-                        pronounced.iter().all(String::is_empty)
-                            || original.iter().any(|value| !value.is_empty())
-                    },
-                )
-        }) {
+        if !related_masks
+            .get(altid)
+            .is_some_and(|masks| masks.iter().any(|related| mask & !related == 0))
+        {
             return Err(without_related());
         }
 
         // Phonetic properties with the same ALTID must have different LANGUAGE values, so at most one of them can omit it.
-        if properties[..i].iter().any(|other| {
-            other.parameters.phonetic.is_some()
-                && other.parameters.altid.as_ref() == Some(altid)
-                && same_language(parameters.language.as_ref(), other.parameters.language.as_ref())
-        }) {
+        if !languages.insert((altid, language_key(parameters.language.as_ref()))) {
             return Err(ValidationError::DuplicatePhoneticLanguage(name.to_string()));
         }
     }

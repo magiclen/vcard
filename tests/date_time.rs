@@ -1,4 +1,4 @@
-use chrono::{FixedOffset, TimeZone, Timelike};
+use chrono::{FixedOffset, TimeZone, Timelike, Utc};
 use vcard::{
     Birthday, VCard,
     values::{Date, DateAndOrTime, Time, Timestamp, UtcOffset, Zone},
@@ -11,17 +11,54 @@ fn leap_seconds_round_trip() {
 
         assert_eq!(input, timestamp.to_string());
         assert_eq!(1_000_000_000, timestamp.date_time().nanosecond());
+
+        let original = timestamp.to_fixed_offset().unwrap();
+        let converted = Timestamp::try_from(original).unwrap();
+
+        assert_eq!(timestamp.date_time(), converted.date_time());
+        assert_eq!(original, converted.to_fixed_offset().unwrap());
     }
 }
 
 #[test]
 fn minute_aligned_offset_is_preserved() {
-    let original =
-        FixedOffset::east_opt(8 * 3600).unwrap().with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap();
+    for (year, month, day, hour, offset, expected) in [
+        (2025, 12, 31, 16, 8 * 3600, "20260101T000000+0800"),
+        (-1, 12, 31, 23, 3600, "00000101T000000+0100"),
+        (10000, 1, 1, 0, -3600, "99991231T230000-0100"),
+    ] {
+        let original = Utc
+            .with_ymd_and_hms(year, month, day, hour, 0, 0)
+            .unwrap()
+            .with_timezone(&FixedOffset::east_opt(offset).unwrap());
+        let timestamp = Timestamp::try_from(original).unwrap();
+
+        assert_eq!(expected, timestamp.to_string());
+        assert_eq!(original, timestamp.to_fixed_offset().unwrap());
+    }
+}
+
+#[test]
+fn offsets_with_seconds_use_utc() {
+    let original = FixedOffset::east_opt(8 * 3600 + 30)
+        .unwrap()
+        .with_ymd_and_hms(2026, 1, 1, 0, 0, 0)
+        .unwrap();
     let timestamp = Timestamp::try_from(original).unwrap();
 
-    assert_eq!("20260101T000000+0800", timestamp.to_string());
+    assert_eq!("20251231T155930Z", timestamp.to_string());
     assert_eq!(original, timestamp.to_fixed_offset().unwrap());
+}
+
+#[test]
+fn fixed_offset_timestamps_reject_out_of_range_dates() {
+    for (date_time, offset) in
+        [(chrono::DateTime::<Utc>::MIN_UTC, -60), (chrono::DateTime::<Utc>::MAX_UTC, 60)]
+    {
+        let original = date_time.with_timezone(&FixedOffset::east_opt(offset).unwrap());
+
+        assert!(Timestamp::try_from(original).is_err());
+    }
 }
 
 #[test]

@@ -60,6 +60,7 @@ CALSCALE on BDAY and ANNIVERSARY requires a date or date-time value, and SORT-AS
 Known property names belong in their dedicated fields, and known parameters belong in the named [`Parameters`] fields.
 Known TYPE, PHONETIC and CALSCALE values must use their dedicated enum variants instead of `Extension`.
 Typed values write their own VALUE parameters, so only extension properties can keep a VALUE parameter in [`Parameters::any`].
+VALUE names must be non-empty tokens of ASCII letters, digits and hyphens, including extension names.
 Text values and parameters cannot contain ASCII control characters other than tabs and line breaks, and line breaks are escaped when written.
 The raw values of extension properties cannot contain ASCII control characters other than tabs.
 
@@ -104,9 +105,11 @@ Parsing also rejects these combinations, following RFC 6350 erratum 3484.
 URIs outside the WHATWG URL syntax, such as `foo://[v1.example]/`, are validated against RFC 3986 and kept as written.
 Existing URL parsing and normalization remain available, including IDNA and percent encoding.
 Handle the optional or fallible URL conversion when your application needs a `url::Url`.
+URI property values now escape commas as `\,` on output; parsing still accepts bare commas.
 
 N now follows the rule of the other properties limited to one logical instance, so parsing rejects several N properties unless they share an ALTID.
 Parsing is also stricter than in 0.5: known properties reject VALUE types they do not support, a repeated VALUE parameter is rejected, the RFC 9554 occurrence limits for parameters are checked, content lines cannot contain ASCII control characters other than tabs, and PREF, PID and CLIENTPIDMAP numbers must be written with ASCII digits only.
+VALUE names must be valid tokens, including on extension properties.
 BDAY and ANNIVERSARY properties with an unknown or conflicting CALSCALE are ignored, and `^N` in a parameter value is no longer decoded as a newline because RFC 6868 defines only `^n`.
 MEDIATYPE values are no longer caret-decoded, and the GENDER identity now keeps everything after the first semicolon, so `GENDER:M;` gives an empty identity instead of `None`.
 [`VCard::validate`] checks many more RFC rules, so a card that passed in 0.5 can fail now.
@@ -122,8 +125,14 @@ use vcard::VCard;
 
 let vcard: VCard = "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Magic Len\r\nEND:VCARD\r\n".parse().unwrap();
 
+vcard.validate().unwrap();
+
 assert_eq!("Magic Len", vcard.formatted_names[0].value);
 ```
+
+Parsing checks the card structure and value formats, but does not run semantic validation.
+Call [`VCard::validate`] after parsing, or [`VCard::validate_with_calendars`] when using an external calendar registry.
+For multiple cards, validate each returned card.
 
 Use [`VCard::parse_multiple`] to read a `.vcf` file that contains several vCards.
 Only version 4.0 is supported, and unknown properties are kept in the `extensions` field with their raw values and typed parameters.
@@ -133,7 +142,7 @@ The RFC 9554 occurrence limits for GRAMGENDER, PRONOUNS and SOCIALPROFILE parame
 Other repeated single-value parameters keep their last value, while TYPE, PID and SORT-AS collect every value.
 Content lines cannot contain ASCII control characters other than tabs.
 URI property values accept bare commas and the `\\`, `\,` and `\;` escapes, which RFC 6350 errata 3845 and 3846 apply to URI values.
-URI output still uses bare commas, escapes only backslashes, and keeps percent-encoded bytes as encoded.
+URI output escapes backslashes and commas and keeps percent-encoded bytes as encoded.
 URI parameters such as GEO, TZ and AUTHOR are written inside double quotes, so a double quote inside such a URI is written as `%22` and stays percent-encoded when read back.
 
 ## Calendar extensions

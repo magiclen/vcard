@@ -1,4 +1,41 @@
-use vcard::{ParseErrorKind, Pid, TypeValue, Url, VCard};
+use vcard::{ParseErrorKind, Pid, TypeValue, Url, VCard, ValidationError};
+
+#[test]
+fn extension_value_types_use_tokens() {
+    let mut card: VCard = concat!(
+        "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+        "X-EXTRA;VALUE=x-example:raw\r\nEND:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
+
+    assert!(card.validate().is_ok());
+    assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
+
+    for value in ["", "bad value"] {
+        let input = format!(
+            concat!(
+                "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+                "X-EXTRA;VALUE=\"{value}\":raw\r\nEND:VCARD\r\n",
+            ),
+            value = value,
+        );
+        let error = input.parse::<VCard>().unwrap_err();
+
+        assert_eq!(4, error.line);
+        assert_eq!(ParseErrorKind::InvalidParameter(String::from("VALUE")), error.kind);
+
+        card.extensions[0].parameters.any[0].values[0] = value.to_string();
+
+        assert_eq!(
+            Err(ValidationError::InvalidParameter {
+                property:  String::from("X-EXTRA"),
+                parameter: String::from("VALUE"),
+            }),
+            card.validate()
+        );
+    }
+}
 
 #[test]
 fn media_type_preserves_literal_carets() {

@@ -22,6 +22,7 @@ impl FromStr for VCard {
     type Err = ParseError;
 
     /// Parses text that contains exactly one vCard.
+    /// Call [`VCard::validate`] on the returned card to check the semantic rules.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Self::parse_with_calendar_registry(s, None)
     }
@@ -30,6 +31,7 @@ impl FromStr for VCard {
 impl VCard {
     /// Parses one vCard with external handlers for non-Gregorian BDAY and ANNIVERSARY values.
     /// Properties with an unknown or conflicting CALSCALE are ignored before their values or cardinality are checked.
+    /// Call [`VCard::validate_with_calendars`] on the returned card to check the semantic rules.
     pub fn parse_with_calendars(
         s: &str,
         calendars: &dyn CalendarRegistry,
@@ -60,12 +62,14 @@ impl VCard {
     }
 
     /// Parses text that contains any number of vCards, e.g. the content of a `.vcf` file with several contacts.
+    /// Call [`VCard::validate`] on each returned card to check the semantic rules.
     pub fn parse_multiple(s: &str) -> Result<Vec<Self>, ParseError> {
         Self::parse_multiple_with_calendar_registry(s, None)
     }
 
     /// Parses any number of vCards with external handlers for non-Gregorian dates.
     /// Properties with an unknown or conflicting CALSCALE are ignored, as in [`VCard::parse_with_calendars`].
+    /// Call [`VCard::validate_with_calendars`] on each returned card to check the semantic rules.
     pub fn parse_multiple_with_calendars(
         s: &str,
         calendars: &dyn CalendarRegistry,

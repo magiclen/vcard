@@ -1,5 +1,5 @@
 use vcard::{
-    Url, VCard,
+    Photo, Url, VCard,
     values::{TelValue, TextOrUri, TzValue, Uri},
 };
 
@@ -17,16 +17,46 @@ fn data_uri_escapes_mime_components() {
         let uri = Uri::from_data(&mime.parse().unwrap(), b"Hi");
 
         assert_eq!(format!("data:{metadata};base64,SGk="), uri.as_str());
+
+        let mut card = VCard::new("Test");
+        card.photos.push(Photo::new(uri));
+        let output = card.to_string();
+
+        assert_eq!(
+            format!(
+                concat!(
+                    "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+                    "PHOTO:data:{metadata};base64\\,SGk=\r\nEND:VCARD\r\n",
+                ),
+                metadata = metadata,
+            ),
+            output
+        );
+        assert_eq!(card, output.parse::<VCard>().unwrap());
     }
 }
 
 #[test]
 fn property_uris_accept_backslash_escapes() {
-    for (raw, expected) in [
-        ("geo:25.0\\,121.0", "geo:25.0,121.0"),
-        ("data:text/plain;base64\\,SGk=", "data:text/plain;base64,SGk="),
-        ("data:image/png\\;base64\\,SGk=", "data:image/png;base64,SGk="),
-        ("urn:example:a%2Cb%5Cc", "urn:example:a%2Cb%5Cc"),
+    for (raw, expected, wire) in [
+        ("geo:25.0,121.0", "geo:25.0,121.0", r"geo:25.0\,121.0"),
+        (r"geo:25.0\,121.0", "geo:25.0,121.0", r"geo:25.0\,121.0"),
+        (
+            "data:text/plain;base64,SGk=",
+            "data:text/plain;base64,SGk=",
+            r"data:text/plain;base64\,SGk=",
+        ),
+        (
+            r"data:text/plain;base64\,SGk=",
+            "data:text/plain;base64,SGk=",
+            r"data:text/plain;base64\,SGk=",
+        ),
+        (
+            r"data:image/png\;base64\,SGk=",
+            "data:image/png;base64,SGk=",
+            r"data:image/png;base64\,SGk=",
+        ),
+        ("urn:example:a%2Cb%5Cc", "urn:example:a%2Cb%5Cc", "urn:example:a%2Cb%5Cc"),
     ] {
         let vcard: VCard = format!(
             concat!(
@@ -48,7 +78,14 @@ fn property_uris_accept_backslash_escapes() {
         assert_eq!(TextOrUri::Uri(uri.clone()), vcard.relations[0].value);
         assert_eq!(TzValue::Uri(uri.clone()), vcard.time_zones[0].value);
         assert_eq!(uri, vcard.client_pid_maps[0].value.uri);
-        assert_eq!(vcard, vcard.to_string().parse::<VCard>().unwrap());
+
+        let output = vcard.to_string();
+
+        for prefix in ["GEO:", "TEL;VALUE=uri:", "RELATED:", "TZ;VALUE=uri:", "CLIENTPIDMAP:1;"] {
+            assert!(output.contains(&format!("{prefix}{wire}\r\n")));
+        }
+
+        assert_eq!(vcard, output.parse::<VCard>().unwrap());
     }
 }
 

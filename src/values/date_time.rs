@@ -887,6 +887,11 @@ impl TryFrom<chrono::DateTime<FixedOffset>> for Timestamp {
     /// It fails when the resulting year is out of the `0..=9999` range.
     #[inline]
     fn try_from(date_time: chrono::DateTime<FixedOffset>) -> Result<Self, Self::Error> {
+        // An offset can move the date by less than one day, so these UTC years cannot give a valid local year.
+        if !(-1..=10000).contains(&date_time.naive_utc().year()) {
+            return Err(TIMESTAMP_ERROR);
+        }
+
         if date_time.offset().local_minus_utc() % 60 != 0 {
             return Self::new(date_time.naive_utc(), Some(Zone::Utc));
         }
