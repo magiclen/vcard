@@ -9,7 +9,7 @@ use std::{
 
 use chrono::{Datelike, FixedOffset, NaiveDate, NaiveDateTime, TimeZone as _, Timelike, Utc};
 
-use crate::error::InvalidValueError;
+use crate::{Calendar, Parameters, calendar::calendar_name, error::InvalidValueError};
 
 /// Parses a fixed amount of ASCII digits into a number.
 fn parse_digits(s: &[u8]) -> Option<u16> {
@@ -168,12 +168,104 @@ impl FromStr for Zone {
     }
 }
 
+/// Date parts whose shape and numeric ranges follow RFC 6350, without calendar-specific day checks.
+/// Public fields may hold invalid input, which [`Date::from_calendar_parts`] checks before calling a calendar handler.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub struct DateParts {
+    /// The optional year, which must be within `0..=9999`.
+    pub year:  Option<u16>,
+    /// The optional month, which must be within `1..=12`.
+    pub month: Option<u8>,
+    /// The optional day, which must be within `1..=31`.
+    pub day:   Option<u8>,
+}
+
+impl DateParts {
+    fn validate_syntax(&self) -> Result<(), InvalidValueError> {
+        if self.year.is_some_and(|year| year > 9999)
+            || self.month.is_some_and(|month| !(1..=12).contains(&month))
+            || self.day.is_some_and(|day| !(1..=31).contains(&day))
+            || matches!(
+                (self.year, self.month, self.day),
+                (None, None, None) | (Some(_), None, Some(_))
+            )
+        {
+            return Err(DATE_ERROR);
+        }
+
+        Ok(())
+    }
+}
+
+impl FromStr for DateParts {
+    type Err = InvalidValueError;
+
+    /// Parses date syntax without applying Gregorian month lengths or leap years.
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let bytes = s.as_bytes();
+
+        let parts = if let Some(rest) = s.strip_prefix("---") {
+            if rest.len() != 2 {
+                return Err(DATE_ERROR);
+            }
+
+            Self {
+                year:  None,
+                month: None,
+                day:   Some(parse_digits(rest.as_bytes()).ok_or(DATE_ERROR)? as u8),
+            }
+        } else if let Some(rest) = s.strip_prefix("--") {
+            let bytes = rest.as_bytes();
+
+            match bytes.len() {
+                2 => Self {
+                    year:  None,
+                    month: Some(parse_digits(bytes).ok_or(DATE_ERROR)? as u8),
+                    day:   None,
+                },
+                4 => Self {
+                    year:  None,
+                    month: Some(parse_digits(&bytes[..2]).ok_or(DATE_ERROR)? as u8),
+                    day:   Some(parse_digits(&bytes[2..]).ok_or(DATE_ERROR)? as u8),
+                },
+                _ => return Err(DATE_ERROR),
+            }
+        } else {
+            match bytes.len() {
+                4 => Self {
+                    year:  Some(parse_digits(bytes).ok_or(DATE_ERROR)?),
+                    month: None,
+                    day:   None,
+                },
+                7 if bytes[4] == b'-' => Self {
+                    year:  Some(parse_digits(&bytes[..4]).ok_or(DATE_ERROR)?),
+                    month: Some(parse_digits(&bytes[5..]).ok_or(DATE_ERROR)? as u8),
+                    day:   None,
+                },
+                8 => Self {
+                    year:  Some(parse_digits(&bytes[..4]).ok_or(DATE_ERROR)?),
+                    month: Some(parse_digits(&bytes[4..6]).ok_or(DATE_ERROR)? as u8),
+                    day:   Some(parse_digits(&bytes[6..]).ok_or(DATE_ERROR)? as u8),
+                },
+                _ => return Err(DATE_ERROR),
+            }
+        };
+
+        parts.validate_syntax()?;
+
+        Ok(parts)
+    }
+}
+
 /// A date value which allows the truncated and reduced forms of RFC 6350, e.g. `19850412`, `1985-04`, `1985`, `--0412` and `---12`.
+/// Use [`Date::from_calendar_parts`] to create a date validated by an external calendar.
+/// `FromStr` and the other constructors use the Gregorian calendar.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Date {
-    year:  Option<u16>,
-    month: Option<u8>,
-    day:   Option<u8>,
+    year:           Option<u16>,
+    month:          Option<u8>,
+    day:            Option<u8>,
+    calendar_scale: Option<&'static str>,
 }
 
 /// Returns the biggest day number that the month can have in any year.
@@ -188,7 +280,7 @@ const fn max_day_in_month(month: u8) -> u8 {
 const DATE_ERROR: InvalidValueError = InvalidValueError::new("date");
 
 impl Date {
-    /// Creates a complete date, validated against the real calendar.
+    /// Creates a complete date, validated against the Gregorian calendar.
     /// The year must be within `0..=9999`.
     pub fn from_year_month_day(year: u16, month: u8, day: u8) -> Result<Self, InvalidValueError> {
         if year > 9999 {
@@ -199,7 +291,10 @@ impl Date {
             .ok_or(DATE_ERROR)?;
 
         Ok(Self {
-            year: Some(year), month: Some(month), day: Some(day)
+            year:           Some(year),
+            month:          Some(month),
+            day:            Some(day),
+            calendar_scale: None,
         })
     }
 
@@ -211,7 +306,10 @@ impl Date {
         }
 
         Ok(Self {
-            year: Some(year), month: Some(month), day: None
+            year:           Some(year),
+            month:          Some(month),
+            day:            None,
+            calendar_scale: None,
         })
     }
 
@@ -223,7 +321,10 @@ impl Date {
         }
 
         Ok(Self {
-            year: Some(year), month: None, day: None
+            year:           Some(year),
+            month:          None,
+            day:            None,
+            calendar_scale: None,
         })
     }
 
@@ -234,7 +335,10 @@ impl Date {
         }
 
         Ok(Self {
-            year: None, month: Some(month), day: Some(day)
+            year:           None,
+            month:          Some(month),
+            day:            Some(day),
+            calendar_scale: None,
         })
     }
 
@@ -245,7 +349,10 @@ impl Date {
         }
 
         Ok(Self {
-            year: None, month: Some(month), day: None
+            year:           None,
+            month:          Some(month),
+            day:            None,
+            calendar_scale: None,
         })
     }
 
@@ -256,8 +363,56 @@ impl Date {
         }
 
         Ok(Self {
-            year: None, month: None, day: Some(day)
+            year:           None,
+            month:          None,
+            day:            Some(day),
+            calendar_scale: None,
         })
+    }
+
+    /// Creates a date after checking the RFC syntax, matching CALSCALE, and the external calendar rules.
+    /// The handler name must be a lowercase token other than `gregorian`.
+    /// Keep these parameters with the date, and use [`VCard::validate_with_calendars`](crate::VCard::validate_with_calendars) after changing them.
+    /// `Display` writes only the date value, so parsing it again requires the same calendar context.
+    pub fn from_calendar_parts(
+        parts: DateParts,
+        parameters: &Parameters,
+        calendar: &dyn Calendar,
+    ) -> Result<Self, InvalidValueError> {
+        parts.validate_syntax()?;
+
+        let name = calendar_name(calendar)?;
+
+        if !parameters
+            .calscale
+            .as_ref()
+            .is_some_and(|scale| name.eq_ignore_ascii_case(scale.as_str()))
+            || !calendar.is_valid_date(&parts, parameters)
+        {
+            return Err(DATE_ERROR);
+        }
+
+        Ok(Self {
+            year:           parts.year,
+            month:          parts.month,
+            day:            parts.day,
+            calendar_scale: Some(name),
+        })
+    }
+
+    /// Returns the calendar name, or `gregorian` for Gregorian dates.
+    #[inline]
+    pub const fn calendar_scale(&self) -> &'static str {
+        match self.calendar_scale {
+            Some(name) => name,
+            None => "gregorian",
+        }
+    }
+
+    pub(crate) const fn parts(&self) -> DateParts {
+        DateParts {
+            year: self.year, month: self.month, day: self.day
+        }
     }
 
     /// Returns the year part if it exists.
@@ -310,42 +465,15 @@ impl FromStr for Date {
     type Err = InvalidValueError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let bytes = s.as_bytes();
+        let parts: DateParts = s.parse()?;
 
-        if let Some(rest) = s.strip_prefix("---") {
-            let bytes = rest.as_bytes();
-
-            if bytes.len() != 2 {
-                return Err(DATE_ERROR);
-            }
-
-            return Self::from_day(parse_digits(bytes).ok_or(DATE_ERROR)? as u8);
-        }
-
-        if let Some(rest) = s.strip_prefix("--") {
-            let bytes = rest.as_bytes();
-
-            return match bytes.len() {
-                2 => Self::from_month(parse_digits(bytes).ok_or(DATE_ERROR)? as u8),
-                4 => Self::from_month_day(
-                    parse_digits(&bytes[..2]).ok_or(DATE_ERROR)? as u8,
-                    parse_digits(&bytes[2..]).ok_or(DATE_ERROR)? as u8,
-                ),
-                _ => Err(DATE_ERROR),
-            };
-        }
-
-        match bytes.len() {
-            4 => Self::from_year(parse_digits(bytes).ok_or(DATE_ERROR)?),
-            7 if bytes[4] == b'-' => Self::from_year_month(
-                parse_digits(&bytes[..4]).ok_or(DATE_ERROR)?,
-                parse_digits(&bytes[5..]).ok_or(DATE_ERROR)? as u8,
-            ),
-            8 => Self::from_year_month_day(
-                parse_digits(&bytes[..4]).ok_or(DATE_ERROR)?,
-                parse_digits(&bytes[4..6]).ok_or(DATE_ERROR)? as u8,
-                parse_digits(&bytes[6..]).ok_or(DATE_ERROR)? as u8,
-            ),
+        match (parts.year, parts.month, parts.day) {
+            (Some(year), Some(month), Some(day)) => Self::from_year_month_day(year, month, day),
+            (Some(year), Some(month), None) => Self::from_year_month(year, month),
+            (Some(year), None, None) => Self::from_year(year),
+            (None, Some(month), Some(day)) => Self::from_month_day(month, day),
+            (None, Some(month), None) => Self::from_month(month),
+            (None, None, Some(day)) => Self::from_day(day),
             _ => Err(DATE_ERROR),
         }
     }
@@ -618,6 +746,25 @@ pub enum DateAndOrTime {
     Date(Date),
     /// A time only, written with a leading `T`, e.g. `T1400`.
     Time(Time),
+}
+
+impl DateAndOrTime {
+    pub(crate) fn parse_with_calendar(
+        raw: &str,
+        parameters: &Parameters,
+        calendar: &dyn Calendar,
+    ) -> Result<Self, InvalidValueError> {
+        if let Some(rest) = raw.strip_prefix(['T', 't']) {
+            Time::from_str(rest).map(Self::Time)
+        } else if let Some((date, time)) = raw.split_once(['T', 't']) {
+            let date = Date::from_calendar_parts(date.parse()?, parameters, calendar)?;
+            let time = Time::from_str(time)?;
+
+            DateTime::new(date, time).map(Self::DateTime)
+        } else {
+            Date::from_calendar_parts(raw.parse()?, parameters, calendar).map(Self::Date)
+        }
+    }
 }
 
 impl From<DateTime> for DateAndOrTime {

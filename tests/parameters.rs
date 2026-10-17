@@ -1,4 +1,4 @@
-use vcard::{Url, VCard};
+use vcard::{ParseErrorKind, Pid, TypeValue, Url, VCard};
 
 #[test]
 fn media_type_preserves_literal_carets() {
@@ -43,5 +43,85 @@ fn media_type_accepts_plain_and_quoted_types() {
 
         assert_eq!(Some(&expected), card.urls[0].parameters.media_type.as_ref());
         assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
+    }
+}
+
+#[test]
+fn parameter_lists_keep_quotes_and_repeated_values() {
+    let card: VCard = concat!(
+        "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+        "N;SORT-AS=\"Doe, family\",John:Doe;John;;;\r\n",
+        "TEL;TYPE=work;TYPE=\"voice,cell\";PID=1;PID=2.1:123\r\n",
+        "CLIENTPIDMAP:1;urn:example:source\r\n",
+        "X-EXTRA;X-TAGS=\"a,b\",c^'d,\"e^nf\":raw\r\nEND:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
+
+    assert!(card.validate().is_ok());
+    assert_eq!(vec!["Doe, family", "John"], card.names[0].parameters.sort_as);
+    assert_eq!(
+        vec![TypeValue::Work, TypeValue::Voice, TypeValue::Cell],
+        card.telephones[0].parameters.types
+    );
+    assert_eq!(
+        vec![
+            Pid {
+                id: 1, source: None
+            },
+            Pid {
+                id: 2, source: Some(1)
+            }
+        ],
+        card.telephones[0].parameters.pids
+    );
+    assert_eq!(vec!["a,b", "c\"d", "e\nf"], card.extensions[0].parameters.any[0].values);
+    assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
+}
+
+#[test]
+fn rfc9554_parameters_follow_occurrence_limits() {
+    let card: VCard = concat!(
+        "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+        "GRAMGENDER;LANGUAGE=de:feminine\r\n",
+        "PRONOUNS;LANGUAGE=en;PREF=1;TYPE=home,work;ALTID=1:they/them\r\n",
+        "SOCIALPROFILE;SERVICE-TYPE=Example;VALUE=text:alice\r\nEND:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
+
+    assert!(card.validate().is_ok());
+    assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
+
+    for (name, first, repeated, value) in [
+        ("GRAMGENDER", "LANGUAGE=de", "language=fr", "feminine"),
+        ("PRONOUNS", "LANGUAGE=en", "language=de", "they/them"),
+        ("PRONOUNS", "PREF=1", "pref=2", "they/them"),
+        ("PRONOUNS", "TYPE=home", "type=work", "they/them"),
+        ("PRONOUNS", "ALTID=1", "altid=2", "they/them"),
+        (
+            "SOCIALPROFILE",
+            "SERVICE-TYPE=Example",
+            "service-type=Other",
+            "https://example.com/alice",
+        ),
+    ] {
+        let error = format!(
+            concat!(
+                "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+                "{name};{first};{repeated}:{value}\r\nEND:VCARD\r\n",
+            ),
+            name = name,
+            first = first,
+            repeated = repeated,
+            value = value,
+        )
+        .parse::<VCard>()
+        .unwrap_err();
+
+        let parameter = repeated.split_once('=').unwrap().0;
+
+        assert_eq!(4, error.line);
+        assert_eq!(ParseErrorKind::InvalidParameter(parameter.to_string()), error.kind);
     }
 }

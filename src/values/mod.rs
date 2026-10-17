@@ -10,7 +10,7 @@ use std::{
     str::FromStr,
 };
 
-pub use date_time::{Date, DateAndOrTime, DateTime, Time, Timestamp, UtcOffset, Zone};
+pub use date_time::{Date, DateAndOrTime, DateParts, DateTime, Time, Timestamp, UtcOffset, Zone};
 pub use language_tag::LanguageTag;
 pub use name::{AddressValue, NameValue};
 pub use uri::Uri;

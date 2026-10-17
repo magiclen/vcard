@@ -11,6 +11,7 @@ A pure Rust implementation of vCard 4.0 for generating and parsing vCards, based
 * Parses vCard 4.0 text back into typed structures, including folded lines and extension properties.
 * Supports all RFC 6350 properties and parameters, including KIND, XML and the group construct.
 * Supports the RFC 9554 extensions: the CREATED, GRAMGENDER, LANGUAGE, PRONOUNS and SOCIALPROFILE properties, the new parameters like AUTHOR, DERIVED, PHONETIC and SERVICE-TYPE, the extended N and ADR components, and the RFC 6868 caret encoding for parameter values.
+* Allows applications to supply external calendar handlers for BDAY and ANNIVERSARY without adding calendar dependencies.
 
 ## Generating a vCard
 
@@ -43,6 +44,9 @@ Every property carries its parameters in a shared `Parameters` struct and can ha
 Use `VCard::validate` to check required properties, ALTID cardinality, the group kind for MEMBER, and the service type for text SOCIALPROFILE values.
 It also checks phonetic representations, GRAMGENDER language conflicts, LANGUAGE and USERNAME usage, and non-empty AUTHOR-NAME values.
 PID identifiers must be positive, their sources must have CLIENTPIDMAP entries, and properties limited to one logical instance cannot have PID parameters.
+CLIENTPIDMAP cannot have PID parameters either.
+TYPE parameters are checked against the RFC 6350 property restrictions.
+CALSCALE on BDAY and ANNIVERSARY requires a date or date-time value, and SORT-AS cannot have more entries than the N or ORG value has serialized components.
 Known property names belong in their dedicated fields, and known parameters belong in the named `Parameters` fields.
 Typed values write their own VALUE parameters, so only extension properties can keep a VALUE parameter in `Parameters::any`.
 The raw values of extension properties cannot contain line breaks.
@@ -101,9 +105,56 @@ assert_eq!("Magic Len", vcard.formatted_names[0].value);
 
 Use `VCard::parse_multiple` to read a `.vcf` file that contains several vCards.
 Only version 4.0 is supported, and unknown properties are kept in the `extensions` field so that nothing is lost.
+The only properties that are dropped are BDAY and ANNIVERSARY with an unknown CALSCALE, which RFC 6350 requires to be ignored.
 Known properties reject VALUE declarations that do not match their supported value types.
+The RFC 9554 occurrence limits for GRAMGENDER, PRONOUNS and SOCIALPROFILE parameters are checked while parsing.
 URI property values accept bare commas and the `\\`, `\,` and `\;` escapes, which RFC 6350 errata 3845 and 3846 apply to URI values.
 URI output still uses bare commas, escapes only backslashes, and keeps percent-encoded bytes as encoded.
+
+## Calendar extensions
+
+The `Date` constructors and `FromStr` use the Gregorian calendar, except `Date::from_calendar_parts`.
+Other calendars are supplied by the application through the `Calendar` and `CalendarRegistry` traits; this crate does not provide any non-Gregorian calendar implementation or global registration.
+Handler names must be fixed lowercase tokens other than `gregorian`.
+Private calendar extensions should use an agreed `x-` name.
+The registry receives lowercase names, and a returned handler must have the same name as the requested calendar.
+
+Use `VCard::parse_with_calendars` or `VCard::parse_multiple_with_calendars` to read dates with an external registry.
+The handler validates the calendar rules and can inspect property parameters, including private parameters used to distinguish dates such as leap months.
+Date values, CALSCALE and the other parameters are kept together without conversion to Gregorian dates.
+BDAY and ANNIVERSARY properties with an unknown CALSCALE are ignored before parsing their values or checking their cardinality, as RFC 6350 section 5.8 requires.
+The default parsing methods therefore ignore all non-Gregorian BDAY and ANNIVERSARY properties.
+
+Use `DateParts` and `Date::from_calendar_parts` to build a date for an external calendar:
+
+```rust
+use vcard::{Birthday, Calendar, InvalidValueError, Parameters, values::{Date, DateParts}};
+
+fn make_calendar_birthday(
+    parts: DateParts,
+    mut parameters: Parameters,
+    calendar: &dyn Calendar,
+) -> Result<Birthday, InvalidValueError> {
+    parameters.calscale = Some(calendar.name().parse()?);
+
+    let date = Date::from_calendar_parts(parts, &parameters, calendar)?;
+    let mut birthday = Birthday::new(date.into());
+    birthday.parameters = parameters;
+
+    Ok(birthday)
+}
+```
+
+The crate checks the RFC date shapes and numeric bounds before calling the handler: years remain within `0..=9999`, months within `1..=12`, and days within `1..=31`.
+A thirteenth month or leap-month marker cannot be written directly as an RFC 6350 DATE; it requires a separately agreed extension representation.
+`Date` keeps the calendar name as a `&'static str` and stays `Copy`.
+`Date::calendar_scale` returns that name, or `gregorian` for Gregorian dates.
+Date equality and hashing include the calendar name and numeric parts; other calendar metadata remains in the property's parameters.
+
+`VCard::validate` checks that each date matches its CALSCALE parameter.
+Use `VCard::validate_with_calendars` to also check the current parameters with the external handlers, especially after modifying parameters that affect the calendar rules.
+Missing handlers, mismatched names and rejected calendar dates report `ValidationError::InvalidParameter` for CALSCALE.
+Serialization writes the usual RFC 6350 date format with the CALSCALE parameter, so reading a custom date back needs the same calendar registry.
 
 ## Crates.io
 

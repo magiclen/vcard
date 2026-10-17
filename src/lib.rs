@@ -49,6 +49,7 @@ assert_eq!("Magic Len", vcard.formatted_names[0].value);
 ```
 */
 
+mod calendar;
 mod error;
 mod fold;
 mod parameters;
@@ -59,6 +60,7 @@ pub mod values;
 mod vcard;
 
 pub use base64;
+pub use calendar::{Calendar, CalendarRegistry};
 pub use chrono;
 pub use chrono_tz;
 pub use error::{InvalidValueError, ParseError, ParseErrorKind, ValidationError};

@@ -71,7 +71,7 @@ pub enum ValidationError {
     ReservedExtensionName(String),
     /// The raw value of an extension contains a line break.
     InvalidExtensionValue(String),
-    /// A parameter conflicts with the typed property or belongs in a dedicated field.
+    /// A parameter is not valid for the property or value, or belongs in a dedicated field.
     InvalidParameter {
         /// The property that contains the parameter.
         property:  String,
@@ -148,7 +148,10 @@ impl Display for ValidationError {
                 property,
                 parameter,
             } => {
-                write!(f, "the parameter {parameter} of {property} conflicts with its typed fields")
+                write!(
+                    f,
+                    "the parameter {parameter} of {property} is invalid for this property or value"
+                )
             },
             Self::UnrepresentableMediaType(name) => {
                 write!(

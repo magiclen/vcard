@@ -9,10 +9,12 @@ use content_line::{RawContentLine, parse_content_line};
 use lines::LogicalLines;
 
 use crate::{
+    CalendarRegistry,
+    calendar::lookup_calendar,
     error::{ParseError, ParseErrorKind},
-    parameters::{AnyParameter, Parameters},
+    parameters::{AnyParameter, Calscale, Parameters},
     property::{ExtensionProperty, GroupName, Property, PropertyValue},
-    values::Token,
+    values::{DateAndOrTimeOrText, Token},
     vcard::{VCard, for_each_property},
 };
 
@@ -21,9 +23,27 @@ impl FromStr for VCard {
 
     /// Parses text that contains exactly one vCard.
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::parse_with_calendar_registry(s, None)
+    }
+}
+
+impl VCard {
+    /// Parses one vCard with external handlers for non-Gregorian BDAY and ANNIVERSARY values.
+    /// Properties with an unknown CALSCALE are ignored before their values or cardinality are checked.
+    pub fn parse_with_calendars(
+        s: &str,
+        calendars: &dyn CalendarRegistry,
+    ) -> Result<Self, ParseError> {
+        Self::parse_with_calendar_registry(s, Some(calendars))
+    }
+
+    fn parse_with_calendar_registry(
+        s: &str,
+        calendars: Option<&dyn CalendarRegistry>,
+    ) -> Result<Self, ParseError> {
         let mut lines = LogicalLines::new(s);
 
-        let Some(vcard) = parse_card(&mut lines)? else {
+        let Some(vcard) = parse_card(&mut lines, calendars)? else {
             return Err(ParseError {
                 line: lines.current_line_number(),
                 kind: ParseErrorKind::ExpectedBegin,
@@ -38,16 +58,30 @@ impl FromStr for VCard {
 
         Ok(vcard)
     }
-}
 
-impl VCard {
     /// Parses text that contains any number of vCards, e.g. the content of a `.vcf` file with several contacts.
     pub fn parse_multiple(s: &str) -> Result<Vec<Self>, ParseError> {
+        Self::parse_multiple_with_calendar_registry(s, None)
+    }
+
+    /// Parses any number of vCards with external handlers for non-Gregorian dates.
+    /// Properties with an unknown CALSCALE are ignored, as in [`VCard::parse_with_calendars`].
+    pub fn parse_multiple_with_calendars(
+        s: &str,
+        calendars: &dyn CalendarRegistry,
+    ) -> Result<Vec<Self>, ParseError> {
+        Self::parse_multiple_with_calendar_registry(s, Some(calendars))
+    }
+
+    fn parse_multiple_with_calendar_registry(
+        s: &str,
+        calendars: Option<&dyn CalendarRegistry>,
+    ) -> Result<Vec<Self>, ParseError> {
         let mut lines = LogicalLines::new(s);
 
         let mut vcards = Vec::new();
 
-        while let Some(vcard) = parse_card(&mut lines)? {
+        while let Some(vcard) = parse_card(&mut lines, calendars)? {
             vcards.push(vcard);
         }
 
@@ -56,7 +90,10 @@ impl VCard {
 }
 
 /// Parses one vCard from the line iterator, returning `None` when no lines are left.
-fn parse_card(lines: &mut LogicalLines) -> Result<Option<VCard>, ParseError> {
+fn parse_card(
+    lines: &mut LogicalLines,
+    calendars: Option<&dyn CalendarRegistry>,
+) -> Result<Option<VCard>, ParseError> {
     // The first line must be BEGIN:VCARD without a group or parameters.
     let Some((number, line)) = lines.next() else {
         return Ok(None);
@@ -95,7 +132,7 @@ fn parse_card(lines: &mut LogicalLines) -> Result<Option<VCard>, ParseError> {
     }
 
     let (version_parameters, value_type) =
-        Parameters::parse(content.params).map_err(|kind| ParseError {
+        Parameters::parse(content.params, "VERSION").map_err(|kind| ParseError {
             line: number,
             kind,
         })?;
@@ -161,7 +198,7 @@ fn parse_card(lines: &mut LogicalLines) -> Result<Option<VCard>, ParseError> {
             });
         }
 
-        add_property(&mut vcard, number, content)?;
+        add_property(&mut vcard, number, content, calendars)?;
     }
 }
 
@@ -170,6 +207,7 @@ fn add_property(
     vcard: &mut VCard,
     number: usize,
     content: RawContentLine,
+    calendars: Option<&dyn CalendarRegistry>,
 ) -> Result<(), ParseError> {
     let RawContentLine {
         group,
@@ -188,19 +226,56 @@ fn add_property(
             None => None,
         };
 
-    let (parameters, value_type) = Parameters::parse(params).map_err(|kind| ParseError {
-        line: number,
-        kind,
-    })?;
+    let upper_name = name.to_ascii_uppercase();
+
+    let (parameters, value_type) =
+        Parameters::parse(params, &upper_name).map_err(|kind| ParseError {
+            line: number,
+            kind,
+        })?;
 
     let value_type = value_type.as_deref();
 
-    let upper_name = name.to_ascii_uppercase();
+    let calendar = if matches!(upper_name.as_str(), "BDAY" | "ANNIVERSARY")
+        && let Some(Calscale::Extension(scale)) = &parameters.calscale
+    {
+        let calendar = lookup_calendar(calendars, scale.as_str()).map_err(|_| ParseError {
+            line: number,
+            kind: ParseErrorKind::InvalidParameter(String::from("CALSCALE")),
+        })?;
+
+        let Some(calendar) = calendar else {
+            return Ok(());
+        };
+
+        Some(calendar)
+    } else {
+        None
+    };
+
+    let parse_date_value = || match calendar {
+        Some(calendar) => {
+            DateAndOrTimeOrText::parse_with_calendar(value, value_type, &parameters, calendar)
+        },
+        None => <DateAndOrTimeOrText as PropertyValue>::parse_value(value, value_type),
+    };
+
+    macro_rules! value_result {
+        (birthdays) => {
+            parse_date_value()
+        };
+        (anniversaries) => {
+            parse_date_value()
+        };
+        ($field:ident) => {
+            PropertyValue::parse_value(value, value_type)
+        };
+    }
 
     // Parses the raw value, where the target type is inferred from the field the result goes into.
     macro_rules! parse_value {
-        ($property_name:literal) => {
-            match PropertyValue::parse_value(value, value_type) {
+        ($field:ident, $property_name:literal) => {
+            match value_result!($field) {
                 Ok(value) => value,
                 Err(_) => {
                     return Err(ParseError {
@@ -215,13 +290,15 @@ fn add_property(
     }
 
     macro_rules! dispatch_arm {
-        (many, $field:ident, $property_name:literal) => {
+        (many, $field:ident, $property_name:literal) => {{
+            let value = parse_value!($field, $property_name);
+
             vcard.$field.push(Property {
                 group,
                 parameters,
-                value: parse_value!($property_name),
+                value,
             })
-        };
+        }};
         (one, $field:ident, $property_name:literal) => {{
             if let Some(first) = vcard.$field.first()
                 && (parameters.altid.is_none() || first.parameters.altid != parameters.altid)
@@ -232,10 +309,12 @@ fn add_property(
                 });
             }
 
+            let value = parse_value!($field, $property_name);
+
             vcard.$field.push(Property {
                 group,
                 parameters,
-                value: parse_value!($property_name),
+                value,
             })
         }};
     }

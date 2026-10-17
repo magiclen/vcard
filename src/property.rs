@@ -6,6 +6,7 @@ use std::{
 };
 
 use crate::{
+    Calendar,
     error::InvalidValueError,
     fold::FoldingWriter,
     parameters::Parameters,
@@ -318,6 +319,23 @@ impl_property_value_by_display!(
     OrgValue => ["text"],
     ClientPidMapValue => [],
 );
+
+impl DateAndOrTimeOrText {
+    pub(crate) fn parse_with_calendar(
+        raw: &str,
+        value_type: Option<&str>,
+        parameters: &Parameters,
+        calendar: &dyn Calendar,
+    ) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["date-and-or-time", "text"])?;
+
+        match value_type {
+            Some("text") => Ok(Self::Text(unescape_text(raw))),
+            _ => DateAndOrTime::parse_with_calendar(raw, parameters, calendar)
+                .map(Self::DateAndOrTime),
+        }
+    }
+}
 
 impl PropertyValue for DateAndOrTimeOrText {
     #[inline]

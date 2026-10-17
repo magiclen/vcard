@@ -31,10 +31,14 @@ fn parse_component(s: Option<&str>) -> Vec<String> {
     }
 }
 
+/// Counts the components that will be written, keeping at least `min` components.
+fn component_count(components: &[&[String]], min: usize) -> usize {
+    components.iter().rposition(|list| !list.is_empty()).map_or(min, |last| min.max(last + 1))
+}
+
 /// Writes semicolon-separated components, keeping at least `min` components and dropping unused trailing ones.
 fn write_components(f: &mut Formatter, components: &[&[String]], min: usize) -> fmt::Result {
-    let count =
-        components.iter().rposition(|list| !list.is_empty()).map_or(min, |last| min.max(last + 1));
+    let count = component_count(components, min);
 
     for (i, list) in components[..count].iter().enumerate() {
         if i > 0 {
@@ -87,6 +91,11 @@ impl NameValue {
             &self.surname2,
             &self.generation,
         ]
+    }
+
+    /// Returns the number of components written by this value.
+    pub(crate) fn component_count(&self) -> usize {
+        component_count(&self.components(), 5)
     }
 }
 

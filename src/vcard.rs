@@ -9,6 +9,8 @@ use std::{
 };
 
 use crate::{
+    CalendarRegistry,
+    calendar::lookup_calendar,
     error::ValidationError,
     fold::FoldingWriter,
     parameters::{Parameters, Phonetic, is_known_parameter},
@@ -19,7 +21,10 @@ use crate::{
         Pronouns, Property, Related, Rev, Role, SocialProfile, Sound, Source, Tel, TimeZone, Title,
         Uid, Url, Xml, write_property,
     },
-    values::{AddressValue, KindValue, LanguageTag, NameValue, TextOrUri},
+    values::{
+        AddressValue, DateAndOrTime, DateAndOrTimeOrText, KindValue, LanguageTag, NameValue,
+        TextOrUri,
+    },
 };
 
 /// Calls another macro with the whole property table.
@@ -198,7 +203,26 @@ impl VCard {
     /// Checks required properties, ALTID cardinality, the group kind for MEMBER, and the service type for text SOCIALPROFILE values.
     /// Also checks phonetic representations, GRAMGENDER languages, LANGUAGE and USERNAME usage, and non-empty AUTHOR-NAME values.
     /// Checks PID sources, reserved extension names, line breaks in raw extension values, generic parameter conflicts, and MEDIATYPE quoting.
+    /// Checks TYPE usage, the date required by CALSCALE, and SORT-AS component counts.
+    /// Checks that each date has the same calendar as its CALSCALE parameter.
+    /// Use [`VCard::validate_with_calendars`] to check external calendar rules again after changing property parameters.
     pub fn validate(&self) -> Result<(), ValidationError> {
+        self.validate_with_calendar_registry(None)
+    }
+
+    /// Checks this vCard and validates its non-Gregorian dates with the supplied calendar registry.
+    /// This checks current property parameters, including any extension parameters used by a calendar handler.
+    pub fn validate_with_calendars(
+        &self,
+        calendars: &dyn CalendarRegistry,
+    ) -> Result<(), ValidationError> {
+        self.validate_with_calendar_registry(Some(calendars))
+    }
+
+    fn validate_with_calendar_registry(
+        &self,
+        calendars: Option<&dyn CalendarRegistry>,
+    ) -> Result<(), ValidationError> {
         if self.formatted_names.is_empty() {
             return Err(ValidationError::MissingFormattedName);
         }
@@ -255,7 +279,7 @@ impl VCard {
                         &property.parameters,
                         $name,
                         false,
-                        allows_pid!($limit),
+                        allows_pid!($limit) && $name != "CLIENTPIDMAP",
                         &sources,
                     )?;
                 })*
@@ -276,6 +300,17 @@ impl VCard {
             }
 
             validate_parameters(&extension.parameters, name, true, true, &sources)?;
+        }
+
+        validate_calendar_dates(&self.birthdays, "BDAY", calendars)?;
+        validate_calendar_dates(&self.anniversaries, "ANNIVERSARY", calendars)?;
+
+        for property in &self.names {
+            validate_sort_as(&property.parameters, "N", property.value.component_count())?;
+        }
+
+        for property in &self.organizations {
+            validate_sort_as(&property.parameters, "ORG", 1 + property.value.units.len())?;
         }
 
         if self.social_profiles.iter().any(|profile| {
@@ -342,6 +377,11 @@ fn validate_parameters(
     allows_pid: bool,
     sources: &HashSet<u32>,
 ) -> Result<(), ValidationError> {
+    let invalid = |parameter: &str| ValidationError::InvalidParameter {
+        property:  name.to_string(),
+        parameter: parameter.to_string(),
+    };
+
     if parameters.author_name.as_ref().is_some_and(String::is_empty) {
         return Err(ValidationError::EmptyAuthorName(name.to_string()));
     }
@@ -352,6 +392,27 @@ fn validate_parameters(
 
     if !allows_pid && !parameters.pids.is_empty() {
         return Err(ValidationError::PidNotAllowed(name.to_string()));
+    }
+
+    if !parameters.types.is_empty()
+        && matches!(
+            name,
+            "VERSION"
+                | "SOURCE"
+                | "KIND"
+                | "XML"
+                | "N"
+                | "BDAY"
+                | "ANNIVERSARY"
+                | "GENDER"
+                | "MEMBER"
+                | "PRODID"
+                | "REV"
+                | "UID"
+                | "CLIENTPIDMAP"
+        )
+    {
+        return Err(invalid("TYPE"));
     }
 
     for pid in &parameters.pids {
@@ -370,22 +431,84 @@ fn validate_parameters(
 
     for parameter in &parameters.any {
         let upper_name = parameter.name.as_str().to_ascii_uppercase();
-        let invalid = || ValidationError::InvalidParameter {
-            property:  name.to_string(),
-            parameter: upper_name.clone(),
-        };
 
         match upper_name.as_str() {
             "VALUE" => {
                 if !allows_value_type || has_value_type || parameter.values.len() != 1 {
-                    return Err(invalid());
+                    return Err(invalid(&upper_name));
                 }
 
                 has_value_type = true;
             },
-            known if is_known_parameter(known) => return Err(invalid()),
+            known if is_known_parameter(known) => return Err(invalid(known)),
             _ => (),
         }
+    }
+
+    Ok(())
+}
+
+/// Checks that CALSCALE is used only with date or date-time values and matches the calendar of the date.
+/// When a registry is given, non-Gregorian dates are also checked by their calendars with the current parameters.
+fn validate_calendar_dates(
+    properties: &[Property<DateAndOrTimeOrText>],
+    name: &str,
+    calendars: Option<&dyn CalendarRegistry>,
+) -> Result<(), ValidationError> {
+    let invalid = || ValidationError::InvalidParameter {
+        property:  name.to_string(),
+        parameter: String::from("CALSCALE"),
+    };
+
+    for property in properties {
+        let date = match &property.value {
+            DateAndOrTimeOrText::DateAndOrTime(DateAndOrTime::Date(date)) => Some(*date),
+            DateAndOrTimeOrText::DateAndOrTime(DateAndOrTime::DateTime(date_time)) => {
+                Some(date_time.date())
+            },
+            _ => None,
+        };
+
+        let Some(date) = date else {
+            if property.parameters.calscale.is_some() {
+                return Err(invalid());
+            }
+
+            continue;
+        };
+
+        let scale =
+            property.parameters.calscale.as_ref().map_or("gregorian", |scale| scale.as_str());
+
+        if !date.calendar_scale().eq_ignore_ascii_case(scale) {
+            return Err(invalid());
+        }
+
+        if calendars.is_some() && date.calendar_scale() != "gregorian" {
+            let calendar = lookup_calendar(calendars, date.calendar_scale())
+                .map_err(|_| invalid())?
+                .ok_or_else(invalid)?;
+
+            if !calendar.is_valid_date(&date.parts(), &property.parameters) {
+                return Err(invalid());
+            }
+        }
+    }
+
+    Ok(())
+}
+
+/// Checks that SORT-AS has no more values than the property has components.
+fn validate_sort_as(
+    parameters: &Parameters,
+    name: &str,
+    component_count: usize,
+) -> Result<(), ValidationError> {
+    if parameters.sort_as.len() > component_count {
+        return Err(ValidationError::InvalidParameter {
+            property:  name.to_string(),
+            parameter: String::from("SORT-AS"),
+        });
     }
 
     Ok(())

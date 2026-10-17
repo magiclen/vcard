@@ -251,13 +251,21 @@ pub enum Calscale {
     Extension(Token),
 }
 
+impl Calscale {
+    /// Returns the calendar name as a string slice.
+    #[inline]
+    pub fn as_str(&self) -> &str {
+        match self {
+            Self::Gregorian => "gregorian",
+            Self::Extension(token) => token.as_str(),
+        }
+    }
+}
+
 impl Display for Calscale {
     #[inline]
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        match self {
-            Self::Gregorian => f.write_str("gregorian"),
-            Self::Extension(token) => Display::fmt(token, f),
-        }
+        f.write_str(self.as_str())
     }
 }
 
@@ -615,16 +623,35 @@ impl Parameters {
     /// Builds a parameter set from raw name and value pairs coming from the parser.
     ///
     /// The VALUE parameter is returned separately in lowercase because it selects how the property value is parsed.
+    /// It rejects parameters that RFC 9554 allows only once for the property, where `property_name` is uppercase.
     pub(crate) fn parse(
         raw_params: Vec<(&str, &str)>,
+        property_name: &str,
     ) -> Result<(Self, Option<String>), ParseErrorKind> {
         let mut parameters = Self::default();
         let mut value_type = None;
+        let unique_parameters: &[&str] = match property_name {
+            "GRAMGENDER" => &["LANGUAGE"],
+            "PRONOUNS" => &["LANGUAGE", "PREF", "TYPE", "ALTID"],
+            "SOCIALPROFILE" => &["SERVICE-TYPE"],
+            _ => &[],
+        };
+        let mut seen = 0u8;
 
         for (name, raw) in raw_params {
             let invalid = || ParseErrorKind::InvalidParameter(name.to_string());
 
             let upper_name = name.to_ascii_uppercase();
+
+            if let Some(index) = unique_parameters.iter().position(|name| *name == upper_name) {
+                let flag = 1 << index;
+
+                if seen & flag != 0 {
+                    return Err(invalid());
+                }
+
+                seen |= flag;
+            }
 
             match upper_name.as_str() {
                 "LANGUAGE" => {
@@ -702,7 +729,7 @@ impl Parameters {
                 "USERNAME" => parameters.username = Some(single_value(raw)),
                 _ => parameters.any.push(AnyParameter {
                     name:   name.parse().map_err(|_| invalid())?,
-                    values: list_values(raw, false),
+                    values: list_values(raw, false).collect(),
                 }),
             }
         }
@@ -754,40 +781,33 @@ fn single_value(raw: &str) -> String {
 ///
 /// When `split_inside_quotes` is enabled, commas inside a quoted item also separate values.
 /// That accepts the legacy `TYPE="voice,cell"` form which older versions of this crate produced.
-fn list_values(raw: &str, split_inside_quotes: bool) -> Vec<String> {
-    let mut items = Vec::new();
+fn list_values(raw: &str, split_inside_quotes: bool) -> impl Iterator<Item = String> {
+    let mut rest = Some(raw);
 
-    let bytes = raw.as_bytes();
+    let items = std::iter::from_fn(move || {
+        let raw = rest?;
+        let mut in_quotes = false;
 
-    let mut start = 0;
-    let mut in_quotes = false;
+        for (i, b) in raw.bytes().enumerate() {
+            match b {
+                b'"' => in_quotes = !in_quotes,
+                b',' if !in_quotes => {
+                    rest = Some(&raw[i + 1..]);
 
-    for (i, b) in bytes.iter().enumerate() {
-        match b {
-            b'"' => in_quotes = !in_quotes,
-            b',' if !in_quotes => {
-                items.push(&raw[start..i]);
-                start = i + 1;
-            },
-            _ => (),
+                    return Some(&raw[..i]);
+                },
+                _ => (),
+            }
         }
-    }
 
-    items.push(&raw[start..]);
+        rest = None;
 
-    let mut values = Vec::with_capacity(items.len());
+        Some(raw)
+    });
 
-    for item in items {
-        let quoted = item.starts_with('"');
+    items.flat_map(move |item| {
+        let count = if split_inside_quotes && item.starts_with('"') { usize::MAX } else { 1 };
 
-        let inner = unquote(item);
-
-        if quoted && split_inside_quotes && inner.contains(',') {
-            values.extend(inner.split(',').map(caret_decode));
-        } else {
-            values.push(caret_decode(inner));
-        }
-    }
-
-    values
+        unquote(item).splitn(count, ',').map(caret_decode)
+    })
 }

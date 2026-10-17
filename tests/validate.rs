@@ -1,6 +1,6 @@
 use vcard::{
-    AnyParameter, ExtensionProperty, Phonetic, Pref, SocialProfile, VCard, ValidationError,
-    values::TextOrUri,
+    AnyParameter, Calscale, ExtensionProperty, Phonetic, Pref, SocialProfile, VCard,
+    ValidationError, values::TextOrUri,
 };
 
 #[test]
@@ -268,17 +268,130 @@ fn pids_reference_client_sources() {
 
 #[test]
 fn single_properties_cannot_have_pids() {
+    for (name, value) in [("BDAY", "19900102"), ("CLIENTPIDMAP", "1;urn:example:source")] {
+        let card: VCard = format!(
+            "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n{name};PID=1:{value}\r\nEND:VCARD\r\n"
+        )
+        .parse()
+        .unwrap();
+
+        assert_eq!(Err(ValidationError::PidNotAllowed(name.to_string())), card.validate());
+    }
+}
+
+#[test]
+fn type_parameters_follow_property_rules() {
     let card: VCard = concat!(
-        "BEGIN:VCARD\r\n",
-        "VERSION:4.0\r\n",
-        "FN:Test\r\n",
-        "BDAY;PID=1:19900102\r\n",
-        "END:VCARD\r\n",
+        "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+        "ADR;TYPE=billing:;;Main Street;Town;;;\r\n",
+        "TEL;TYPE=cell:123\r\n",
+        "EMAIL;TYPE=work:test@example.com\r\n",
+        "PRONOUNS;TYPE=home:they/them\r\n",
+        "X-EXTRA;TYPE=work:raw\r\nEND:VCARD\r\n",
     )
     .parse()
     .unwrap();
 
-    assert_eq!(Err(ValidationError::PidNotAllowed(String::from("BDAY"))), card.validate());
+    assert!(card.validate().is_ok());
+
+    for (name, value) in
+        [("SOURCE", "urn:example:source"), ("BDAY", "19900102"), ("N", "Doe;John;;;")]
+    {
+        let card: VCard = format!(
+            "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n{name};TYPE=work:{value}\r\nEND:VCARD\r\n"
+        )
+        .parse()
+        .unwrap();
+
+        assert_eq!(
+            Err(ValidationError::InvalidParameter {
+                property:  name.to_string(),
+                parameter: String::from("TYPE"),
+            }),
+            card.validate()
+        );
+    }
+}
+
+#[test]
+fn calendar_scales_need_date_values() {
+    for name in ["BDAY", "ANNIVERSARY"] {
+        for (value_type, value, has_date) in [
+            ("", "19900102", true),
+            ("", "--0102", true),
+            ("", "19900102T1022", true),
+            ("", "T1022", false),
+            (";VALUE=text", "circa 1800", false),
+        ] {
+            let mut card: VCard = format!(
+                concat!(
+                    "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+                    "{name}{value_type}:{value}\r\nEND:VCARD\r\n",
+                ),
+                name = name,
+                value_type = value_type,
+                value = value,
+            )
+            .parse()
+            .unwrap();
+
+            assert!(card.validate().is_ok());
+
+            let property =
+                if name == "BDAY" { &mut card.birthdays[0] } else { &mut card.anniversaries[0] };
+            property.parameters.calscale = Some(Calscale::Gregorian);
+
+            let expected = if has_date {
+                Ok(())
+            } else {
+                Err(ValidationError::InvalidParameter {
+                    property:  name.to_string(),
+                    parameter: String::from("CALSCALE"),
+                })
+            };
+
+            assert_eq!(expected, card.validate());
+        }
+    }
+}
+
+#[test]
+fn sort_as_follows_component_counts() {
+    let mut card: VCard = concat!(
+        "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+        "N;SORT-AS=Doe,John:Doe;John;;;\r\n",
+        "ORG;SORT-AS=Example,Sales:Example;Sales\r\nEND:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
+
+    assert!(card.validate().is_ok());
+
+    card.names[0].parameters.sort_as.resize(6, String::new());
+    assert_eq!(
+        Err(ValidationError::InvalidParameter {
+            property:  String::from("N"),
+            parameter: String::from("SORT-AS"),
+        }),
+        card.validate()
+    );
+
+    card.names[0].value.surname2.push(String::from("Smith"));
+    assert!(card.validate().is_ok());
+
+    card.names[0].parameters.sort_as.push(String::from("III"));
+    card.names[0].value.generation.push(String::from("III"));
+    assert!(card.validate().is_ok());
+    assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
+
+    card.organizations[0].parameters.sort_as.push(String::from("Extra"));
+    assert_eq!(
+        Err(ValidationError::InvalidParameter {
+            property:  String::from("ORG"),
+            parameter: String::from("SORT-AS"),
+        }),
+        card.validate()
+    );
 }
 
 #[test]
