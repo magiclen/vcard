@@ -69,7 +69,9 @@ pub enum ValidationError {
     PidNotAllowed(String),
     /// An extension uses a name handled by a dedicated property field.
     ReservedExtensionName(String),
-    /// The raw value of an extension contains a line break.
+    /// A text property contains a forbidden ASCII control character.
+    InvalidTextValue(String),
+    /// The raw value of an extension contains a line break or a forbidden ASCII control character.
     InvalidExtensionValue(String),
     /// A parameter is not valid for the property or value, or belongs in a dedicated field.
     InvalidParameter {
@@ -141,8 +143,15 @@ impl Display for ValidationError {
             Self::ReservedExtensionName(name) => {
                 write!(f, "the property {name} must not be stored as an extension")
             },
+            Self::InvalidTextValue(name) => {
+                write!(f, "the text value of {name} contains a forbidden control character")
+            },
             Self::InvalidExtensionValue(name) => {
-                write!(f, "the raw value of the extension {name} must not contain line breaks")
+                write!(
+                    f,
+                    "the raw value of the extension {name} contains a line break or a forbidden \
+                     control character"
+                )
             },
             Self::InvalidParameter {
                 property,

@@ -10,7 +10,7 @@ use crate::{
     error::InvalidValueError,
     fold::FoldingWriter,
     parameters::Parameters,
-    syntax::{is_token, split_unescaped, unescape_text, write_escaped_text},
+    syntax::{is_token, is_valid_text, split_unescaped, unescape_text, write_escaped_text},
     values::{
         AddressValue, ClientPidMapValue, DateAndOrTime, DateAndOrTimeOrText, EmailValue,
         GenderValue, GramGenderValue, KindValue, LanguageTag, NameValue, OrgValue, TelValue,
@@ -66,6 +66,106 @@ pub trait PropertyValue: Sized {
     /// Parses the raw value text of a content line, guided by the lowercase VALUE parameter if one exists.
     /// It fails when the VALUE parameter names a value type that this value does not support.
     fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError>;
+}
+
+/// Checks that text inside a property can be written safely.
+pub(crate) trait ValidateText {
+    fn has_valid_text(&self) -> bool;
+}
+
+impl ValidateText for String {
+    fn has_valid_text(&self) -> bool {
+        is_valid_text(self)
+    }
+}
+
+impl ValidateText for Vec<String> {
+    fn has_valid_text(&self) -> bool {
+        self.iter().all(ValidateText::has_valid_text)
+    }
+}
+
+/// Implements `ValidateText` for value types whose constructors already reject control characters.
+macro_rules! impl_validate_text_always_valid {
+    ($($t:ty),* $(,)?) => {
+        $(impl ValidateText for $t {
+            #[inline]
+            fn has_valid_text(&self) -> bool {
+                true
+            }
+        })*
+    };
+}
+
+impl_validate_text_always_valid!(
+    Uri,
+    LanguageTag,
+    EmailValue,
+    Timestamp,
+    KindValue,
+    GramGenderValue,
+    ClientPidMapValue
+);
+
+impl ValidateText for NameValue {
+    fn has_valid_text(&self) -> bool {
+        self.components().into_iter().flatten().all(ValidateText::has_valid_text)
+    }
+}
+
+impl ValidateText for AddressValue {
+    fn has_valid_text(&self) -> bool {
+        self.components().into_iter().flatten().all(ValidateText::has_valid_text)
+    }
+}
+
+impl ValidateText for GenderValue {
+    fn has_valid_text(&self) -> bool {
+        self.identity.as_ref().is_none_or(ValidateText::has_valid_text)
+    }
+}
+
+impl ValidateText for OrgValue {
+    fn has_valid_text(&self) -> bool {
+        self.name.has_valid_text() && self.units.has_valid_text()
+    }
+}
+
+impl ValidateText for DateAndOrTimeOrText {
+    fn has_valid_text(&self) -> bool {
+        match self {
+            Self::Text(text) => text.has_valid_text(),
+            Self::DateAndOrTime(_) => true,
+        }
+    }
+}
+
+impl ValidateText for TelValue {
+    fn has_valid_text(&self) -> bool {
+        match self {
+            Self::Text(text) => text.has_valid_text(),
+            Self::Uri(uri) => uri.has_valid_text(),
+        }
+    }
+}
+
+impl ValidateText for TextOrUri {
+    fn has_valid_text(&self) -> bool {
+        match self {
+            Self::Text(text) => text.has_valid_text(),
+            Self::Uri(uri) => uri.has_valid_text(),
+        }
+    }
+}
+
+impl ValidateText for TzValue {
+    fn has_valid_text(&self) -> bool {
+        match self {
+            Self::Text(text) => text.has_valid_text(),
+            Self::Uri(uri) => uri.has_valid_text(),
+            Self::UtcOffset(_) => true,
+        }
+    }
 }
 
 /// A single vCard property with an optional group, parameters and a typed value.
@@ -140,7 +240,7 @@ pub struct ExtensionProperty {
     /// The parameters of the property.
     pub parameters: Parameters,
     /// The raw value in its wire format, kept as it is so that nothing is lost.
-    /// It must not contain line breaks, which [`VCard::validate`](crate::VCard::validate) checks.
+    /// It must not contain line breaks or forbidden ASCII control characters, which [`VCard::validate`](crate::VCard::validate) checks.
     pub value:      String,
 }
 

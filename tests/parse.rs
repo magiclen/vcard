@@ -287,3 +287,22 @@ fn version_parameters_round_trip() {
     assert_eq!(2, error.line);
     assert_eq!(ParseErrorKind::InvalidParameter(String::from("VALUE")), error.kind);
 }
+
+#[test]
+fn raw_content_lines_reject_control_characters() {
+    for control in ['\0', '\u{1b}', '\u{7f}', '\r'] {
+        let input = format!("BEGIN:VCARD\r\nVERSION:4.0\r\nFN:A{control}B\r\nEND:VCARD\r\n");
+        let error = input.parse::<VCard>().unwrap_err();
+
+        assert_eq!(3, error.line);
+        assert_eq!(ParseErrorKind::InvalidLine, error.kind);
+    }
+
+    for line in ["FN;ALTID=a\0b:Test", "X-EXTRA:a\u{7f}b"] {
+        let input = format!("BEGIN:VCARD\r\nVERSION:4.0\r\n{line}\r\nEND:VCARD\r\n");
+        let error = input.parse::<VCard>().unwrap_err();
+
+        assert_eq!(3, error.line);
+        assert_eq!(ParseErrorKind::InvalidLine, error.kind);
+    }
+}

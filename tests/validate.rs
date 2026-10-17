@@ -1,6 +1,7 @@
 use vcard::{
-    AnyParameter, Calscale, ExtensionProperty, Phonetic, Pref, SocialProfile, VCard,
-    ValidationError, values::TextOrUri,
+    AnyParameter, Calscale, ExtensionProperty, Name, Phonetic, Pref, SocialProfile, VCard,
+    ValidationError,
+    values::{NameValue, TextOrUri},
 };
 
 #[test]
@@ -471,4 +472,66 @@ fn media_types_with_nested_quotes_need_another_representation() {
         Err(ValidationError::UnrepresentableMediaType(String::from("URL"))),
         card.validate()
     );
+}
+
+#[test]
+fn control_characters_cannot_be_serialized_as_text() {
+    for control in ['\0', '\u{7f}'] {
+        let text = format!("A{control}B");
+        let mut card = VCard::new(text.clone());
+
+        assert_eq!(Err(ValidationError::InvalidTextValue(String::from("FN"))), card.validate());
+
+        card.formatted_names[0].value = String::from("Test");
+        card.names.push(Name::new(NameValue {
+            family_names: vec![text.clone()],
+            ..NameValue::default()
+        }));
+
+        assert_eq!(Err(ValidationError::InvalidTextValue(String::from("N"))), card.validate());
+
+        card.names.clear();
+        card.extensions.push(ExtensionProperty::new("X-EXTRA".parse().unwrap(), text.clone()));
+
+        assert_eq!(
+            Err(ValidationError::InvalidExtensionValue(String::from("X-EXTRA"))),
+            card.validate()
+        );
+
+        card.extensions.clear();
+        card.formatted_names[0].parameters.altid = Some(text);
+
+        assert_eq!(
+            Err(ValidationError::InvalidParameter {
+                property:  String::from("FN"),
+                parameter: String::from("ALTID"),
+            }),
+            card.validate()
+        );
+    }
+}
+
+#[test]
+fn tabs_and_escaped_newlines_remain_valid() {
+    let mut card = VCard::new("甲\t乙\n丙");
+    card.formatted_names[0].parameters.altid = Some(String::from("one\ttwo\nthree"));
+    card.names.push(Name::new(NameValue {
+        family_names: vec![String::from("Doe\tSmith\nJones")],
+        ..NameValue::default()
+    }));
+    card.extensions
+        .push(ExtensionProperty::from_text("X-EXTRA".parse().unwrap(), "one\ttwo\nthree"));
+
+    assert!(card.validate().is_ok());
+    assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
+
+    card.formatted_names[0].value = String::from("one\r\ntwo\rthree");
+    card.formatted_names[0].parameters.altid = Some(String::from("one\r\ntwo\rthree"));
+
+    assert!(card.validate().is_ok());
+
+    let parsed: VCard = card.to_string().parse().unwrap();
+
+    assert_eq!("one\ntwo\nthree", parsed.formatted_names[0].value);
+    assert_eq!(Some("one\ntwo\nthree"), parsed.formatted_names[0].parameters.altid.as_deref());
 }

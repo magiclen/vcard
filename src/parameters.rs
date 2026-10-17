@@ -419,6 +419,7 @@ pub struct AnyParameter {
 ///
 /// Every property shares this struct, and [`VCard::validate`](crate::VCard::validate) checks the restrictions that depend on the property.
 /// A parameter that is `None` or an empty list is simply not written.
+/// When parsing, a repeated single-value parameter keeps its last value.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Parameters {
     /// The LANGUAGE parameter, which tells the language of the property value.
@@ -606,6 +607,10 @@ impl Parameters {
         }
 
         for any in &self.any {
+            if any.values.is_empty() {
+                continue;
+            }
+
             write!(w, ";{}=", any.name)?;
 
             for (i, value) in any.values.iter().enumerate() {
@@ -623,13 +628,15 @@ impl Parameters {
     /// Builds a parameter set from raw name and value pairs coming from the parser.
     ///
     /// The VALUE parameter is returned separately in lowercase because it selects how the property value is parsed.
+    /// The flag tells whether CALSCALE appears again with a different value, which makes the calendar of a date ambiguous.
     /// It rejects parameters that RFC 9554 allows only once for the property, where `property_name` is uppercase.
     pub(crate) fn parse(
         raw_params: Vec<(&str, &str)>,
         property_name: &str,
-    ) -> Result<(Self, Option<String>), ParseErrorKind> {
+    ) -> Result<(Self, Option<String>, bool), ParseErrorKind> {
         let mut parameters = Self::default();
         let mut value_type = None;
+        let mut conflicting_calscale = false;
         let unique_parameters: &[&str] = match property_name {
             "GRAMGENDER" => &["LANGUAGE"],
             "PRONOUNS" => &["LANGUAGE", "PREF", "TYPE", "ALTID"],
@@ -680,7 +687,13 @@ impl Parameters {
                     parameters.media_type = Some(unquote(raw).parse().map_err(|_| invalid())?);
                 },
                 "CALSCALE" => {
-                    parameters.calscale = Some(single_value(raw).parse().map_err(|_| invalid())?);
+                    let calscale: Calscale = single_value(raw).parse().map_err(|_| invalid())?;
+
+                    conflicting_calscale |= parameters.calscale.as_ref().is_some_and(|earlier| {
+                        !earlier.as_str().eq_ignore_ascii_case(calscale.as_str())
+                    });
+
+                    parameters.calscale = Some(calscale);
                 },
                 "SORT-AS" => parameters.sort_as.extend(list_values(raw, false)),
                 "GEO" => {
@@ -734,7 +747,7 @@ impl Parameters {
             }
         }
 
-        Ok((parameters, value_type))
+        Ok((parameters, value_type, conflicting_calscale))
     }
 }
 

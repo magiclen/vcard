@@ -49,7 +49,8 @@ TYPE parameters are checked against the RFC 6350 property restrictions.
 CALSCALE on BDAY and ANNIVERSARY requires a date or date-time value, and SORT-AS cannot have more entries than the N or ORG value has serialized components.
 Known property names belong in their dedicated fields, and known parameters belong in the named `Parameters` fields.
 Typed values write their own VALUE parameters, so only extension properties can keep a VALUE parameter in `Parameters::any`.
-The raw values of extension properties cannot contain line breaks.
+Text values and parameters cannot contain ASCII control characters other than tabs and line breaks, and line breaks are escaped when written.
+The raw values of extension properties cannot contain ASCII control characters other than tabs.
 
 MEDIATYPE values keep literal carets, including `^n` and `^'`, without RFC 6868 decoding.
 Ordinary media types and token MIME parameters such as `text/plain;charset=utf-8` are supported.
@@ -104,10 +105,12 @@ assert_eq!("Magic Len", vcard.formatted_names[0].value);
 ```
 
 Use `VCard::parse_multiple` to read a `.vcf` file that contains several vCards.
-Only version 4.0 is supported, and unknown properties are kept in the `extensions` field so that nothing is lost.
-The only properties that are dropped are BDAY and ANNIVERSARY with an unknown CALSCALE, which RFC 6350 requires to be ignored.
+Only version 4.0 is supported, and unknown properties are kept in the `extensions` field with their raw values and typed parameters.
+The only properties that are dropped are BDAY and ANNIVERSARY with an unknown CALSCALE, which RFC 6350 requires to be ignored, or with conflicting CALSCALE values.
 Known properties reject VALUE declarations that do not match their supported value types.
 The RFC 9554 occurrence limits for GRAMGENDER, PRONOUNS and SOCIALPROFILE parameters are checked while parsing.
+Other repeated single-value parameters keep their last value, while TYPE, PID and SORT-AS collect every value.
+Content lines cannot contain ASCII control characters other than tabs.
 URI property values accept bare commas and the `\\`, `\,` and `\;` escapes, which RFC 6350 errata 3845 and 3846 apply to URI values.
 URI output still uses bare commas, escapes only backslashes, and keeps percent-encoded bytes as encoded.
 
@@ -122,7 +125,7 @@ The registry receives lowercase names, and a returned handler must have the same
 Use `VCard::parse_with_calendars` or `VCard::parse_multiple_with_calendars` to read dates with an external registry.
 The handler validates the calendar rules and can inspect property parameters, including private parameters used to distinguish dates such as leap months.
 Date values, CALSCALE and the other parameters are kept together without conversion to Gregorian dates.
-BDAY and ANNIVERSARY properties with an unknown CALSCALE are ignored before parsing their values or checking their cardinality, as RFC 6350 section 5.8 requires.
+BDAY and ANNIVERSARY properties with an unknown or conflicting CALSCALE are ignored before parsing their values or checking their cardinality, following RFC 6350 section 5.8.
 The default parsing methods therefore ignore all non-Gregorian BDAY and ANNIVERSARY properties.
 
 Use `DateParts` and `Date::from_calendar_parts` to build a date for an external calendar:

@@ -1,6 +1,9 @@
 //! The splitter that breaks a logical line into its group, name, parameters and value.
 
-use crate::{error::ParseErrorKind, syntax::is_token};
+use crate::{
+    error::ParseErrorKind,
+    syntax::{is_token, is_valid_raw_text},
+};
 
 /// A content line split into its sections, where parameter values still carry their double quotes.
 pub(crate) struct RawContentLine<'a> {
@@ -12,6 +15,10 @@ pub(crate) struct RawContentLine<'a> {
 
 /// Splits a logical line following the `contentline` rule of RFC 6350 section 3.3.
 pub(crate) fn parse_content_line(line: &str) -> Result<RawContentLine<'_>, ParseErrorKind> {
+    if !is_valid_raw_text(line) {
+        return Err(ParseErrorKind::InvalidLine);
+    }
+
     let bytes = line.as_bytes();
 
     // The name section ends at the first semicolon or colon, which cannot be quoted there.

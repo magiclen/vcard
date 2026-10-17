@@ -29,7 +29,7 @@ impl FromStr for VCard {
 
 impl VCard {
     /// Parses one vCard with external handlers for non-Gregorian BDAY and ANNIVERSARY values.
-    /// Properties with an unknown CALSCALE are ignored before their values or cardinality are checked.
+    /// Properties with an unknown or conflicting CALSCALE are ignored before their values or cardinality are checked.
     pub fn parse_with_calendars(
         s: &str,
         calendars: &dyn CalendarRegistry,
@@ -65,7 +65,7 @@ impl VCard {
     }
 
     /// Parses any number of vCards with external handlers for non-Gregorian dates.
-    /// Properties with an unknown CALSCALE are ignored, as in [`VCard::parse_with_calendars`].
+    /// Properties with an unknown or conflicting CALSCALE are ignored, as in [`VCard::parse_with_calendars`].
     pub fn parse_multiple_with_calendars(
         s: &str,
         calendars: &dyn CalendarRegistry,
@@ -131,8 +131,8 @@ fn parse_card(
         });
     }
 
-    let (version_parameters, value_type) =
-        Parameters::parse(content.params, "VERSION").map_err(|kind| ParseError {
+    let (version_parameters, value_type, _) = Parameters::parse(content.params, "VERSION")
+        .map_err(|kind| ParseError {
             line: number,
             kind,
         })?;
@@ -228,17 +228,22 @@ fn add_property(
 
     let upper_name = name.to_ascii_uppercase();
 
-    let (parameters, value_type) =
-        Parameters::parse(params, &upper_name).map_err(|kind| ParseError {
+    let (parameters, value_type, conflicting_calscale) = Parameters::parse(params, &upper_name)
+        .map_err(|kind| ParseError {
             line: number,
             kind,
         })?;
 
     let value_type = value_type.as_deref();
 
-    let calendar = if matches!(upper_name.as_str(), "BDAY" | "ANNIVERSARY")
-        && let Some(Calscale::Extension(scale)) = &parameters.calscale
-    {
+    let is_date = matches!(upper_name.as_str(), "BDAY" | "ANNIVERSARY");
+
+    // Conflicting CALSCALE values cannot be understood either, so the property is ignored like an unknown CALSCALE.
+    if is_date && conflicting_calscale {
+        return Ok(());
+    }
+
+    let calendar = if is_date && let Some(Calscale::Extension(scale)) = &parameters.calscale {
         let calendar = lookup_calendar(calendars, scale.as_str()).map_err(|_| ParseError {
             line: number,
             kind: ParseErrorKind::InvalidParameter(String::from("CALSCALE")),

@@ -158,6 +158,7 @@ fn unknown_calendars_do_not_affect_dates_or_cardinality() {
         "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
         "BDAY;CALSCALE=x-unknown:unrecognized date syntax\r\n",
         "BDAY;CALSCALE=GREGORIAN:19900102\r\n",
+        "BDAY;CALSCALE=x-unknown;CALSCALE=gregorian:19900103\r\n",
         "BDAY;CALSCALE=x-unknown:another date\r\n",
         "ANNIVERSARY;CALSCALE=x-unknown:unrecognized date syntax\r\nEND:VCARD\r\n",
     );

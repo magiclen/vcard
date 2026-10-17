@@ -9,6 +9,18 @@ pub(crate) fn is_token(s: &str) -> bool {
     !s.is_empty() && s.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
 }
 
+/// Checks text before escaping, allowing tabs and newlines.
+#[inline]
+pub(crate) fn is_valid_text(s: &str) -> bool {
+    s.bytes().all(|b| !b.is_ascii_control() || matches!(b, b'\t' | b'\r' | b'\n'))
+}
+
+/// Checks wire text, allowing tabs but no other ASCII control characters.
+#[inline]
+pub(crate) fn is_valid_raw_text(s: &str) -> bool {
+    s.bytes().all(|b| !b.is_ascii_control() || b == b'\t')
+}
+
 /// Writes a text value with the escaping rules of RFC 6350 section 3.4.
 /// Backslashes, commas and newlines are always escaped.
 /// Semicolons are escaped only when the text is a component of a compound value.

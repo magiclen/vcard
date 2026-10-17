@@ -178,17 +178,15 @@ impl FromStr for GenderValue {
     type Err = InvalidValueError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut parts = split_unescaped(s, b';');
+        let raw_sex = split_unescaped(s, b';').next().unwrap_or_default();
 
-        let sex = match parts.next().unwrap_or_default() {
+        let sex = match raw_sex {
             "" => None,
             sex => Some(Sex::from_str(sex)?),
         };
 
-        let identity = match parts.next() {
-            Some(identity) if !identity.is_empty() => Some(unescape_text(identity)),
-            _ => None,
-        };
+        // The identity is everything after the first unescaped semicolon, so a later unescaped semicolon stays in the text.
+        let identity = (raw_sex.len() < s.len()).then(|| unescape_text(&s[raw_sex.len() + 1..]));
 
         Ok(Self {
             sex,

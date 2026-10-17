@@ -1,4 +1,4 @@
-use vcard::{TzParam, VCard};
+use vcard::{Gender, TzParam, VCard, values::GenderValue};
 
 /// Parses the input, serializes it, and parses it again, expecting both parses to give equal structures.
 fn assert_round_trip(input: &str) {
@@ -249,4 +249,29 @@ fn structured_components_keep_escaping_and_ignore_unknown_tail() {
     assert_eq!(vec!["Room"], address.rooms);
     assert_eq!(vec!["North"], address.directions);
     assert_eq!(vcard, vcard.to_string().parse::<VCard>().unwrap());
+}
+
+#[test]
+fn gender_keeps_the_complete_identity() {
+    for (raw, expected) in [
+        ("O;first;second", Some("first;second")),
+        (r";甲\;乙;丙", Some("甲;乙;丙")),
+        ("O;", Some("")),
+        (";", Some("")),
+        ("O", None),
+    ] {
+        let input =
+            format!("BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\nGENDER:{raw}\r\nEND:VCARD\r\n");
+        let card: VCard = input.parse().unwrap();
+
+        assert_eq!(expected, card.genders[0].value.identity.as_deref());
+        assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
+    }
+
+    let mut card = VCard::new("Test");
+    card.genders.push(Gender::new(GenderValue {
+        sex: None, identity: Some(String::new())
+    }));
+
+    assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
 }

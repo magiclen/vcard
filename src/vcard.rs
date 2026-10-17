@@ -13,14 +13,15 @@ use crate::{
     calendar::lookup_calendar,
     error::ValidationError,
     fold::FoldingWriter,
-    parameters::{Parameters, Phonetic, is_known_parameter},
+    parameters::{Parameters, Phonetic, TzParam, is_known_parameter},
     property::{
         Address, Anniversary, Birthday, CalendarAddressUri, CalendarUri, Categories, ClientPidMap,
         Created, Email, ExtensionProperty, Fburl, FormattedName, Gender, Geo, GramGender, Impp,
         Key, Kind, Lang, Language, Logo, Member, Name, Nickname, Note, Org, Photo, ProdId,
         Pronouns, Property, Related, Rev, Role, SocialProfile, Sound, Source, Tel, TimeZone, Title,
-        Uid, Url, Xml, write_property,
+        Uid, Url, ValidateText, Xml, write_property,
     },
+    syntax::{is_valid_raw_text, is_valid_text},
     values::{
         AddressValue, DateAndOrTime, DateAndOrTimeOrText, KindValue, LanguageTag, NameValue,
         TextOrUri,
@@ -202,9 +203,10 @@ impl VCard {
     ///
     /// Checks required properties, ALTID cardinality, the group kind for MEMBER, and the service type for text SOCIALPROFILE values.
     /// Also checks phonetic representations, GRAMGENDER languages, LANGUAGE and USERNAME usage, and non-empty AUTHOR-NAME values.
-    /// Checks PID sources, reserved extension names, line breaks in raw extension values, generic parameter conflicts, and MEDIATYPE quoting.
+    /// Checks PID sources, reserved extension names, generic parameter conflicts, and MEDIATYPE quoting.
     /// Checks TYPE usage, the date required by CALSCALE, and SORT-AS component counts.
     /// Checks that each date has the same calendar as its CALSCALE parameter.
+    /// Rejects forbidden ASCII control characters in text values, parameters and raw extension values.
     /// Use [`VCard::validate_with_calendars`] to check external calendar rules again after changing property parameters.
     pub fn validate(&self) -> Result<(), ValidationError> {
         self.validate_with_calendar_registry(None)
@@ -275,6 +277,10 @@ impl VCard {
         macro_rules! validate_property_parameters {
             ($(($field:ident, $name:literal, $limit:tt)),* $(,)?) => {
                 $(for property in &self.$field {
+                    if !property.value.has_valid_text() {
+                        return Err(ValidationError::InvalidTextValue(String::from($name)));
+                    }
+
                     validate_parameters(
                         &property.parameters,
                         $name,
@@ -295,7 +301,7 @@ impl VCard {
                 return Err(ValidationError::ReservedExtensionName(name.to_string()));
             }
 
-            if extension.value.contains(['\r', '\n']) {
+            if !is_valid_raw_text(&extension.value) {
                 return Err(ValidationError::InvalidExtensionValue(name.to_string()));
             }
 
@@ -390,6 +396,28 @@ fn validate_parameters(
         return Err(ValidationError::UnrepresentableMediaType(name.to_string()));
     }
 
+    for (parameter, value) in [
+        ("ALTID", &parameters.altid),
+        ("LABEL", &parameters.label),
+        ("AUTHOR-NAME", &parameters.author_name),
+        ("SERVICE-TYPE", &parameters.service_type),
+        ("USERNAME", &parameters.username),
+    ] {
+        if value.as_deref().is_some_and(|value| !is_valid_text(value)) {
+            return Err(invalid(parameter));
+        }
+    }
+
+    if let Some(TzParam::Text(text)) = &parameters.tz
+        && !is_valid_text(text)
+    {
+        return Err(invalid("TZ"));
+    }
+
+    if parameters.sort_as.iter().any(|value| !is_valid_text(value)) {
+        return Err(invalid("SORT-AS"));
+    }
+
     if !allows_pid && !parameters.pids.is_empty() {
         return Err(ValidationError::PidNotAllowed(name.to_string()));
     }
@@ -431,6 +459,10 @@ fn validate_parameters(
 
     for parameter in &parameters.any {
         let upper_name = parameter.name.as_str().to_ascii_uppercase();
+
+        if parameter.values.iter().any(|value| !is_valid_text(value)) {
+            return Err(invalid(&upper_name));
+        }
 
         match upper_name.as_str() {
             "VALUE" => {
