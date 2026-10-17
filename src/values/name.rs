@@ -24,11 +24,9 @@ fn write_component(f: &mut Formatter, list: &[String]) -> fmt::Result {
 }
 
 /// Parses one component into a list of unescaped text items.
-fn parse_component(s: Option<&&str>) -> Vec<String> {
+fn parse_component(s: Option<&str>) -> Vec<String> {
     match s {
-        Some(s) if !s.is_empty() => {
-            split_unescaped(s, b',').into_iter().map(unescape_text).collect()
-        },
+        Some(s) if !s.is_empty() => split_unescaped(s, b',').map(unescape_text).collect(),
         _ => Vec::new(),
     }
 }
@@ -77,24 +75,25 @@ impl NameValue {
     pub fn new() -> Self {
         Self::default()
     }
+
+    /// Returns all components in the order defined by RFC 6350 and RFC 9554.
+    pub(crate) fn components(&self) -> [&[String]; 7] {
+        [
+            &self.family_names,
+            &self.given_names,
+            &self.additional_names,
+            &self.honorific_prefixes,
+            &self.honorific_suffixes,
+            &self.surname2,
+            &self.generation,
+        ]
+    }
 }
 
 impl Display for NameValue {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         // The two RFC 9554 components are written only when they are used, for backward compatibility.
-        write_components(
-            f,
-            &[
-                &self.family_names,
-                &self.given_names,
-                &self.additional_names,
-                &self.honorific_prefixes,
-                &self.honorific_suffixes,
-                &self.surname2,
-                &self.generation,
-            ],
-            5,
-        )
+        write_components(f, &self.components(), 5)
     }
 }
 
@@ -102,17 +101,17 @@ impl FromStr for NameValue {
     type Err = InvalidValueError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts = split_unescaped(s, b';');
+        let mut parts = split_unescaped(s, b';');
 
         // Components after the seventh one are ignored, as required for unknown components.
         Ok(Self {
-            family_names:       parse_component(parts.first()),
-            given_names:        parse_component(parts.get(1)),
-            additional_names:   parse_component(parts.get(2)),
-            honorific_prefixes: parse_component(parts.get(3)),
-            honorific_suffixes: parse_component(parts.get(4)),
-            surname2:           parse_component(parts.get(5)),
-            generation:         parse_component(parts.get(6)),
+            family_names:       parse_component(parts.next()),
+            given_names:        parse_component(parts.next()),
+            additional_names:   parse_component(parts.next()),
+            honorific_prefixes: parse_component(parts.next()),
+            honorific_suffixes: parse_component(parts.next()),
+            surname2:           parse_component(parts.next()),
+            generation:         parse_component(parts.next()),
         })
     }
 }
@@ -167,35 +166,36 @@ impl AddressValue {
     pub fn new() -> Self {
         Self::default()
     }
+
+    /// Returns all components in the order defined by RFC 6350 and RFC 9554.
+    pub(crate) fn components(&self) -> [&[String]; 18] {
+        [
+            &self.post_office_boxes,
+            &self.extended_addresses,
+            &self.street_addresses,
+            &self.localities,
+            &self.regions,
+            &self.postal_codes,
+            &self.countries,
+            &self.rooms,
+            &self.apartments,
+            &self.floors,
+            &self.street_numbers,
+            &self.street_names,
+            &self.buildings,
+            &self.blocks,
+            &self.subdistricts,
+            &self.districts,
+            &self.landmarks,
+            &self.directions,
+        ]
+    }
 }
 
 impl Display for AddressValue {
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         // The RFC 9554 components are written only when they are used, for backward compatibility.
-        write_components(
-            f,
-            &[
-                &self.post_office_boxes,
-                &self.extended_addresses,
-                &self.street_addresses,
-                &self.localities,
-                &self.regions,
-                &self.postal_codes,
-                &self.countries,
-                &self.rooms,
-                &self.apartments,
-                &self.floors,
-                &self.street_numbers,
-                &self.street_names,
-                &self.buildings,
-                &self.blocks,
-                &self.subdistricts,
-                &self.districts,
-                &self.landmarks,
-                &self.directions,
-            ],
-            7,
-        )
+        write_components(f, &self.components(), 7)
     }
 }
 
@@ -203,28 +203,28 @@ impl FromStr for AddressValue {
     type Err = InvalidValueError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts = split_unescaped(s, b';');
+        let mut parts = split_unescaped(s, b';');
 
         // Components after the eighteenth one are ignored, as required for unknown components.
         Ok(Self {
-            post_office_boxes:  parse_component(parts.first()),
-            extended_addresses: parse_component(parts.get(1)),
-            street_addresses:   parse_component(parts.get(2)),
-            localities:         parse_component(parts.get(3)),
-            regions:            parse_component(parts.get(4)),
-            postal_codes:       parse_component(parts.get(5)),
-            countries:          parse_component(parts.get(6)),
-            rooms:              parse_component(parts.get(7)),
-            apartments:         parse_component(parts.get(8)),
-            floors:             parse_component(parts.get(9)),
-            street_numbers:     parse_component(parts.get(10)),
-            street_names:       parse_component(parts.get(11)),
-            buildings:          parse_component(parts.get(12)),
-            blocks:             parse_component(parts.get(13)),
-            subdistricts:       parse_component(parts.get(14)),
-            districts:          parse_component(parts.get(15)),
-            landmarks:          parse_component(parts.get(16)),
-            directions:         parse_component(parts.get(17)),
+            post_office_boxes:  parse_component(parts.next()),
+            extended_addresses: parse_component(parts.next()),
+            street_addresses:   parse_component(parts.next()),
+            localities:         parse_component(parts.next()),
+            regions:            parse_component(parts.next()),
+            postal_codes:       parse_component(parts.next()),
+            countries:          parse_component(parts.next()),
+            rooms:              parse_component(parts.next()),
+            apartments:         parse_component(parts.next()),
+            floors:             parse_component(parts.next()),
+            street_numbers:     parse_component(parts.next()),
+            street_names:       parse_component(parts.next()),
+            buildings:          parse_component(parts.next()),
+            blocks:             parse_component(parts.next()),
+            subdistricts:       parse_component(parts.next()),
+            districts:          parse_component(parts.next()),
+            landmarks:          parse_component(parts.next()),
+            directions:         parse_component(parts.next()),
         })
     }
 }

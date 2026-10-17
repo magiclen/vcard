@@ -10,6 +10,7 @@ use std::{
 use crate::{
     error::ValidationError,
     fold::FoldingWriter,
+    parameters::Phonetic,
     property::{
         Address, Anniversary, Birthday, CalendarAddressUri, CalendarUri, Categories, ClientPidMap,
         Created, Email, ExtensionProperty, Fburl, FormattedName, Gender, Geo, GramGender, Impp,
@@ -17,7 +18,7 @@ use crate::{
         Pronouns, Property, Related, Rev, Role, SocialProfile, Sound, Source, Tel, TimeZone, Title,
         Uid, Url, Xml, write_property,
     },
-    values::{KindValue, TextOrUri},
+    values::{AddressValue, KindValue, LanguageTag, NameValue, TextOrUri},
 };
 
 /// Calls another macro with the whole property table.
@@ -192,6 +193,7 @@ impl VCard {
     /// Checks the semantic rules that the type system cannot enforce.
     ///
     /// Checks required properties, ALTID cardinality, the group kind for MEMBER, and the service type for text SOCIALPROFILE values.
+    /// Also checks phonetic representations, GRAMGENDER languages, LANGUAGE and USERNAME usage, and non-empty AUTHOR-NAME values.
     pub fn validate(&self) -> Result<(), ValidationError> {
         if self.formatted_names.is_empty() {
             return Err(ValidationError::MissingFormattedName);
@@ -228,6 +230,48 @@ impl VCard {
             return Err(ValidationError::SocialProfileWithoutServiceType);
         }
 
+        validate_phonetic(&self.names, "N", NameValue::components)?;
+        validate_phonetic(&self.addresses, "ADR", AddressValue::components)?;
+
+        for (i, gender) in self.gram_genders.iter().enumerate() {
+            if self.gram_genders[..i].iter().any(|other| {
+                same_language(
+                    gender.parameters.language.as_ref(),
+                    other.parameters.language.as_ref(),
+                )
+            }) {
+                return Err(ValidationError::DuplicateGramGenderLanguage);
+            }
+        }
+
+        if self.languages.iter().any(|language| language.parameters.language.is_some()) {
+            return Err(ValidationError::LanguageWithLanguageParameter);
+        }
+
+        if self.social_profiles.iter().any(|profile| {
+            matches!(&profile.value, TextOrUri::Text(_)) && profile.parameters.username.is_some()
+        }) {
+            return Err(ValidationError::UsernameWithoutUriValue);
+        }
+
+        macro_rules! validate_author_names {
+            ($(($field:ident, $name:literal, $limit:tt)),* $(,)?) => {
+                $(if self.$field.iter().any(|property| {
+                    property.parameters.author_name.as_ref().is_some_and(|name| name.is_empty())
+                }) {
+                    return Err(ValidationError::EmptyAuthorName(String::from($name)));
+                })*
+            };
+        }
+
+        for_each_property!(validate_author_names);
+
+        for extension in &self.extensions {
+            if extension.parameters.author_name.as_ref().is_some_and(|name| name.is_empty()) {
+                return Err(ValidationError::EmptyAuthorName(extension.name.to_string()));
+            }
+        }
+
         Ok(())
     }
 
@@ -240,6 +284,65 @@ impl VCard {
 
         file.flush()
     }
+}
+
+/// Checks whether two optional language tags are the same, where two missing tags also count as the same.
+/// Language tags are compared case-insensitively.
+fn same_language(first: Option<&LanguageTag>, second: Option<&LanguageTag>) -> bool {
+    match (first, second) {
+        (Some(first), Some(second)) => first.as_str().eq_ignore_ascii_case(second.as_str()),
+        (None, None) => true,
+        _ => false,
+    }
+}
+
+/// Checks the PHONETIC rules of RFC 9554 section 4.6 for N or ADR properties.
+fn validate_phonetic<V, const N: usize>(
+    properties: &[Property<V>],
+    name: &str,
+    components: fn(&V) -> [&[String]; N],
+) -> Result<(), ValidationError> {
+    for (i, property) in properties.iter().enumerate() {
+        let parameters = &property.parameters;
+
+        let Some(phonetic) = &parameters.phonetic else {
+            continue;
+        };
+
+        if *phonetic == Phonetic::Script && parameters.script.is_none() {
+            return Err(ValidationError::PhoneticWithoutScript(name.to_string()));
+        }
+
+        let without_related = || ValidationError::PhoneticWithoutRelatedProperty(name.to_string());
+
+        let altid = parameters.altid.as_ref().ok_or_else(without_related)?;
+        let phonetic_components = components(&property.value);
+
+        // A component set in the phonetic value must also be set at the same position in the related value.
+        if !properties.iter().any(|related| {
+            related.parameters.phonetic.is_none()
+                && related.parameters.altid.as_ref() == Some(altid)
+                && components(&related.value).into_iter().zip(phonetic_components).all(
+                    |(original, pronounced)| {
+                        pronounced.iter().all(String::is_empty)
+                            || original.iter().any(|value| !value.is_empty())
+                    },
+                )
+        }) {
+            return Err(without_related());
+        }
+
+        // Phonetic properties with the same ALTID must have different LANGUAGE values, so at most one of them can omit it.
+        if properties[..i].iter().any(|other| {
+            other.parameters.phonetic.is_some()
+                && other.parameters.altid.as_ref() == Some(altid)
+                && same_language(parameters.language.as_ref(), other.parameters.language.as_ref())
+        }) {
+            return Err(ValidationError::DuplicatePhoneticLanguage(name.to_string()));
+        }
+    }
+
+    Ok(())
 }
 
 fn has_single_logical_property<V>(properties: &[Property<V>]) -> bool {

@@ -222,3 +222,31 @@ fn single_properties_keep_altid_representations() {
     assert!(vcard.validate().is_ok());
     assert_eq!(vcard, vcard.to_string().parse::<VCard>().unwrap());
 }
+
+#[test]
+fn structured_components_keep_escaping_and_ignore_unknown_tail() {
+    let input = concat!(
+        "BEGIN:VCARD\r\n",
+        "VERSION:4.0\r\n",
+        "FN:Test\r\n",
+        "N:Doe\\;Smith;John\\\\;A\\,B;;;Second;III;unknown;tail\r\n",
+        "ADR:;;Main\\;Street;City\\\\;Region;123;Country;Room;Apt;2;10;Main;Building;Block;Sub;\
+         District;Landmark;North;unknown;tail\r\n",
+        "END:VCARD\r\n",
+    );
+
+    let vcard: VCard = input.parse().unwrap();
+    let name = &vcard.names[0].value;
+    let address = &vcard.addresses[0].value;
+
+    assert_eq!(vec!["Doe;Smith"], name.family_names);
+    assert_eq!(vec!["John\\"], name.given_names);
+    assert_eq!(vec!["A,B"], name.additional_names);
+    assert_eq!(vec!["Second"], name.surname2);
+    assert_eq!(vec!["III"], name.generation);
+    assert_eq!(vec!["Main;Street"], address.street_addresses);
+    assert_eq!(vec!["City\\"], address.localities);
+    assert_eq!(vec!["Room"], address.rooms);
+    assert_eq!(vec!["North"], address.directions);
+    assert_eq!(vcard, vcard.to_string().parse::<VCard>().unwrap());
+}

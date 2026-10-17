@@ -41,6 +41,7 @@ Every property is stored in a `Vec` field, and an empty list means that the prop
 A property limited to one logical instance can have several representations when they all share the same ALTID.
 Every property carries its parameters in a shared `Parameters` struct and can have a group name.
 Use `VCard::validate` to check required properties, ALTID cardinality, the group kind for MEMBER, and the service type for text SOCIALPROFILE values.
+It also checks phonetic representations, GRAMGENDER language conflicts, LANGUAGE and USERNAME usage, and non-empty AUTHOR-NAME values.
 
 Use `VCard::save_to_file` to write the vCard to a file, and `vcard::values::Uri::from_file` to embed a photo, a logo or a sound as a base64 data URI.
 
@@ -76,6 +77,7 @@ assert_eq!("Magic Len", vcard.formatted_names[0].value);
 
 Use `VCard::parse_multiple` to read a `.vcf` file that contains several vCards.
 Only version 4.0 is supported, and unknown properties are kept in the `extensions` field so that nothing is lost.
+Known properties reject VALUE declarations that do not match their supported value types.
 
 ## Crates.io
 

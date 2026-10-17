@@ -45,6 +45,20 @@ pub enum ValidationError {
     DuplicateProperty(String),
     /// A text SOCIALPROFILE property must have a SERVICE-TYPE parameter.
     SocialProfileWithoutServiceType,
+    /// A phonetic N or ADR property with `PHONETIC=script` must have a SCRIPT parameter.
+    PhoneticWithoutScript(String),
+    /// A phonetic N or ADR property must share its ALTID with a related property that sets every component it uses.
+    PhoneticWithoutRelatedProperty(String),
+    /// Phonetic N or ADR properties with the same ALTID must have different LANGUAGE values, and at most one of them can omit it.
+    DuplicatePhoneticLanguage(String),
+    /// GRAMGENDER properties must have different LANGUAGE values.
+    DuplicateGramGenderLanguage,
+    /// The LANGUAGE property cannot have a LANGUAGE parameter.
+    LanguageWithLanguageParameter,
+    /// A SOCIALPROFILE property with USERNAME must have a URI value.
+    UsernameWithoutUriValue,
+    /// An AUTHOR-NAME parameter must not be empty.
+    EmptyAuthorName(String),
 }
 
 impl Display for ValidationError {
@@ -60,6 +74,38 @@ impl Display for ValidationError {
             },
             Self::SocialProfileWithoutServiceType => {
                 f.write_str("a text SOCIALPROFILE property must have a SERVICE-TYPE parameter")
+            },
+            Self::PhoneticWithoutScript(name) => {
+                write!(
+                    f,
+                    "a phonetic {name} property with PHONETIC=script must have a SCRIPT parameter"
+                )
+            },
+            Self::PhoneticWithoutRelatedProperty(name) => {
+                write!(
+                    f,
+                    "a phonetic {name} property must share its ALTID with a related property that \
+                     sets every component it uses"
+                )
+            },
+            Self::DuplicatePhoneticLanguage(name) => {
+                write!(
+                    f,
+                    "the phonetic {name} properties with the same ALTID must have different \
+                     LANGUAGE values"
+                )
+            },
+            Self::DuplicateGramGenderLanguage => {
+                f.write_str("the GRAMGENDER properties must have different LANGUAGE values")
+            },
+            Self::LanguageWithLanguageParameter => {
+                f.write_str("the LANGUAGE property cannot have a LANGUAGE parameter")
+            },
+            Self::UsernameWithoutUriValue => {
+                f.write_str("a SOCIALPROFILE property with USERNAME must have a URI value")
+            },
+            Self::EmptyAuthorName(name) => {
+                write!(f, "the AUTHOR-NAME parameter of {name} must not be empty")
             },
         }
     }

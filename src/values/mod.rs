@@ -178,14 +178,14 @@ impl FromStr for GenderValue {
     type Err = InvalidValueError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts = split_unescaped(s, b';');
+        let mut parts = split_unescaped(s, b';');
 
-        let sex = match parts[0] {
+        let sex = match parts.next().unwrap_or_default() {
             "" => None,
             sex => Some(Sex::from_str(sex)?),
         };
 
-        let identity = match parts.get(1) {
+        let identity = match parts.next() {
             Some(identity) if !identity.is_empty() => Some(unescape_text(identity)),
             _ => None,
         };
@@ -280,11 +280,13 @@ impl FromStr for OrgValue {
     type Err = InvalidValueError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let parts = split_unescaped(s, b';');
+        let mut parts = split_unescaped(s, b';');
+
+        let name = unescape_text(parts.next().unwrap_or_default());
 
         Ok(Self {
-            name:  unescape_text(parts[0]),
-            units: parts[1..].iter().map(|unit| unescape_text(unit)).collect(),
+            name,
+            units: parts.map(unescape_text).collect(),
         })
     }
 }

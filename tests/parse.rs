@@ -195,3 +195,57 @@ fn duplicate_single_property() {
         assert_eq!(ParseErrorKind::DuplicateProperty(String::from("BDAY")), error.kind);
     }
 }
+
+#[test]
+fn explicit_value_types() {
+    let vcard: VCard = concat!(
+        "BEGIN:VCARD\r\n",
+        "VERSION:4.0\r\n",
+        "KIND;VALUE=text:individual\r\n",
+        "FN;VALUE=TEXT:Test\r\n",
+        "N;VALUE=text:Doe;John;;;\r\n",
+        "NICKNAME;VALUE=text:Jim,Jimmie\r\n",
+        "PHOTO;VALUE=URI:https://example.com/photo.png\r\n",
+        "BDAY;VALUE=date-and-or-time:19900102\r\n",
+        "EMAIL;VALUE=text:test@example.com\r\n",
+        "LANG;VALUE=language-tag:zh-Hant\r\n",
+        "REV;VALUE=timestamp:20260101T000000Z\r\n",
+        "X-CUSTOM;VALUE=x-custom:raw value\r\n",
+        "END:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
+
+    assert_eq!("Test", vcard.formatted_names[0].value);
+    assert_eq!(vec!["Doe"], vcard.names[0].value.family_names);
+    assert_eq!(vec!["Jim", "Jimmie"], vcard.nicknames[0].value);
+    assert_eq!("https://example.com/photo.png", vcard.photos[0].value.as_str());
+    assert_eq!("zh-Hant", vcard.langs[0].value.as_str());
+    assert_eq!("VALUE", vcard.extensions[0].parameters.any[0].name.as_str());
+    assert_eq!(vec!["x-custom"], vcard.extensions[0].parameters.any[0].values);
+    assert_eq!(vcard, vcard.to_string().parse::<VCard>().unwrap());
+}
+
+#[test]
+fn unsupported_value_types() {
+    for (name, value_type, value) in [
+        ("FN", "uri", "urn:example:x"),
+        ("PHOTO", "text", "https://example.com/photo.png"),
+        ("TZ", "timestamp", "UTC"),
+    ] {
+        let error = format!(
+            "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n{name};VALUE={value_type}:{value}\r\nEND:\
+             VCARD\r\n"
+        )
+        .parse::<VCard>()
+        .unwrap_err();
+
+        assert_eq!(4, error.line);
+        assert_eq!(
+            ParseErrorKind::InvalidValue {
+                property: name.to_string()
+            },
+            error.kind
+        );
+    }
+}

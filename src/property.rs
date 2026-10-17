@@ -63,6 +63,7 @@ pub trait PropertyValue: Sized {
     }
 
     /// Parses the raw value text of a content line, guided by the lowercase VALUE parameter if one exists.
+    /// It fails when the VALUE parameter names a value type that this value does not support.
     fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError>;
 }
 
@@ -181,6 +182,17 @@ impl ExtensionProperty {
     }
 }
 
+/// Checks that the VALUE parameter, if one exists, names one of the allowed value types.
+fn check_value_type(value_type: Option<&str>, allowed: &[&str]) -> Result<(), InvalidValueError> {
+    if let Some(value_type) = value_type
+        && !allowed.contains(&value_type)
+    {
+        return Err(InvalidValueError::new("property value type"));
+    }
+
+    Ok(())
+}
+
 impl PropertyValue for String {
     #[inline]
     fn write_value(&self, w: &mut FoldingWriter) -> fmt::Result {
@@ -188,7 +200,9 @@ impl PropertyValue for String {
     }
 
     #[inline]
-    fn parse_value(raw: &str, _value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+    fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["text"])?;
+
         Ok(unescape_text(raw))
     }
 }
@@ -206,12 +220,14 @@ impl PropertyValue for Vec<String> {
         Ok(())
     }
 
-    fn parse_value(raw: &str, _value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+    fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["text"])?;
+
         if raw.is_empty() {
             return Ok(Vec::new());
         }
 
-        Ok(split_unescaped(raw, b',').into_iter().map(unescape_text).collect())
+        Ok(split_unescaped(raw, b',').map(unescape_text).collect())
     }
 }
 
@@ -222,7 +238,9 @@ impl PropertyValue for Uri {
     }
 
     #[inline]
-    fn parse_value(raw: &str, _value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+    fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["uri"])?;
+
         Self::from_str(raw)
     }
 }
@@ -234,7 +252,9 @@ impl PropertyValue for LanguageTag {
     }
 
     #[inline]
-    fn parse_value(raw: &str, _value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+    fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["language-tag"])?;
+
         Self::from_str(raw)
     }
 }
@@ -246,7 +266,9 @@ impl PropertyValue for Timestamp {
     }
 
     #[inline]
-    fn parse_value(raw: &str, _value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+    fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["timestamp"])?;
+
         Self::from_str(raw)
     }
 }
@@ -258,14 +280,16 @@ impl PropertyValue for EmailValue {
     }
 
     #[inline]
-    fn parse_value(raw: &str, _value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+    fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["text"])?;
+
         Self::from_str(&unescape_text(raw))
     }
 }
 
 /// Implements `PropertyValue` for value types whose `Display` and `FromStr` already use the wire format.
 macro_rules! impl_property_value_by_display {
-    ($($t:ty),* $(,)?) => {
+    ($($t:ty => [$($value_type:literal),*]),* $(,)?) => {
         $(
             impl PropertyValue for $t {
                 #[inline]
@@ -274,7 +298,9 @@ macro_rules! impl_property_value_by_display {
                 }
 
                 #[inline]
-                fn parse_value(raw: &str, _value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+                fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+                    check_value_type(value_type, &[$($value_type),*])?;
+
                     Self::from_str(raw)
                 }
             }
@@ -283,13 +309,13 @@ macro_rules! impl_property_value_by_display {
 }
 
 impl_property_value_by_display!(
-    KindValue,
-    NameValue,
-    AddressValue,
-    GenderValue,
-    GramGenderValue,
-    OrgValue,
-    ClientPidMapValue,
+    KindValue => ["text"],
+    NameValue => ["text"],
+    AddressValue => ["text"],
+    GenderValue => ["text"],
+    GramGenderValue => ["text"],
+    OrgValue => ["text"],
+    ClientPidMapValue => [],
 );
 
 impl PropertyValue for DateAndOrTimeOrText {
@@ -311,6 +337,8 @@ impl PropertyValue for DateAndOrTimeOrText {
 
     #[inline]
     fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["date-and-or-time", "text"])?;
+
         match value_type {
             Some("text") => Ok(Self::Text(unescape_text(raw))),
             _ => DateAndOrTime::from_str(raw).map(Self::DateAndOrTime),
@@ -337,6 +365,8 @@ impl PropertyValue for TelValue {
 
     #[inline]
     fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["uri", "text"])?;
+
         match value_type {
             Some("uri") => Uri::from_str(raw).map(Self::Uri),
             _ => Ok(Self::Text(unescape_text(raw))),
@@ -363,6 +393,8 @@ impl PropertyValue for TextOrUri {
 
     #[inline]
     fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["uri", "text"])?;
+
         match value_type {
             Some("text") => Ok(Self::Text(unescape_text(raw))),
             _ => Uri::from_str(raw).map(Self::Uri),
@@ -391,6 +423,8 @@ impl PropertyValue for TzValue {
 
     #[inline]
     fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
+        check_value_type(value_type, &["text", "uri", "utc-offset"])?;
+
         match value_type {
             Some("uri") => Uri::from_str(raw).map(Self::Uri),
             Some("utc-offset") => UtcOffset::from_str(raw).map(Self::UtcOffset),

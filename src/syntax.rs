@@ -83,31 +83,32 @@ pub(crate) fn unescape_text(s: &str) -> String {
     out
 }
 
-/// Splits a compound or list value at every separator that is not escaped by a backslash.
-pub(crate) fn split_unescaped(s: &str, separator: u8) -> Vec<&str> {
+/// Lazily splits a compound or list value at every separator that is not escaped by a backslash.
+pub(crate) fn split_unescaped(s: &str, separator: u8) -> impl Iterator<Item = &str> {
     debug_assert!(separator.is_ascii() && separator != b'\\');
 
-    let bytes = s.as_bytes();
+    let mut rest = Some(s);
 
-    let mut parts = Vec::new();
+    std::iter::from_fn(move || {
+        let s = rest?;
+        let mut escaped = false;
 
-    let mut start = 0;
-    let mut escaped = false;
+        for (i, b) in s.bytes().enumerate() {
+            if escaped {
+                escaped = false;
+            } else if b == b'\\' {
+                escaped = true;
+            } else if b == separator {
+                rest = Some(&s[i + 1..]);
 
-    for (i, b) in bytes.iter().enumerate() {
-        if escaped {
-            escaped = false;
-        } else if *b == b'\\' {
-            escaped = true;
-        } else if *b == separator {
-            parts.push(&s[start..i]);
-            start = i + 1;
+                return Some(&s[..i]);
+            }
         }
-    }
 
-    parts.push(&s[start..]);
+        rest = None;
 
-    parts
+        Some(s)
+    })
 }
 
 /// Writes a parameter value with the caret escaping of RFC 6868.
