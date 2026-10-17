@@ -18,7 +18,7 @@ use validators::prelude::*;
 
 use crate::{
     error::InvalidValueError,
-    syntax::{is_token, split_unescaped, unescape_text, write_escaped_text},
+    syntax::{is_token, parse_number, split_unescaped, unescape_text, write_escaped_text},
 };
 
 /// A token made of ASCII letters, digits and hyphens.
@@ -60,7 +60,8 @@ impl Display for Token {
 }
 
 /// The value of the KIND property, which describes what the vCard represents.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum KindValue {
     /// A single person or entity.
     Individual,
@@ -150,7 +151,7 @@ impl FromStr for Sex {
 }
 
 /// The structured value of the GENDER property.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct GenderValue {
     /// The sex component.
     pub sex:      Option<Sex>,
@@ -196,7 +197,8 @@ impl FromStr for GenderValue {
 }
 
 /// The value of the GRAMGENDER property defined by RFC 9554.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum GramGenderValue {
     /// The animate grammatical gender.
     Animate,
@@ -252,7 +254,7 @@ impl FromStr for GramGenderValue {
 }
 
 /// The structured value of the ORG property, which is an organization name followed by organizational unit names.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct OrgValue {
     /// The organization name.
     pub name:  String,
@@ -290,11 +292,11 @@ impl FromStr for OrgValue {
 }
 
 /// The structured value of the CLIENTPIDMAP property, which maps a PID source number to a globally unique URI.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ClientPidMapValue {
     /// The small integer that PID parameters refer to after their dot.
     pub source_id: u32,
-    /// The URI that identifies the product which created the vCard.
+    /// The globally unique URI of the client that uses this source identifier in its PID values, e.g. a `urn:uuid:` URI.
     pub uri:       Uri,
 }
 
@@ -317,7 +319,7 @@ impl FromStr for ClientPidMapValue {
         let (source_id, uri) = s.split_once(';').ok_or(ERROR)?;
 
         Ok(Self {
-            source_id: source_id.parse().map_err(|_| ERROR)?,
+            source_id: parse_number(source_id).ok_or(ERROR)?,
             uri:       Uri::from_vcard_value(uri).map_err(|_| ERROR)?,
         })
     }
@@ -378,7 +380,7 @@ impl Display for EmailValue {
 struct PhoneValidator(validators::phonenumber::PhoneNumber);
 
 /// The value of the TEL property, which is a `tel:` URI or free-form text.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TelValue {
     /// A URI value, usually using the `tel:` scheme, written with `VALUE=uri`.
     Uri(Uri),
@@ -405,7 +407,7 @@ struct UuidValidator(u128);
 /// A value that is a URI or free-form text, used by the RELATED, UID, KEY and SOCIALPROFILE properties.
 ///
 /// The URI form is the default, and the text form is written with `VALUE=text`.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TextOrUri {
     /// A URI value, which is the default form.
     Uri(Uri),
@@ -433,7 +435,7 @@ impl TextOrUri {
 }
 
 /// The value of the TZ property, which is a time zone name, a URI, or a UTC offset.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TzValue {
     /// A text value, which is the default form and should be a time zone name from the IANA time zone database.
     Text(String),
@@ -454,7 +456,7 @@ impl TzValue {
 }
 
 /// The value of the BDAY and ANNIVERSARY properties, which is a date-and-or-time or free-form text.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum DateAndOrTimeOrText {
     /// A date, a time, or a date with a time, which is the default form.
     DateAndOrTime(DateAndOrTime),

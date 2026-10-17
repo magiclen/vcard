@@ -1,6 +1,6 @@
 //! The line folding writer required by RFC 6350 section 3.2.
 
-use std::fmt::{self, Write};
+use std::fmt::{self, Debug, Formatter, Write};
 
 /// A physical line must not be longer than 75 octets, not counting the line break.
 const MAX_LINE_OCTETS: usize = 75;
@@ -29,6 +29,15 @@ impl<'a> FoldingWriter<'a> {
         self.line_octets = 0;
 
         self.out.write_str("\r\n")
+    }
+}
+
+impl Debug for FoldingWriter<'_> {
+    #[inline]
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        f.debug_struct("FoldingWriter")
+            .field("line_octets", &self.line_octets)
+            .finish_non_exhaustive()
     }
 }
 

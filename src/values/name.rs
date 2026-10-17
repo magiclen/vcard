@@ -55,7 +55,7 @@ fn write_components(f: &mut Formatter, components: &[&[String]], min: usize) -> 
 ///
 /// RFC 6350 defines the first five components and RFC 9554 adds the last two.
 /// Each component can hold multiple values.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct NameValue {
     /// The family names, also known as surnames.
     pub family_names:       Vec<String>,
@@ -129,7 +129,7 @@ impl FromStr for NameValue {
 ///
 /// RFC 6350 defines the first seven components and RFC 9554 adds the remaining eleven.
 /// Each component can hold multiple values.
-#[derive(Debug, Clone, PartialEq, Eq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
 pub struct AddressValue {
     /// The post office boxes.
     pub post_office_boxes:  Vec<String>,

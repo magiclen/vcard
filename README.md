@@ -45,7 +45,7 @@ Use `VCard::validate` to check required properties, ALTID cardinality, the group
 It also checks phonetic representations, GRAMGENDER language conflicts, LANGUAGE and USERNAME usage, and non-empty AUTHOR-NAME values.
 PID identifiers must be positive, their sources must have CLIENTPIDMAP entries, and properties limited to one logical instance cannot have PID parameters.
 CLIENTPIDMAP cannot have PID parameters either.
-TYPE parameters are checked against the RFC 6350 property restrictions.
+TYPE parameters are checked against the RFC 6350 property restrictions, and the TEL-specific and RELATED values cannot be used on other properties.
 CALSCALE on BDAY and ANNIVERSARY requires a date or date-time value, and SORT-AS cannot have more entries than the N or ORG value has serialized components.
 Known property names belong in their dedicated fields, and known parameters belong in the named `Parameters` fields.
 Typed values write their own VALUE parameters, so only extension properties can keep a VALUE parameter in `Parameters::any`.
@@ -92,6 +92,13 @@ URIs outside the WHATWG URL syntax, such as `foo://[v1.example]/`, are validated
 Existing URL parsing and normalization remain available, including IDNA and percent encoding.
 Handle the optional or fallible URL conversion when your application needs a `url::Url`.
 
+N now follows the rule of the other properties limited to one logical instance, so parsing rejects several N properties unless they share an ALTID.
+Parsing is also stricter than in 0.5: known properties reject VALUE types they do not support, a repeated VALUE parameter is rejected, the RFC 9554 occurrence limits for parameters are checked, and content lines cannot contain ASCII control characters other than tabs.
+BDAY and ANNIVERSARY properties with an unknown or conflicting CALSCALE are ignored, and `^N` in a parameter value is no longer decoded as a newline because RFC 6868 defines only `^n`.
+`VCard::validate` checks many more RFC rules, so a card that passed in 0.5 can fail now.
+
+`TypeValue`, `KindValue`, `GramGenderValue`, `Phonetic` and `Calscale` are now `#[non_exhaustive]`, so add a wildcard arm when matching them.
+
 The public `base64` re-export now uses version 0.23.
 
 ## Parsing vCards
@@ -113,6 +120,7 @@ Other repeated single-value parameters keep their last value, while TYPE, PID an
 Content lines cannot contain ASCII control characters other than tabs.
 URI property values accept bare commas and the `\\`, `\,` and `\;` escapes, which RFC 6350 errata 3845 and 3846 apply to URI values.
 URI output still uses bare commas, escapes only backslashes, and keeps percent-encoded bytes as encoded.
+URI parameters such as GEO, TZ and AUTHOR are written inside double quotes, so a double quote inside such a URI is written as `%22` and stays percent-encoded when read back.
 
 ## Calendar extensions
 

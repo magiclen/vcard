@@ -287,6 +287,7 @@ fn type_parameters_follow_property_rules() {
         "ADR;TYPE=billing:;;Main Street;Town;;;\r\n",
         "TEL;TYPE=cell:123\r\n",
         "EMAIL;TYPE=work:test@example.com\r\n",
+        "RELATED;TYPE=friend:urn:example:friend\r\n",
         "PRONOUNS;TYPE=home:they/them\r\n",
         "X-EXTRA;TYPE=work:raw\r\nEND:VCARD\r\n",
     )
@@ -295,11 +296,22 @@ fn type_parameters_follow_property_rules() {
 
     assert!(card.validate().is_ok());
 
-    for (name, value) in
-        [("SOURCE", "urn:example:source"), ("BDAY", "19900102"), ("N", "Doe;John;;;")]
-    {
+    for (name, type_value, value) in [
+        ("SOURCE", "work", "urn:example:source"),
+        ("BDAY", "work", "19900102"),
+        ("N", "work", "Doe;John;;;"),
+        ("EMAIL", "cell", "test@example.com"),
+        ("TEL", "friend", "123"),
+        ("X-EXTRA", "voice", "raw"),
+    ] {
         let card: VCard = format!(
-            "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n{name};TYPE=work:{value}\r\nEND:VCARD\r\n"
+            concat!(
+                "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+                "{name};TYPE={type_value}:{value}\r\nEND:VCARD\r\n",
+            ),
+            name = name,
+            type_value = type_value,
+            value = value,
         )
         .parse()
         .unwrap();

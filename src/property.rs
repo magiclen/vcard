@@ -169,7 +169,7 @@ impl ValidateText for TzValue {
 }
 
 /// A single vCard property with an optional group, parameters and a typed value.
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Property<V> {
     /// The optional group name that prefixes the property.
     pub group:      Option<GroupName>,
@@ -231,7 +231,7 @@ pub(crate) fn write_property<V: PropertyValue>(
 }
 
 /// A property that this crate has no dedicated field for, which is an x-name or IANA extension property.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ExtensionProperty {
     /// The optional group name that prefixes the property.
     pub group:      Option<GroupName>,
@@ -264,6 +264,12 @@ impl ExtensionProperty {
         write_escaped_text(&mut value, text, false).unwrap();
 
         Self::new(name, value)
+    }
+
+    /// Decodes the raw value as text with the escaping rules of RFC 6350 section 3.4.
+    #[inline]
+    pub fn to_text(&self) -> String {
+        unescape_text(&self.value)
     }
 
     /// Writes the whole content line of this property, including the ending CRLF.

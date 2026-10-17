@@ -4,7 +4,7 @@ use std::{
 };
 
 /// The error type for a value that does not match the format expected by its type.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct InvalidValueError {
     expected: &'static str,
 }

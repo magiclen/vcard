@@ -99,7 +99,7 @@ pub(crate) use for_each_property;
 ///     vcard.to_string()
 /// );
 /// ```
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct VCard {
     /// The parameters of the automatic VERSION property.
     pub version_parameters:    Parameters,
@@ -439,6 +439,14 @@ fn validate_parameters(
                 | "UID"
                 | "CLIENTPIDMAP"
         )
+    {
+        return Err(invalid("TYPE"));
+    }
+
+    if parameters
+        .types
+        .iter()
+        .any(|type_value| type_value.restricted_property().is_some_and(|property| property != name))
     {
         return Err(invalid("TYPE"));
     }

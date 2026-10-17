@@ -1,12 +1,24 @@
 //! Low-level helpers for the vCard 4.0 syntax defined in RFC 6350 section 3 and RFC 6868.
 
-use std::fmt::{self, Write};
+use std::{
+    fmt::{self, Write},
+    str::FromStr,
+};
 
 /// Checks whether the string is a non-empty token made of ASCII letters, digits and hyphens.
 /// This matches both the `iana-token` and the `group` rules of RFC 6350.
 #[inline]
 pub(crate) fn is_token(s: &str) -> bool {
     !s.is_empty() && s.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+}
+
+/// Parses a number written only with ASCII digits, so a sign such as the `+` of `+1` is rejected.
+pub(crate) fn parse_number<T: FromStr>(s: &str) -> Option<T> {
+    if s.is_empty() || !s.bytes().all(|b| b.is_ascii_digit()) {
+        return None;
+    }
+
+    s.parse().ok()
 }
 
 /// Checks text before escaping, allowing tabs and newlines.

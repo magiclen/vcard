@@ -10,7 +10,9 @@ use mime::Mime;
 use crate::{
     error::{InvalidValueError, ParseErrorKind},
     fold::FoldingWriter,
-    syntax::{caret_decode, param_value_needs_quoting, write_param_value, write_quoted_uri},
+    syntax::{
+        caret_decode, param_value_needs_quoting, parse_number, write_param_value, write_quoted_uri,
+    },
     values::{LanguageTag, Timestamp, Token, Uri},
 };
 
@@ -40,7 +42,7 @@ impl FromStr for Pref {
 
     #[inline]
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        s.parse::<u8>().map_err(|_| InvalidValueError::new("preference")).and_then(Self::new)
+        parse_number(s).ok_or(InvalidValueError::new("preference")).and_then(Self::new)
     }
 }
 
@@ -80,12 +82,12 @@ impl FromStr for Pid {
         const ERROR: InvalidValueError = InvalidValueError::new("pid");
 
         let (id, source) = match s.split_once('.') {
-            Some((id, source)) => (id, Some(source.parse().map_err(|_| ERROR)?)),
+            Some((id, source)) => (id, Some(parse_number(source).ok_or(ERROR)?)),
             None => (s, None),
         };
 
         Ok(Self {
-            id: id.parse().map_err(|_| ERROR)?,
+            id: parse_number(id).ok_or(ERROR)?,
             source,
         })
     }
@@ -94,7 +96,9 @@ impl FromStr for Pid {
 /// A value of the TYPE parameter.
 ///
 /// This single type covers the general values, the TEL-specific values, the RELATED relation values and the RFC 9554 values.
-#[derive(Debug, Clone, PartialEq, Eq)]
+/// [`VCard::validate`](crate::VCard::validate) rejects the TEL-specific values outside TEL and the RELATED values outside RELATED.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum TypeValue {
     /// Related to the individual's work.
     Work,
@@ -114,7 +118,7 @@ pub enum TypeValue {
     Textphone,
     /// A telephone number that supports text messages.
     Text,
-    /// An emergency contact, from the RELATED relation values.
+    /// A contact, someone the individual knows how to get in touch with, from the RELATED relation values.
     Contact,
     /// An acquaintance, from the RELATED relation values.
     Acquaintance,
@@ -144,7 +148,7 @@ pub enum TypeValue {
     Muse,
     /// A crush, from the RELATED relation values.
     Crush,
-    /// A date, from the RELATED relation values.
+    /// Someone the individual is dating, from the RELATED relation values.
     Date,
     /// A sweetheart, from the RELATED relation values.
     Sweetheart,
@@ -160,6 +164,42 @@ pub enum TypeValue {
     Delivery,
     /// An extension value which is an IANA token or an x-name.
     Extension(Token),
+}
+
+impl TypeValue {
+    /// Returns the only property that can use this value, as the TEL and RELATED rules of RFC 6350 require.
+    pub(crate) const fn restricted_property(&self) -> Option<&'static str> {
+        match self {
+            Self::Voice
+            | Self::Fax
+            | Self::Cell
+            | Self::Video
+            | Self::Pager
+            | Self::Textphone
+            | Self::Text => Some("TEL"),
+            Self::Contact
+            | Self::Acquaintance
+            | Self::Friend
+            | Self::Met
+            | Self::CoWorker
+            | Self::Colleague
+            | Self::CoResident
+            | Self::Neighbor
+            | Self::Child
+            | Self::Parent
+            | Self::Sibling
+            | Self::Spouse
+            | Self::Kin
+            | Self::Muse
+            | Self::Crush
+            | Self::Date
+            | Self::Sweetheart
+            | Self::Me
+            | Self::Agent
+            | Self::Emergency => Some("RELATED"),
+            Self::Work | Self::Home | Self::Billing | Self::Delivery | Self::Extension(_) => None,
+        }
+    }
 }
 
 impl Display for TypeValue {
@@ -243,7 +283,8 @@ impl FromStr for TypeValue {
 }
 
 /// The value of the CALSCALE parameter, which describes the calendar system of a date.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Calscale {
     /// The Gregorian calendar, which is the only calendar system defined by RFC 6350.
     Gregorian,
@@ -283,7 +324,8 @@ impl FromStr for Calscale {
 }
 
 /// The value of the PHONETIC parameter defined by RFC 9554, which names a phonetic system.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[non_exhaustive]
 pub enum Phonetic {
     /// The International Phonetic Alphabet.
     Ipa,
@@ -398,7 +440,7 @@ impl Display for Script {
 ///
 /// When parsing, a quoted value that is a valid URI becomes [`TzParam::Uri`], and any other value becomes [`TzParam::Text`].
 /// A text value that needs quotes, e.g. `GMT+08:00`, can therefore be read back as a URI.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum TzParam {
     /// A time zone text, which should be a name from the IANA time zone database.
     Text(String),
@@ -407,7 +449,7 @@ pub enum TzParam {
 }
 
 /// An extension parameter that this crate has no dedicated field for.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct AnyParameter {
     /// The parameter name, which is an IANA token or an x-name.
     pub name:   Token,
@@ -419,8 +461,8 @@ pub struct AnyParameter {
 ///
 /// Every property shares this struct, and [`VCard::validate`](crate::VCard::validate) checks the restrictions that depend on the property.
 /// A parameter that is `None` or an empty list is simply not written.
-/// When parsing, a repeated single-value parameter keeps its last value.
-#[derive(Debug, Clone, PartialEq, Default)]
+/// When parsing, a repeated single-value parameter keeps its last value, unless RFC 9554 allows it only once for the property.
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Parameters {
     /// The LANGUAGE parameter, which tells the language of the property value.
     pub language:     Option<LanguageTag>,
@@ -440,12 +482,15 @@ pub struct Parameters {
     /// The SORT-AS values, which give the strings that sorting should use.
     pub sort_as:      Vec<String>,
     /// The GEO parameter, which attaches geographic coordinates to an address.
+    /// The URI is written inside double quotes, so a double quote in it is written as `%22` and stays percent-encoded when read back.
     pub geo:          Option<Uri>,
     /// The TZ parameter, which attaches time zone information to an address.
+    /// A URI value is written inside double quotes, so a double quote in it is written as `%22` and stays percent-encoded when read back.
     pub tz:           Option<TzParam>,
     /// The LABEL parameter, which carries the formatted text of an address.
     pub label:        Option<String>,
     /// The AUTHOR parameter defined by RFC 9554, which is a URI that identifies the author of the value.
+    /// The URI is written inside double quotes, so a double quote in it is written as `%22` and stays percent-encoded when read back.
     pub author:       Option<Uri>,
     /// The AUTHOR-NAME parameter defined by RFC 9554, which names the author of the value.
     pub author_name:  Option<String>,
