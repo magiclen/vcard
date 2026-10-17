@@ -59,6 +59,27 @@ pub enum ValidationError {
     UsernameWithoutUriValue,
     /// An AUTHOR-NAME parameter must not be empty.
     EmptyAuthorName(String),
+    /// A PID contains an identifier that is not positive.
+    InvalidPid(String),
+    /// A CLIENTPIDMAP source identifier is not positive.
+    InvalidClientPidMap,
+    /// A PID source has no matching CLIENTPIDMAP.
+    MissingClientPidMap(u32),
+    /// A property cannot have a PID parameter.
+    PidNotAllowed(String),
+    /// An extension uses a name handled by a dedicated property field.
+    ReservedExtensionName(String),
+    /// The raw value of an extension contains a line break.
+    InvalidExtensionValue(String),
+    /// A parameter conflicts with the typed property or belongs in a dedicated field.
+    InvalidParameter {
+        /// The property that contains the parameter.
+        property:  String,
+        /// The parameter name.
+        parameter: String,
+    },
+    /// A MEDIATYPE contains quoted MIME values that cannot be represented without ambiguous quoting.
+    UnrepresentableMediaType(String),
 }
 
 impl Display for ValidationError {
@@ -106,6 +127,34 @@ impl Display for ValidationError {
             },
             Self::EmptyAuthorName(name) => {
                 write!(f, "the AUTHOR-NAME parameter of {name} must not be empty")
+            },
+            Self::InvalidPid(name) => write!(f, "the PID identifiers of {name} must be positive"),
+            Self::InvalidClientPidMap => {
+                f.write_str("a CLIENTPIDMAP source identifier must be positive")
+            },
+            Self::MissingClientPidMap(source) => {
+                write!(f, "the PID source {source} has no CLIENTPIDMAP")
+            },
+            Self::PidNotAllowed(name) => {
+                write!(f, "the property {name} cannot have a PID parameter")
+            },
+            Self::ReservedExtensionName(name) => {
+                write!(f, "the property {name} must not be stored as an extension")
+            },
+            Self::InvalidExtensionValue(name) => {
+                write!(f, "the raw value of the extension {name} must not contain line breaks")
+            },
+            Self::InvalidParameter {
+                property,
+                parameter,
+            } => {
+                write!(f, "the parameter {parameter} of {property} conflicts with its typed fields")
+            },
+            Self::UnrepresentableMediaType(name) => {
+                write!(
+                    f,
+                    "the MEDIATYPE parameter of {name} contains unsupported quoted MIME values"
+                )
             },
         }
     }

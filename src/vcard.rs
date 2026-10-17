@@ -1,6 +1,7 @@
 //! The `VCard` struct and its serialization.
 
 use std::{
+    collections::HashSet,
     fmt::{self, Display, Formatter, Write as _},
     fs::File,
     io::{self, BufWriter, Write as _},
@@ -10,7 +11,7 @@ use std::{
 use crate::{
     error::ValidationError,
     fold::FoldingWriter,
-    parameters::Phonetic,
+    parameters::{Parameters, Phonetic, is_known_parameter},
     property::{
         Address, Anniversary, Birthday, CalendarAddressUri, CalendarUri, Categories, ClientPidMap,
         Created, Email, ExtensionProperty, Fburl, FormattedName, Gender, Geo, GramGender, Impp,
@@ -78,7 +79,7 @@ pub(crate) use for_each_property;
 ///
 /// Every property is stored in a `Vec` field where an empty list means the property is absent.
 /// A property limited to one logical instance can have several representations when they all share the same ALTID.
-/// The BEGIN, END and VERSION properties have no fields because they are handled automatically.
+/// BEGIN, END and the VERSION value are handled automatically, while VERSION parameters are kept separately.
 ///
 /// # Examples
 ///
@@ -94,6 +95,8 @@ pub(crate) use for_each_property;
 /// ```
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct VCard {
+    /// The parameters of the automatic VERSION property.
+    pub version_parameters:    Parameters,
     /// The SOURCE properties.
     pub sources:               Vec<Source>,
     /// The KIND properties, which share the same ALTID when there are several of them.
@@ -194,6 +197,7 @@ impl VCard {
     ///
     /// Checks required properties, ALTID cardinality, the group kind for MEMBER, and the service type for text SOCIALPROFILE values.
     /// Also checks phonetic representations, GRAMGENDER languages, LANGUAGE and USERNAME usage, and non-empty AUTHOR-NAME values.
+    /// Checks PID sources, reserved extension names, line breaks in raw extension values, generic parameter conflicts, and MEDIATYPE quoting.
     pub fn validate(&self) -> Result<(), ValidationError> {
         if self.formatted_names.is_empty() {
             return Err(ValidationError::MissingFormattedName);
@@ -222,6 +226,57 @@ impl VCard {
         }
 
         for_each_property!(validate_fields);
+
+        let mut sources = HashSet::with_capacity(self.client_pid_maps.len());
+
+        for map in &self.client_pid_maps {
+            if map.value.source_id == 0 {
+                return Err(ValidationError::InvalidClientPidMap);
+            }
+
+            sources.insert(map.value.source_id);
+        }
+
+        validate_parameters(&self.version_parameters, "VERSION", false, false, &sources)?;
+
+        macro_rules! allows_pid {
+            (one) => {
+                false
+            };
+            (many) => {
+                true
+            };
+        }
+
+        macro_rules! validate_property_parameters {
+            ($(($field:ident, $name:literal, $limit:tt)),* $(,)?) => {
+                $(for property in &self.$field {
+                    validate_parameters(
+                        &property.parameters,
+                        $name,
+                        false,
+                        allows_pid!($limit),
+                        &sources,
+                    )?;
+                })*
+            };
+        }
+
+        for_each_property!(validate_property_parameters);
+
+        for extension in &self.extensions {
+            let name = extension.name.as_str();
+
+            if is_known_property(name) {
+                return Err(ValidationError::ReservedExtensionName(name.to_string()));
+            }
+
+            if extension.value.contains(['\r', '\n']) {
+                return Err(ValidationError::InvalidExtensionValue(name.to_string()));
+            }
+
+            validate_parameters(&extension.parameters, name, true, true, &sources)?;
+        }
 
         if self.social_profiles.iter().any(|profile| {
             matches!(&profile.value, TextOrUri::Text(_))
@@ -254,24 +309,6 @@ impl VCard {
             return Err(ValidationError::UsernameWithoutUriValue);
         }
 
-        macro_rules! validate_author_names {
-            ($(($field:ident, $name:literal, $limit:tt)),* $(,)?) => {
-                $(if self.$field.iter().any(|property| {
-                    property.parameters.author_name.as_ref().is_some_and(|name| name.is_empty())
-                }) {
-                    return Err(ValidationError::EmptyAuthorName(String::from($name)));
-                })*
-            };
-        }
-
-        for_each_property!(validate_author_names);
-
-        for extension in &self.extensions {
-            if extension.parameters.author_name.as_ref().is_some_and(|name| name.is_empty()) {
-                return Err(ValidationError::EmptyAuthorName(extension.name.to_string()));
-            }
-        }
-
         Ok(())
     }
 
@@ -284,6 +321,74 @@ impl VCard {
 
         file.flush()
     }
+}
+
+fn is_known_property(name: &str) -> bool {
+    macro_rules! known_properties {
+        ($(($field:ident, $name:literal, $limit:tt)),* $(,)?) => {
+            ["BEGIN", "END", "VERSION", $($name),*].iter().any(|known| name.eq_ignore_ascii_case(known))
+        };
+    }
+
+    for_each_property!(known_properties)
+}
+
+/// Checks the parameter rules shared by every property.
+/// Only extension properties allow a VALUE parameter in `any`, because typed values write their own VALUE parameters.
+fn validate_parameters(
+    parameters: &Parameters,
+    name: &str,
+    allows_value_type: bool,
+    allows_pid: bool,
+    sources: &HashSet<u32>,
+) -> Result<(), ValidationError> {
+    if parameters.author_name.as_ref().is_some_and(String::is_empty) {
+        return Err(ValidationError::EmptyAuthorName(name.to_string()));
+    }
+
+    if parameters.media_type.as_ref().is_some_and(|mime| mime.as_ref().contains('"')) {
+        return Err(ValidationError::UnrepresentableMediaType(name.to_string()));
+    }
+
+    if !allows_pid && !parameters.pids.is_empty() {
+        return Err(ValidationError::PidNotAllowed(name.to_string()));
+    }
+
+    for pid in &parameters.pids {
+        if pid.id == 0 || pid.source == Some(0) {
+            return Err(ValidationError::InvalidPid(name.to_string()));
+        }
+
+        if let Some(source) = pid.source
+            && !sources.contains(&source)
+        {
+            return Err(ValidationError::MissingClientPidMap(source));
+        }
+    }
+
+    let mut has_value_type = false;
+
+    for parameter in &parameters.any {
+        let upper_name = parameter.name.as_str().to_ascii_uppercase();
+        let invalid = || ValidationError::InvalidParameter {
+            property:  name.to_string(),
+            parameter: upper_name.clone(),
+        };
+
+        match upper_name.as_str() {
+            "VALUE" => {
+                if !allows_value_type || has_value_type || parameter.values.len() != 1 {
+                    return Err(invalid());
+                }
+
+                has_value_type = true;
+            },
+            known if is_known_parameter(known) => return Err(invalid()),
+            _ => (),
+        }
+    }
+
+    Ok(())
 }
 
 /// Checks whether two optional language tags are the same, where two missing tags also count as the same.
@@ -363,7 +468,9 @@ impl Display for VCard {
         w.write_str("BEGIN:VCARD")?;
         w.end_line()?;
 
-        w.write_str("VERSION:4.0")?;
+        w.write_str("VERSION")?;
+        self.version_parameters.write(&mut w)?;
+        w.write_str(":4.0")?;
         w.end_line()?;
 
         macro_rules! write_fields {

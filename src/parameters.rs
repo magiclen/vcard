@@ -10,7 +10,7 @@ use mime::Mime;
 use crate::{
     error::{InvalidValueError, ParseErrorKind},
     fold::FoldingWriter,
-    syntax::{caret_decode, write_param_value, write_quoted_uri},
+    syntax::{caret_decode, param_value_needs_quoting, write_param_value, write_quoted_uri},
     values::{LanguageTag, Timestamp, Token, Uri},
 };
 
@@ -409,7 +409,7 @@ pub struct AnyParameter {
 
 /// The parameters of a property.
 ///
-/// RFC 9554 section 3 allows most parameters on any property, so every property shares this struct.
+/// Every property shares this struct, and [`VCard::validate`](crate::VCard::validate) checks the restrictions that depend on the property.
 /// A parameter that is `None` or an empty list is simply not written.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Parameters {
@@ -424,6 +424,7 @@ pub struct Parameters {
     /// The TYPE values, which describe the context of the property.
     pub types:        Vec<TypeValue>,
     /// The MEDIATYPE parameter, which hints the media type of the resource behind a URI value.
+    /// Quoted MIME parameter values are rejected by [`VCard::validate`](crate::VCard::validate) because their wire quoting is ambiguous.
     pub media_type:   Option<Mime>,
     /// The CALSCALE parameter, which tells the calendar system of a date value.
     pub calscale:     Option<Calscale>,
@@ -454,6 +455,7 @@ pub struct Parameters {
     /// The USERNAME parameter defined by RFC 9554, which carries the user name of an IMPP or SOCIALPROFILE property.
     pub username:     Option<String>,
     /// Any other parameters that this crate has no dedicated field for.
+    /// Use the dedicated fields for known parameters where available.
     pub any:          Vec<AnyParameter>,
 }
 
@@ -505,7 +507,13 @@ impl Parameters {
 
         if let Some(media_type) = &self.media_type {
             w.write_str(";MEDIATYPE=")?;
-            write_param_value(w, media_type.as_ref())?;
+
+            // MEDIATYPE uses MIME syntax, so carets are literal characters.
+            if param_value_needs_quoting(media_type.as_ref()) {
+                write!(w, "\"{media_type}\"")?;
+            } else {
+                write!(w, "{media_type}")?;
+            }
         }
 
         if let Some(calscale) = &self.calscale {
@@ -622,7 +630,13 @@ impl Parameters {
                 "LANGUAGE" => {
                     parameters.language = Some(single_value(raw).parse().map_err(|_| invalid())?);
                 },
-                "VALUE" => value_type = Some(single_value(raw).to_ascii_lowercase()),
+                "VALUE" => {
+                    if value_type.is_some() {
+                        return Err(invalid());
+                    }
+
+                    value_type = Some(single_value(raw).to_ascii_lowercase());
+                },
                 "PREF" => parameters.pref = Some(single_value(raw).parse().map_err(|_| invalid())?),
                 "ALTID" => parameters.altid = Some(single_value(raw)),
                 "PID" => {
@@ -636,7 +650,7 @@ impl Parameters {
                     }
                 },
                 "MEDIATYPE" => {
-                    parameters.media_type = Some(single_value(raw).parse().map_err(|_| invalid())?);
+                    parameters.media_type = Some(unquote(raw).parse().map_err(|_| invalid())?);
                 },
                 "CALSCALE" => {
                     parameters.calscale = Some(single_value(raw).parse().map_err(|_| invalid())?);
@@ -695,6 +709,35 @@ impl Parameters {
 
         Ok((parameters, value_type))
     }
+}
+
+/// Checks whether `Parameters::parse` handles an uppercase parameter name by itself instead of keeping it in `Parameters::any`.
+/// Keep this list in sync with the names matched by `Parameters::parse`.
+pub(crate) fn is_known_parameter(upper_name: &str) -> bool {
+    matches!(
+        upper_name,
+        "LANGUAGE"
+            | "VALUE"
+            | "PREF"
+            | "ALTID"
+            | "PID"
+            | "TYPE"
+            | "MEDIATYPE"
+            | "CALSCALE"
+            | "SORT-AS"
+            | "GEO"
+            | "TZ"
+            | "LABEL"
+            | "AUTHOR"
+            | "AUTHOR-NAME"
+            | "CREATED"
+            | "DERIVED"
+            | "PHONETIC"
+            | "PROP-ID"
+            | "SCRIPT"
+            | "SERVICE-TYPE"
+            | "USERNAME"
+    )
 }
 
 /// Removes the surrounding double quotes of a raw parameter value if they exist.

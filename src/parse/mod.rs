@@ -94,7 +94,26 @@ fn parse_card(lines: &mut LogicalLines) -> Result<Option<VCard>, ParseError> {
         });
     }
 
-    let mut vcard = VCard::default();
+    let (version_parameters, value_type) =
+        Parameters::parse(content.params).map_err(|kind| ParseError {
+            line: number,
+            kind,
+        })?;
+
+    // The only allowed VALUE is the default text type, which is dropped like the default VALUE of other properties.
+    if value_type.is_some_and(|value_type| value_type != "text") {
+        return Err(ParseError {
+            line: number,
+            kind: ParseErrorKind::InvalidValue {
+                property: String::from("VERSION")
+            },
+        });
+    }
+
+    let mut vcard = VCard {
+        version_parameters,
+        ..VCard::default()
+    };
 
     loop {
         let Some((number, line)) = lines.next() else {

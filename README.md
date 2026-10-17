@@ -42,6 +42,15 @@ A property limited to one logical instance can have several representations when
 Every property carries its parameters in a shared `Parameters` struct and can have a group name.
 Use `VCard::validate` to check required properties, ALTID cardinality, the group kind for MEMBER, and the service type for text SOCIALPROFILE values.
 It also checks phonetic representations, GRAMGENDER language conflicts, LANGUAGE and USERNAME usage, and non-empty AUTHOR-NAME values.
+PID identifiers must be positive, their sources must have CLIENTPIDMAP entries, and properties limited to one logical instance cannot have PID parameters.
+Known property names belong in their dedicated fields, and known parameters belong in the named `Parameters` fields.
+Typed values write their own VALUE parameters, so only extension properties can keep a VALUE parameter in `Parameters::any`.
+The raw values of extension properties cannot contain line breaks.
+
+MEDIATYPE values keep literal carets, including `^n` and `^'`, without RFC 6868 decoding.
+Ordinary media types and token MIME parameters such as `text/plain;charset=utf-8` are supported.
+MIME parameters containing double quotes, such as `text/plain;name="a,b"`, have ambiguous vCard quoting and are rejected by `VCard::validate`.
+Call `validate` before writing a card that you build through its public fields.
 
 Use `VCard::save_to_file` to write the vCard to a file, and `vcard::values::Uri::from_file` to embed a photo, a logo or a sound as a base64 data URI.
 
@@ -65,6 +74,21 @@ Replace assignments such as `vcard.birthday = Some(birthday)` with `vcard.birthd
 `vcard::values::Date::from_year` now returns a `Result` like the other `Date` constructors.
 Every `Date` constructor rejects a year outside `0..=9999`.
 
+`VCard` now has a `version_parameters: Parameters` field that preserves VERSION parameters.
+Add this field or use `..VCard::default()` when constructing a complete struct literal.
+The VERSION value remains fixed at `4.0`, and an explicit VALUE parameter on it must be `text` and is not kept, like the default VALUE of other properties.
+
+`Time::with_zone` now returns `Result<Time, InvalidValueError>`.
+Handle its result with `?` or `unwrap()`; a truncated time without an hour cannot have a zone.
+Parsing also rejects these combinations, following RFC 6350 erratum 3484.
+
+`Uri::as_url` now returns `Option<&url::Url>`, and `Uri::into_url` returns `Result<url::Url, InvalidValueError>`.
+URIs outside the WHATWG URL syntax, such as `foo://[v1.example]/`, are validated against RFC 3986 and kept as written.
+Existing URL parsing and normalization remain available, including IDNA and percent encoding.
+Handle the optional or fallible URL conversion when your application needs a `url::Url`.
+
+The public `base64` re-export now uses version 0.23.
+
 ## Parsing vCards
 
 ```rust
@@ -78,6 +102,8 @@ assert_eq!("Magic Len", vcard.formatted_names[0].value);
 Use `VCard::parse_multiple` to read a `.vcf` file that contains several vCards.
 Only version 4.0 is supported, and unknown properties are kept in the `extensions` field so that nothing is lost.
 Known properties reject VALUE declarations that do not match their supported value types.
+URI property values accept bare commas and the `\\`, `\,` and `\;` escapes, which RFC 6350 errata 3845 and 3846 apply to URI values.
+URI output still uses bare commas, escapes only backslashes, and keeps percent-encoded bytes as encoded.
 
 ## Crates.io
 

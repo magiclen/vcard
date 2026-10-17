@@ -139,6 +139,7 @@ pub struct ExtensionProperty {
     /// The parameters of the property.
     pub parameters: Parameters,
     /// The raw value in its wire format, kept as it is so that nothing is lost.
+    /// It must not contain line breaks, which [`VCard::validate`](crate::VCard::validate) checks.
     pub value:      String,
 }
 
@@ -234,14 +235,14 @@ impl PropertyValue for Vec<String> {
 impl PropertyValue for Uri {
     #[inline]
     fn write_value(&self, w: &mut FoldingWriter) -> fmt::Result {
-        w.write_str(self.as_str())
+        self.write_vcard_value(w)
     }
 
     #[inline]
     fn parse_value(raw: &str, value_type: Option<&str>) -> Result<Self, InvalidValueError> {
         check_value_type(value_type, &["uri"])?;
 
-        Self::from_str(raw)
+        Self::from_vcard_value(raw)
     }
 }
 
@@ -350,7 +351,7 @@ impl PropertyValue for TelValue {
     #[inline]
     fn write_value(&self, w: &mut FoldingWriter) -> fmt::Result {
         match self {
-            Self::Uri(uri) => w.write_str(uri.as_str()),
+            Self::Uri(uri) => uri.write_vcard_value(w),
             Self::Text(text) => write_escaped_text(w, text, false),
         }
     }
@@ -368,7 +369,7 @@ impl PropertyValue for TelValue {
         check_value_type(value_type, &["uri", "text"])?;
 
         match value_type {
-            Some("uri") => Uri::from_str(raw).map(Self::Uri),
+            Some("uri") => Uri::from_vcard_value(raw).map(Self::Uri),
             _ => Ok(Self::Text(unescape_text(raw))),
         }
     }
@@ -378,7 +379,7 @@ impl PropertyValue for TextOrUri {
     #[inline]
     fn write_value(&self, w: &mut FoldingWriter) -> fmt::Result {
         match self {
-            Self::Uri(uri) => w.write_str(uri.as_str()),
+            Self::Uri(uri) => uri.write_vcard_value(w),
             Self::Text(text) => write_escaped_text(w, text, false),
         }
     }
@@ -397,7 +398,7 @@ impl PropertyValue for TextOrUri {
 
         match value_type {
             Some("text") => Ok(Self::Text(unescape_text(raw))),
-            _ => Uri::from_str(raw).map(Self::Uri),
+            _ => Uri::from_vcard_value(raw).map(Self::Uri),
         }
     }
 }
@@ -407,7 +408,7 @@ impl PropertyValue for TzValue {
     fn write_value(&self, w: &mut FoldingWriter) -> fmt::Result {
         match self {
             Self::Text(text) => write_escaped_text(w, text, false),
-            Self::Uri(uri) => w.write_str(uri.as_str()),
+            Self::Uri(uri) => uri.write_vcard_value(w),
             Self::UtcOffset(offset) => write!(w, "{offset}"),
         }
     }
@@ -426,7 +427,7 @@ impl PropertyValue for TzValue {
         check_value_type(value_type, &["text", "uri", "utc-offset"])?;
 
         match value_type {
-            Some("uri") => Uri::from_str(raw).map(Self::Uri),
+            Some("uri") => Uri::from_vcard_value(raw).map(Self::Uri),
             Some("utc-offset") => UtcOffset::from_str(raw).map(Self::UtcOffset),
             _ => Ok(Self::Text(unescape_text(raw))),
         }

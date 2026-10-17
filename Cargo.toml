@@ -13,9 +13,10 @@ license = "MIT"
 include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
 
 [dependencies]
-base64 = "0.22"
+base64 = "0.23"
 chrono = "0.4.25"
 chrono-tz = "0.10"
+fluent-uri = "0.4"
 mime = "0.3.4"
 mime_guess = "2"
 oxilangtag = "0.1"

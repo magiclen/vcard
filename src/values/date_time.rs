@@ -353,7 +353,8 @@ impl FromStr for Date {
 
 const TIME_ERROR: InvalidValueError = InvalidValueError::new("time");
 
-/// A time value which allows the truncated forms of RFC 6350, e.g. `102200`, `1022`, `10`, `-2200`, `-22` and `--00`, with an optional zone.
+/// A time value which allows the truncated forms of RFC 6350, e.g. `102200`, `1022`, `10`, `-2200`, `-22` and `--00`.
+/// A time zone is allowed only when the hour is present.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Time {
     hour:   Option<u8>,
@@ -434,11 +435,16 @@ impl Time {
     }
 
     /// Attaches time zone information to this time.
+    /// Returns an error if this time has no hour.
     #[inline]
-    pub const fn with_zone(mut self, zone: Zone) -> Self {
+    pub const fn with_zone(mut self, zone: Zone) -> Result<Self, InvalidValueError> {
+        if self.hour.is_none() {
+            return Err(TIME_ERROR);
+        }
+
         self.zone = Some(zone);
 
-        self
+        Ok(self)
     }
 
     /// Returns the hour part if it exists.
@@ -539,7 +545,7 @@ impl FromStr for Time {
         let rest = &s[truncated + position..];
 
         if !rest.is_empty() {
-            time = time.with_zone(Zone::from_str(rest).map_err(|_| TIME_ERROR)?);
+            time = time.with_zone(Zone::from_str(rest).map_err(|_| TIME_ERROR)?)?;
         }
 
         Ok(time)

@@ -303,7 +303,9 @@ pub struct ClientPidMapValue {
 impl Display for ClientPidMapValue {
     #[inline]
     fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{};{}", self.source_id, self.uri)
+        write!(f, "{};", self.source_id)?;
+
+        self.uri.write_vcard_value(f)
     }
 }
 
@@ -318,7 +320,7 @@ impl FromStr for ClientPidMapValue {
 
         Ok(Self {
             source_id: source_id.parse().map_err(|_| ERROR)?,
-            uri:       Uri::from_str(uri).map_err(|_| ERROR)?,
+            uri:       Uri::from_vcard_value(uri).map_err(|_| ERROR)?,
         })
     }
 }

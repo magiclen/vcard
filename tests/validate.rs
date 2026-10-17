@@ -1,5 +1,6 @@
 use vcard::{
-    ExtensionProperty, Phonetic, SocialProfile, VCard, ValidationError, values::TextOrUri,
+    AnyParameter, ExtensionProperty, Phonetic, Pref, SocialProfile, VCard, ValidationError,
+    values::TextOrUri,
 };
 
 #[test]
@@ -234,4 +235,127 @@ fn author_names_must_not_be_empty() {
 
     vcard.extensions[0].parameters.author_name = Some(String::new());
     assert_eq!(Err(ValidationError::EmptyAuthorName(String::from("X-NOTE"))), vcard.validate());
+}
+
+#[test]
+fn pids_reference_client_sources() {
+    let mut card: VCard = concat!(
+        "BEGIN:VCARD\r\nVERSION:4.0\r\nFN;PID=1.1:Test\r\n",
+        "TEL;PID=1.1,2.2,3:123\r\n",
+        "CLIENTPIDMAP:1;urn:example:first\r\n",
+        "CLIENTPIDMAP:2;urn:example:second\r\nEND:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
+
+    assert!(card.validate().is_ok());
+    assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
+
+    card.client_pid_maps.pop();
+    assert_eq!(Err(ValidationError::MissingClientPidMap(2)), card.validate());
+
+    card.telephones[0].parameters.pids[1].source = Some(0);
+    assert_eq!(Err(ValidationError::InvalidPid(String::from("TEL"))), card.validate());
+
+    card.telephones[0].parameters.pids[1].source = None;
+    card.telephones[0].parameters.pids[1].id = 0;
+    assert_eq!(Err(ValidationError::InvalidPid(String::from("TEL"))), card.validate());
+
+    card.telephones[0].parameters.pids[1].id = 2;
+    card.client_pid_maps[0].value.source_id = 0;
+    assert_eq!(Err(ValidationError::InvalidClientPidMap), card.validate());
+}
+
+#[test]
+fn single_properties_cannot_have_pids() {
+    let card: VCard = concat!(
+        "BEGIN:VCARD\r\n",
+        "VERSION:4.0\r\n",
+        "FN:Test\r\n",
+        "BDAY;PID=1:19900102\r\n",
+        "END:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
+
+    assert_eq!(Err(ValidationError::PidNotAllowed(String::from("BDAY"))), card.validate());
+}
+
+#[test]
+fn extensions_keep_unknown_names_and_value_types() {
+    let mut card: VCard = concat!(
+        "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+        "X-EXTRA;VALUE=x-example;X-ORIGIN=one;X-ORIGIN=two:raw\r\nEND:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
+
+    assert!(card.validate().is_ok());
+    assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
+
+    for name in ["end", "VERSION", "fN", "EMAIL"] {
+        card.extensions[0].name = name.parse().unwrap();
+        assert_eq!(Err(ValidationError::ReservedExtensionName(name.to_string())), card.validate());
+    }
+}
+
+#[test]
+fn extension_values_cannot_contain_line_breaks() {
+    let mut vcard = VCard::new("Test");
+
+    vcard.extensions.push(ExtensionProperty::from_text("X-NOTE".parse().unwrap(), "first\nsecond"));
+    assert!(vcard.validate().is_ok());
+
+    vcard.extensions[0].value = String::from("first\r\nEND:VCARD");
+    assert_eq!(
+        Err(ValidationError::InvalidExtensionValue(String::from("X-NOTE"))),
+        vcard.validate()
+    );
+}
+
+#[test]
+fn generic_parameters_cannot_override_typed_values() {
+    let mut card = VCard::new("Test");
+    let mut value_type = AnyParameter {
+        name:   "VALUE".parse().unwrap(),
+        values: vec![String::from("TEXT")],
+    };
+    card.formatted_names[0].parameters.any.push(value_type.clone());
+    assert_eq!(
+        Err(ValidationError::InvalidParameter {
+            property:  String::from("FN"),
+            parameter: String::from("VALUE"),
+        }),
+        card.validate()
+    );
+
+    value_type.name = "PREF".parse().unwrap();
+    value_type.values[0] = String::from("2");
+    card.formatted_names[0].parameters.pref = Some(Pref::new(1).unwrap());
+    card.formatted_names[0].parameters.any[0] = value_type;
+    assert_eq!(
+        Err(ValidationError::InvalidParameter {
+            property:  String::from("FN"),
+            parameter: String::from("PREF"),
+        }),
+        card.validate()
+    );
+}
+
+#[test]
+fn media_types_with_nested_quotes_need_another_representation() {
+    let mut card: VCard = concat!(
+        "BEGIN:VCARD\r\nVERSION:4.0\r\nFN:Test\r\n",
+        "URL;MEDIATYPE=\"text/plain;charset=utf-8\":https://example.com\r\nEND:VCARD\r\n",
+    )
+    .parse()
+    .unwrap();
+
+    assert!(card.validate().is_ok());
+
+    card.urls[0].parameters.media_type = Some("text/plain;name=\"a,b\"".parse().unwrap());
+    assert_eq!(
+        Err(ValidationError::UnrepresentableMediaType(String::from("URL"))),
+        card.validate()
+    );
 }

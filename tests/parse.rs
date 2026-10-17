@@ -51,7 +51,8 @@ fn rfc6350_author_card() {
                 Date::from_year_month_day(2009, 8, 8).unwrap(),
                 Time::from_hour_minute(14, 30)
                     .unwrap()
-                    .with_zone(Zone::Offset(UtcOffset::new(true, 5, 0).unwrap())),
+                    .with_zone(Zone::Offset(UtcOffset::new(true, 5, 0).unwrap()))
+                    .unwrap(),
             )
             .unwrap()
         )),
@@ -248,4 +249,41 @@ fn unsupported_value_types() {
             error.kind
         );
     }
+}
+
+#[test]
+fn version_parameters_round_trip() {
+    let input = concat!(
+        "BEGIN:VCARD\r\n",
+        "VERSION;VALUE=TEXT;AUTHOR-NAME=Jane Doe;X-ORIGIN=\"a,b\";X-LABEL=first^n\r\n",
+        " second:4.0\r\n",
+        "FN:Test\r\n",
+        "END:VCARD\r\n",
+    );
+    let card: VCard = input.parse().unwrap();
+
+    assert_eq!(Some("Jane Doe"), card.version_parameters.author_name.as_deref());
+    assert_eq!(vec!["a,b"], card.version_parameters.any[0].values);
+    assert_eq!(vec!["first\nsecond"], card.version_parameters.any[1].values);
+    assert!(card.validate().is_ok());
+    assert_eq!(card, card.to_string().parse::<VCard>().unwrap());
+
+    let error = "BEGIN:VCARD\r\nVERSION;VALUE=uri:4.0\r\nFN:Test\r\nEND:VCARD\r\n"
+        .parse::<VCard>()
+        .unwrap_err();
+
+    assert_eq!(2, error.line);
+    assert_eq!(
+        ParseErrorKind::InvalidValue {
+            property: String::from("VERSION")
+        },
+        error.kind
+    );
+
+    let error = "BEGIN:VCARD\r\nVERSION;VALUE=uri;VALUE=text:4.0\r\nFN:Test\r\nEND:VCARD\r\n"
+        .parse::<VCard>()
+        .unwrap_err();
+
+    assert_eq!(2, error.line);
+    assert_eq!(ParseErrorKind::InvalidParameter(String::from("VALUE")), error.kind);
 }
